@@ -77,8 +77,6 @@ main{padding:28px 0 64px}
 /* meta */
 .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .cat{color:var(--accent);font-weight:600}
-.cc{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;line-height:1.4}
-.cc-at{background:var(--accent);color:#fff}.cc-de{background:var(--ink);color:var(--bg)}.cc-ch{border:1px solid var(--ink);padding:1px 6px}
 .abo{font-size:11px;border:1px solid var(--muted);border-radius:4px;padding:0 4px;margin-left:4px;color:var(--muted)}
 .bars{display:inline-flex;gap:3px;align-items:center}.bars i{width:6px;height:18px;border-radius:3px;background:var(--line)}.bars i.on{background:var(--accent)}
 /* hero */
@@ -108,7 +106,12 @@ main{padding:28px 0 64px}
 .band .btn{background:#fff;color:#111113}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
 .col{background:var(--band-card);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px}
-.col .pill{align-self:flex-start;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px}
+.col .pill{align-self:flex-start;font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;background:#2c2c31;color:#fff;display:inline-flex;align-items:center}
+.flag{display:inline-block;vertical-align:-2px;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.12);flex-shrink:0}
+.flags{display:inline-flex;gap:4px;align-items:center}
+.seg a .flag,.edmenu .flag,.edlist .flag,.edpick summary .flag{margin-right:6px}
+.seg a .flags,.edmenu .flags,.edlist .flags{margin-right:6px;gap:2px}
+.pill .flag{margin-right:6px;vertical-align:-2px;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
 .pill .short{display:none}
 .pill-at{background:#c8321c;color:#fff}.pill-de{background:#fff;color:#111113}.pill-ch{border:1px solid #fff}
 .col a{font:600 20px/1.22 var(--display);color:#fff}.col a:hover{color:var(--accent-soft)}
@@ -135,14 +138,14 @@ main{padding:28px 0 64px}
 .storyhead p{margin:0;font-size:18px;color:var(--muted);max-width:720px}
 .cover{flex:1 1 280px;display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:16px;background:var(--surface)}
 .cover b{font-size:13px;color:var(--muted);font-weight:600}
-.cover div{display:flex;align-items:center;gap:10px;font-size:14px}.cover span:first-child{width:92px}
+.cover div{display:flex;align-items:center;gap:10px;font-size:14px}.cover span:first-child{width:118px;display:flex;align-items:center;gap:8px}
 .cover .track{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden;display:flex}
 .cover .track i{display:block;height:100%}.cover strong{width:18px;text-align:right}
 .ccols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;align-items:start}
 .ccol{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--card)}
 .ccol header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
-.ccol header span:first-child{font:700 20px var(--display)}
-.h-at{background:#c8321c;color:#fff}.h-de{background:var(--ink);color:var(--bg)}.h-ch{background:var(--surface);border-bottom:1px solid var(--line)}
+.ccol header span:first-child{font:700 20px var(--display);display:flex;align-items:center;gap:10px}
+.h-at,.h-de,.h-ch{background:var(--surface);border-bottom:1px solid var(--line)}
 .ccol a{display:flex;flex-direction:column;gap:6px;padding:18px 20px;border-bottom:1px solid var(--line)}.ccol a:last-child{border-bottom:0}
 .ccol .t{font:600 19px/1.25 var(--display)}
 .ccol small{font-size:13px;color:var(--muted)}.ccol small strong{color:var(--ink);font-weight:600}
@@ -245,9 +248,22 @@ function figure(s: Story): string {
   return `<div class="fig">${icon(s.category)}</div>`;
 }
 
+/** Small inline SVG flags: identical on every device (emoji flags do not render on Windows). */
+export function flag(c: Country | "dach", size = 16): string {
+  const h = Math.round(size * 0.72);
+  const label = c === "dach" ? "DACH" : COUNTRY_NAME[c];
+  const svg: Record<string, string> = {
+    at: `<svg class="flag" width="${size}" height="${h}" viewBox="0 0 30 20" role="img" aria-label="${label}"><rect width="30" height="20" fill="#c8102e"/><rect y="6.67" width="30" height="6.67" fill="#fff"/></svg>`,
+    de: `<svg class="flag" width="${size}" height="${h}" viewBox="0 0 30 20" role="img" aria-label="${label}"><rect width="30" height="6.67" fill="#000"/><rect y="6.67" width="30" height="6.67" fill="#dd0000"/><rect y="13.33" width="30" height="6.67" fill="#ffce00"/></svg>`,
+    ch: `<svg class="flag sq" width="${h}" height="${h}" viewBox="0 0 32 32" role="img" aria-label="${label}"><rect width="32" height="32" fill="#da291c"/><rect x="13" y="6" width="6" height="20" fill="#fff"/><rect x="6" y="13" width="20" height="6" fill="#fff"/></svg>`,
+  };
+  if (c === "dach") return `<span class="flags" role="img" aria-label="DACH">${["at", "de", "ch"].map((x) => svg[x].replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')).join("")}</span>`;
+  return svg[c];
+}
+
 function countryCodes(countries: string): string {
   const set = new Set(countries.split(","));
-  return COUNTRIES.filter((c) => set.has(c)).map((c) => `<span class="cc cc-${c}">${c.toUpperCase()}</span>`).join("");
+  return `<span class="flags">${COUNTRIES.filter((c) => set.has(c)).map((c) => flag(c)).join("")}</span>`;
 }
 
 function bars(n: number): string {
@@ -299,7 +315,7 @@ function feedBlock(latest: ArticleRow[], count?: number): string {
   if (!latest.length) return "";
   return `<aside class="feed" aria-label="Neueste Meldungen">
     <h2><span class="dot"></span>Neueste Meldungen${count ? `<span style="margin-left:auto;font:400 13px var(--text);color:var(--muted)">${count} heute</span>` : ""}</h2>
-    ${latest.map((a) => `<a href="${e(a.url)}" target="_blank" rel="noopener"><time>${clock(a.published)}</time><span><span class="t">${e(a.title)}</span><small>${e(a.publisher ?? "")}${abo(a)}</small></span></a>`).join("")}
+    ${latest.map((a) => `<a href="${e(a.url)}" target="_blank" rel="noopener"><time>${clock(a.published)}</time><span><span class="t">${e(a.title)}</span><small>${flag(a.country, 14)} ${e(a.publisher ?? "")}${abo(a)}</small></span></a>`).join("")}
   </aside>`;
 }
 
@@ -307,7 +323,7 @@ export function compareBand(s: Story, withButton = true): string {
   const by = byCountry(s);
   const cols = COUNTRIES.filter((c) => by[c]?.length).map((c) => {
     const [first, ...rest] = by[c]!;
-    return `<div class="col"><span class="pill pill-${c}"><span class="long">${COUNTRY_NAME[c]} · ${by[c]!.length}</span><span class="short">${c.toUpperCase()} · ${by[c]!.length}</span></span>
+    return `<div class="col"><span class="pill">${flag(c)}<span class="long">${COUNTRY_NAME[c]} · ${by[c]!.length}</span><span class="short">${by[c]!.length}</span></span>
       ${ext(first, "")}
       <small>${by[c]!.slice(0, 3).map((a) => e(a.publisher ?? "")).join(" · ")}</small>
       ${rest.length ? `<div class="more">${rest.slice(0, 2).map((a) => ext(a, "")).join("")}</div>` : ""}</div>`;
@@ -322,14 +338,14 @@ export function card(s: Story): string {
   const n = s.articles.length;
   const { href, attrs } = storyHref(s);
   return `<a class="card" href="${href}"${attrs}>${figure(s)}
-    <span class="sub"><span class="cat">${e(CATEGORY_NAME[s.category])}</span> · ${n > 1 ? newsrooms(n) : `${e(s.lead.publisher ?? "")}${s.lead.paywall ? " · Abo" : ""}`} · ${ago(s.last_update)}</span>
+    <span class="sub"><span class="cat">${e(CATEGORY_NAME[s.category])}</span> ${countryCodes(s.countries)} · ${n > 1 ? newsrooms(n) : `${e(s.lead.publisher ?? "")}${s.lead.paywall ? " · Abo" : ""}`} · ${ago(s.last_update)}</span>
     <span class="t">${e(s.lead.title)}</span></a>`;
 }
 
 function listBlock(cat: Category, list: Story[], base: string): string {
   return `<div class="list"><h3>${CATEGORY_NAME[cat]}<a href="${base}/${cat}">Mehr →</a></h3>${list.slice(0, 4).map((s) => {
     const { href, attrs } = storyHref(s);
-    return `<a class="row" href="${href}"${attrs}><span class="t">${e(s.lead.title)}</span><small>${s.articles.length > 1 ? newsrooms(s.articles.length) : e(s.lead.publisher ?? "")} · ${ago(s.last_update)}</small></a>`;
+    return `<a class="row" href="${href}"${attrs}><span class="t">${e(s.lead.title)}</span><small>${countryCodes(s.countries)} ${s.articles.length > 1 ? newsrooms(s.articles.length) : e(s.lead.publisher ?? "")} · ${ago(s.last_update)}</small></a>`;
   }).join("")}</div>`;
 }
 
@@ -357,7 +373,7 @@ function bottomNav(m: PageMeta, base: string): string {
 
 export function editionChooser(current: Edition): string {
   return `<div class="sechead"><h2>Ausgabe wählen</h2></div><p style="margin:-8px 0 18px;color:var(--muted)">Welche Nachrichten sollen zuerst erscheinen?</p><div class="edlist">${EDITIONS.map((ed) =>
-    `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === current ? ' aria-current="true"' : ""}><span>${ed === "dach" ? "Alle Länder (DACH)" : EDITION_LABEL[ed]}</span>${ed === current ? "<span>✓</span>" : ""}</a>`).join("")}</div>`;
+    `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === current ? ' aria-current="true"' : ""}><span>${flag(ed, 20)}${ed === "dach" ? "Alle Länder (DACH)" : EDITION_LABEL[ed]}</span>${ed === current ? "<span>✓</span>" : ""}</a>`).join("")}</div>`;
 }
 
 export function layout(m: PageMeta, body: string, activeCat?: Category): string {
@@ -367,7 +383,7 @@ export function layout(m: PageMeta, body: string, activeCat?: Category): string 
     ? `<link rel="alternate" hreflang="de-AT" href="${m.siteUrl}/at"><link rel="alternate" hreflang="de-DE" href="${m.siteUrl}/de"><link rel="alternate" hreflang="de-CH" href="${m.siteUrl}/ch"><link rel="alternate" hreflang="x-default" href="${m.siteUrl}/">`
     : "";
   const banner = m.banner
-    ? `<div class="banner"><div class="wrap"><span>Sie scheinen in ${COUNTRY_NAME[m.banner.country]} zu sein.</span><a href="/wechseln?e=${m.banner.country}&amp;r=${encodeURIComponent(`/${m.banner.country}`)}">Zur Ausgabe ${COUNTRY_NAME[m.banner.country]} wechseln</a><a href="/wechseln?e=${m.edition}&amp;r=${encodeURIComponent(m.path)}" style="font-weight:400">Hier bleiben</a></div></div>`
+    ? `<div class="banner"><div class="wrap"><span>${flag(m.banner.country)} Sie scheinen in ${COUNTRY_NAME[m.banner.country]} zu sein.</span><a href="/wechseln?e=${m.banner.country}&amp;r=${encodeURIComponent(`/${m.banner.country}`)}">Zur Ausgabe ${COUNTRY_NAME[m.banner.country]} wechseln</a><a href="/wechseln?e=${m.edition}&amp;r=${encodeURIComponent(m.path)}" style="font-weight:400">Hier bleiben</a></div></div>`
     : "";
   const today = new Date().toLocaleDateString("de-AT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Vienna" });
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -380,9 +396,9 @@ ${m.noindex ? '<meta name="robots" content="noindex,follow">' : ""}${hreflang}
 <header class="top"><div class="wrap">
   <div class="bar"><a href="/" class="logo">der bericht<span>.</span></a>
     <span class="dateline dateline-wide">${today}${m.stats && m.stats.articles ? ` · ${m.stats.articles} Meldungen aus ${m.stats.publishers} Redaktionen` : ""}</span>
-    <nav class="seg" aria-label="Ausgabe">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="page"' : ""}>${EDITION_LABEL[ed]}</a>`).join("")}</nav>
-    <details class="edpick"><summary aria-label="Ausgabe wählen: ${e(EDITION_LABEL[m.edition])}">${m.edition === "dach" ? "DACH" : m.edition.toUpperCase()}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-      <div class="edmenu">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="true"' : ""}>${ed === "dach" ? "Alle Länder (DACH)" : EDITION_LABEL[ed]}</a>`).join("")}</div></details></div>
+    <nav class="seg" aria-label="Ausgabe">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="page"' : ""}>${ed === "dach" ? "" : flag(ed)}${EDITION_LABEL[ed]}</a>`).join("")}</nav>
+    <details class="edpick"><summary aria-label="Ausgabe wählen: ${e(EDITION_LABEL[m.edition])}">${m.edition === "dach" ? "DACH" : `${flag(m.edition, 20)}${m.edition.toUpperCase()}`}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="edmenu">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="true"' : ""}>${flag(ed)}${ed === "dach" ? "Alle Länder (DACH)" : EDITION_LABEL[ed]}</a>`).join("")}</div></details></div>
   <nav class="chips" aria-label="Rubriken"><a href="${base || "/"}"${!activeCat && (m.path === "/" || m.path === base) ? ' aria-current="page"' : ""}>Top</a><a href="/vergleich"${m.path === "/vergleich" ? ' aria-current="page"' : ""}>DACH-Vergleich</a>${CATEGORIES.map((c) => `<a href="${base}/${c}"${c === activeCat ? ' aria-current="page"' : ""}>${CATEGORY_NAME[c]}</a>`).join("")}</nav>
 </div></header>${banner}
 ${m.topAd ? `<div class="wrap">${m.topAd}</div>` : ""}<main><div class="wrap">${m.breaking ? `<a class="breaking" href="/story/${e(m.breaking.id)}"><b>Eilmeldung</b><span>${e(m.breaking.title)} – ${m.breaking.count} Quellen</span></a>` : ""}${body}</div></main>
@@ -422,9 +438,9 @@ export function storyBody(s: Story): string {
   const by = byCountry(s);
   const max = Math.max(...COUNTRIES.map((c) => by[c]?.length ?? 0), 1);
   const fill: Record<Country, string> = { at: "#c8321c", de: "var(--ink)", ch: "#8a8a92" };
-  const cover = COUNTRIES.map((c) => `<div><span>${COUNTRY_NAME[c]}</span><span class="track"><i style="width:${Math.round(((by[c]?.length ?? 0) / max) * 100)}%;background:${fill[c]}"></i></span><strong>${by[c]?.length ?? 0}</strong></div>`).join("");
+  const cover = COUNTRIES.map((c) => `<div><span>${flag(c)} ${COUNTRY_NAME[c]}</span><span class="track"><i style="width:${Math.round(((by[c]?.length ?? 0) / max) * 100)}%;background:${fill[c]}"></i></span><strong>${by[c]?.length ?? 0}</strong></div>`).join("");
   const cols = COUNTRIES.filter((c) => by[c]?.length).map((c) =>
-    `<section class="ccol"><header class="h-${c}"><span>${COUNTRY_NAME[c]}</span><span>${by[c]!.length === 1 ? "1 Artikel" : `${by[c]!.length} Artikel`}</span></header>${by[c]!.map((a) =>
+    `<section class="ccol"><header class="h-${c}"><span>${flag(c, 22)} ${COUNTRY_NAME[c]}</span><span>${by[c]!.length === 1 ? "1 Artikel" : `${by[c]!.length} Artikel`}</span></header>${by[c]!.map((a) =>
       `<a href="${e(a.url)}" target="_blank" rel="noopener"><small><strong>${e(a.publisher ?? "")}</strong>${abo(a)} · ${ago(a.published)}</small><span class="t">${e(a.title)}</span>${a.teaser ? `<p>${e(a.teaser)}</p>` : ""}</a>`).join("")}</section>`).join("");
   return `<div class="storyhead"><div class="l">
       <div class="meta"><span class="cat">${e(CATEGORY_NAME[s.category])}</span>${countryCodes(s.countries)}<span>${newsrooms(s.articles.length)} · zuerst ${ago(s.first_seen)}, zuletzt ${ago(s.last_update)}</span></div>

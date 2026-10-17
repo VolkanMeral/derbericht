@@ -1,6 +1,7 @@
 // Legal pages. Everything in [ECKIGEN KLAMMERN] must be filled in before launch and checked by a lawyer.
 
 import { type Country } from "./sources.ts";
+import { flag } from "./render.ts";
 import { escapeHtml as e } from "./text.ts";
 
 export function impressum(): string {
@@ -36,7 +37,7 @@ export function datenschutz(): string {
 
 export function quellen(feeds: { publisher: string; country: Country; homepage: string; active: number }[]): string {
   const rows = feeds.filter((f) => f.active).map((f) =>
-    `<tr><td>${f.country.toUpperCase()}</td><td><a href="${e(f.homepage)}" target="_blank" rel="noopener">${e(f.publisher)}</a></td></tr>`).join("");
+    `<tr><td>${flag(f.country)}</td><td><a href="${e(f.homepage)}" target="_blank" rel="noopener">${e(f.publisher)}</a></td></tr>`).join("");
   return `<div class="prose"><h1>Quellen &amp; Opt-out</h1>
 <p>Der Bericht zeigt von den folgenden Herausgebern ausschließlich die Schlagzeile, einen Auszug von höchstens 120 Zeichen und einen Link zum Originalartikel. Wir übernehmen keine Fotos und keine Volltexte. Auszüge werden nach 48 Stunden gelöscht, Schlagzeile und Link nach 14 Tagen.</p>
 <table><thead><tr><th></th><th>Herausgeber</th></tr></thead><tbody>${rows}</tbody></table>
