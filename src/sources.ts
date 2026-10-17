@@ -48,7 +48,7 @@ export const FEEDS: FeedSeed[] = [
   { id: "srf", publisher: "SRF", country: "ch", url: "https://www.srf.ch/news/bnf/rss/1646", homepage: "https://www.srf.ch/news", category: "politik", active: true, license: "nk", note: "SRG-Nutzungsbedingungen: nur private, nicht-kommerzielle Zwecke" },
   { id: "nzz", publisher: "NZZ", country: "ch", url: "https://www.nzz.ch/recent.rss", homepage: "https://www.nzz.ch", category: "politik", paywallHint: true, active: true, license: "nk", note: "AGB: automatisierter Abruf nur mit Zustimmung – Erlaubnis anfragen" },
   { id: "watson", publisher: "watson", country: "ch", url: "https://www.watson.ch/api/1.0/rss/index.xml", homepage: "https://www.watson.ch", category: "chronik", active: true, license: "nk", note: "CH-Media-AGB: automatisierter Abruf nur mit Zustimmung – Erlaubnis anfragen" },
-  { id: "suedostschweiz", publisher: "Südostschweiz", country: "ch", url: "https://beta.suedostschweiz.ch/feed", homepage: "https://www.suedostschweiz.ch", category: "regional", active: true, license: "nk", note: "suedostschweiz.ch/rss-feeds: auf kommerziellen Plattformen nur mit vorheriger Zustimmung" },
+  { id: "suedostschweiz", publisher: "Südostschweiz", country: "ch", url: "https://www.suedostschweiz.ch/feed", homepage: "https://www.suedostschweiz.ch", category: "regional", active: true, license: "nk", note: "suedostschweiz.ch/rss-feeds: auf kommerziellen Plattformen nur mit vorheriger Zustimmung" },
   { id: "swissinfo", publisher: "swissinfo.ch", country: "ch", url: "https://www.swissinfo.ch/ger/rss", homepage: "https://www.swissinfo.ch/ger", category: "welt", active: true, license: "nk", note: "Nutzungsbedingungen: kommerzielle Nutzung unzulässig" },
 ];
 

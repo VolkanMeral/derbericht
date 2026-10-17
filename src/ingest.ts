@@ -27,6 +27,8 @@ export async function seedFeeds(env: Env): Promise<void> {
       ).bind(f.id, f.publisher, f.country, f.url, f.homepage, f.category, f.paywallHint ? 1 : 0, f.active ? 1 : 0, f.license ?? "nk", f.note ?? null),
     ),
   );
+  // Feed addresses follow the list (the admin cannot edit them).
+  await env.DB.batch(FEEDS.map((f) => env.DB.prepare("UPDATE feeds SET url = ? WHERE id = ? AND url != ?").bind(f.url, f.id, f.url)));
   // Licence of rows created before the column existed (an admin edit sets license_note, which then wins).
   await env.DB.batch(FEEDS.filter((f) => f.note).map((f) =>
     env.DB.prepare("UPDATE feeds SET license = ?, license_note = ? WHERE id = ? AND license_note IS NULL").bind(f.license ?? "nk", f.note!, f.id)));
