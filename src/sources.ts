@@ -34,6 +34,9 @@ export const FEEDS: FeedSeed[] = [
   { id: "sz", publisher: "Süddeutsche Zeitung", country: "de", url: "https://rss.sueddeutsche.de/rss/Topthemen", homepage: "https://www.sueddeutsche.de", category: "politik", paywallHint: true, active: true },
   { id: "dw", publisher: "Deutsche Welle", country: "de", url: "https://rss.dw.com/xml/rss-de-all", homepage: "https://www.dw.com/de", category: "welt", active: true },
   { id: "kicker", publisher: "kicker", country: "de", url: "https://newsfeed.kicker.de/news/aktuell", homepage: "https://www.kicker.de", category: "sport", active: true },
+  // heise erlaubt anderen Websites ausdrücklich die Übernahme seiner RSS-Feeds mit aktiven Links
+  // (ohne Bilder, Link im neuen Fenster, kein Frame): heise.de/news-extern/news.html
+  { id: "heise", publisher: "heise online", country: "de", url: "https://www.heise.de/rss/heise-atom.xml", homepage: "https://www.heise.de", category: "wissen", active: true },
 
   // Schweiz
   { id: "srf", publisher: "SRF", country: "ch", url: "https://www.srf.ch/news/bnf/rss/1646", homepage: "https://www.srf.ch/news", category: "politik", active: true },

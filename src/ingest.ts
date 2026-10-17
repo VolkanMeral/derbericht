@@ -18,8 +18,7 @@ interface FeedRow {
 }
 
 export async function seedFeeds(env: Env): Promise<void> {
-  const count = await env.DB.prepare("SELECT COUNT(*) AS n FROM feeds").first<{ n: number }>();
-  if (count && count.n > 0) return;
+  // INSERT OR IGNORE: new feeds from the list are added, existing rows (and their admin toggles) stay as they are.
   await env.DB.batch(
     FEEDS.map((f) =>
       env.DB.prepare(

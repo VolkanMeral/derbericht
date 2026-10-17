@@ -190,7 +190,8 @@ export const SOCIAL_JS = `<div class="sheetwrap" id="sheet" aria-hidden="true"><
       if(navigator.clipboard)navigator.clipboard.writeText(url).then(done,function(){});
     });
   });}
-  function sameTab(root){if(!mobile)return;root.querySelectorAll('a[target="_blank"]').forEach(function(a){if(!a.closest('.share'))a.removeAttribute('target');});}
+  // heise.de asks for its links to open in a new window (RSS terms), so those keep target=_blank.
+  function sameTab(root){if(!mobile)return;root.querySelectorAll('a[target="_blank"]').forEach(function(a){if(!a.closest('.share')&&!/heise\.de/.test(a.href))a.removeAttribute('target');});}
   initReact(document);initShare(document);
   // Phones: publisher articles open in the same tab, so "back" returns to Der Bericht.
   sameTab(document);

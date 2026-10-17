@@ -509,7 +509,7 @@ export function sheetBody(s: Story, siteUrl: string, counts: Counts = {}): strin
     ${others.length ? `<div class="sothers"><span>So berichten andere</span>${others.map((a) => `<a href="${e(a.url)}">${flag(a.country)}<span><strong>${e(a.publisher ?? "")}</strong> ${e(a.title)}</span></a>`).join("")}${n > 1 ? `<a class="all" href="/story/${e(s.id)}">Alle ${n} Quellen vergleichen<span>→</span></a>` : ""}</div>` : ""}
     ${reactBar(s.id, counts)}
     ${shareBar(`${siteUrl}/story/${s.id}`, s.lead.title, true)}
-    <a class="sgo" href="${e(s.lead.url)}">Bei ${e(s.lead.publisher ?? "der Quelle")} weiterlesen →</a>
+    <a class="sgo" href="${e(s.lead.url)}"${/heise\.de/.test(s.lead.url) ? ' target="_blank" rel="noopener"' : ""}>Bei ${e(s.lead.publisher ?? "der Quelle")} weiterlesen →</a>
     <small class="snote">${s.lead.paywall ? "Abo-Artikel · " : ""}Der vollständige Artikel öffnet sich beim Herausgeber</small>`;
 }
 
