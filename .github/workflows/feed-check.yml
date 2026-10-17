@@ -14,9 +14,10 @@ jobs:
           python-version: "3.12"
       - run: pip install requests
       - run: python scripts/feed_check.py scripts/feed_candidates.txt
+      - run: python scripts/terms_check.py scripts/terms_sites.txt
       - name: Save to branch
         run: |
-          mkdir out && mv feed_check.json out/ && cd out
+          mkdir out && mv feed_check.json terms_check.json out/ && cd out
           git init -q -b feed-check
           git config user.name "github-actions"; git config user.email "actions@github.com"
           git add -A && git commit -qm "feed check $(date -u +%F)"
