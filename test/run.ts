@@ -232,6 +232,7 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   const secure = await worker.fetch(new Request("https://derbericht.com/at"), env);
   assert.ok(secure.headers.get("Strict-Transport-Security"), "HSTS");
   const found = await (await worker.fetch(new Request("https://derbericht.com/suche?q=Haftung"), env)).text();
+  mkdirSync(new URL("./out/", import.meta.url), { recursive: true });
   writeFileSync(new URL("./out/suche.html", import.meta.url), found);
   assert.ok(/Treffer für „Haftung“/.test(found) && found.includes("KI-Haftung") && found.includes('class="card"'), "search finds the KI story");
   const stem = await (await worker.fetch(new Request("https://derbericht.com/suche?q=haftungsregeln%20eu"), env)).text();
