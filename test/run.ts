@@ -480,4 +480,24 @@ await test("admin pages: sources toggle, opt-out, password reset with code, logo
   assert.equal(r.res.headers.get("Location"), "/admin/login", "session ended");
 });
 
+await test("licences: active banner = commercial mode, non-commercial sources pause and their articles go", async () => {
+  const { commercialMode, enforceLicenses } = await import("../src/license.ts");
+  const lic = sqlite.prepare("SELECT license, COUNT(*) n FROM feeds GROUP BY license").all() as { license: string; n: number }[];
+  assert.ok(lic.some((l) => l.license === "frei") && lic.some((l) => l.license === "nk"), JSON.stringify(lic));
+  sqlite.prepare("UPDATE ads SET active = 0").run();
+  assert.equal((await commercialMode(env)).on, false);
+  const before = (sqlite.prepare("SELECT COUNT(*) n FROM articles a JOIN feeds f ON f.id = a.feed_id WHERE f.license = 'nk'").get() as { n: number }).n;
+  assert.ok(before > 0);
+  await enforceLicenses(env);
+  assert.equal((sqlite.prepare("SELECT COUNT(*) n FROM articles a JOIN feeds f ON f.id = a.feed_id WHERE f.license = 'nk'").get() as { n: number }).n, before, "kept without ads");
+  sqlite.prepare("UPDATE ads SET active = 1").run();
+  assert.equal((await commercialMode(env)).on, true);
+  await enforceLicenses(env);
+  assert.equal((sqlite.prepare("SELECT COUNT(*) n FROM articles a JOIN feeds f ON f.id = a.feed_id WHERE f.license = 'nk'").get() as { n: number }).n, 0, "removed with ads");
+  const orphan = (sqlite.prepare("SELECT COUNT(*) n FROM clusters c WHERE NOT EXISTS (SELECT 1 FROM articles a WHERE a.cluster_id = c.id)").get() as { n: number }).n;
+  assert.equal(orphan, 0, "no empty stories left");
+  const r = await req("/admin/quellen", { cookie: (await req("/admin/login", { method: "POST", form: { email: "admin@example.at", password: "neues-passwort-1" } })).cookie });
+  assert.ok(r.text.includes("Werbemodus aktiv") && r.text.includes("Pausiert (Nutzungsrecht)") && r.text.includes("Nutzung erlaubt"), "admin shows licence state");
+});
+
 console.log(`\n${passed} tests passed. Pages written to test/out/`);

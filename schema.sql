@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS feeds (
   paywall_hint  INTEGER NOT NULL DEFAULT 0,
   active        INTEGER NOT NULL DEFAULT 1,
   terms_status  TEXT NOT NULL DEFAULT 'prüfen',   -- prüfen | ok | verboten
+  license       TEXT NOT NULL DEFAULT 'nk',       -- frei | nk (nur nicht-kommerziell) | erlaubnis
+  license_note  TEXT,
   last_fetch    INTEGER,
   last_error    TEXT
 );

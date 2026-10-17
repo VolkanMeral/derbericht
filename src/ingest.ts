@@ -7,6 +7,7 @@ import { assignClusters, type Clusterable } from "./cluster.ts";
 import { generateImages } from "./images.ts";
 import type { Env } from "./types.ts";
 import { ensureSchema } from "./data.ts";
+import { allowedFeedsSql, commercialMode, enforceLicenses } from "./license.ts";
 
 const UA = "DerBerichtBot/1.0 (+https://derbericht.com/quellen; office@derbericht.com)";
 const MAX_AGE_MS = 48 * 3600 * 1000;   // ignore older items; teasers are removed after 48h
@@ -22,10 +23,13 @@ export async function seedFeeds(env: Env): Promise<void> {
   await env.DB.batch(
     FEEDS.map((f) =>
       env.DB.prepare(
-        "INSERT OR IGNORE INTO feeds (id, publisher, country, url, homepage, category, paywall_hint, active) VALUES (?,?,?,?,?,?,?,?)",
-      ).bind(f.id, f.publisher, f.country, f.url, f.homepage, f.category, f.paywallHint ? 1 : 0, f.active ? 1 : 0),
+        "INSERT OR IGNORE INTO feeds (id, publisher, country, url, homepage, category, paywall_hint, active, license, license_note) VALUES (?,?,?,?,?,?,?,?,?,?)",
+      ).bind(f.id, f.publisher, f.country, f.url, f.homepage, f.category, f.paywallHint ? 1 : 0, f.active ? 1 : 0, f.license ?? "nk", f.note ?? null),
     ),
   );
+  // Licence of rows created before the column existed (an admin edit sets license_note, which then wins).
+  await env.DB.batch(FEEDS.filter((f) => f.note).map((f) =>
+    env.DB.prepare("UPDATE feeds SET license = ?, license_note = ? WHERE id = ? AND license_note IS NULL").bind(f.license ?? "nk", f.note!, f.id)));
 }
 
 export function guessCategory(title: string, fallback: Category): Category {
@@ -137,7 +141,7 @@ export async function runIngest(env: Env): Promise<{ feeds: number; items: numbe
   await ensureSchema(env);
   await seedFeeds(env);
   const { results: feeds } = await env.DB.prepare(
-    "SELECT id, publisher, country, url, category, paywall_hint, active FROM feeds WHERE active = 1 AND terms_status != 'verboten'",
+    `SELECT id, publisher, country, url, category, paywall_hint, active FROM feeds WHERE active = 1 AND terms_status != 'verboten' AND ${allowedFeedsSql((await commercialMode(env)).on)}`,
   ).all<FeedRow>();
   const opt = await env.DB.prepare("SELECT domain FROM optouts").all<{ domain: string }>();
   const optouts = new Set(opt.results.map((r) => r.domain));
@@ -160,5 +164,6 @@ export async function runIngest(env: Env): Promise<{ feeds: number; items: numbe
   await cluster(env);
   const images = await generateImages(env);
   await cleanup(env);
+  await enforceLicenses(env);
   return { feeds: feeds.length, items, errors, images };
 }

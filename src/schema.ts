@@ -1,6 +1,6 @@
 // Generated from schema.sql – keep in sync. Applied automatically on the first run.
 export const SCHEMA: string[] = [
-  "CREATE TABLE IF NOT EXISTS feeds ( id TEXT PRIMARY KEY, publisher TEXT NOT NULL, country TEXT NOT NULL CHECK (country IN ('at','de','ch')), url TEXT NOT NULL, homepage TEXT NOT NULL, category TEXT NOT NULL, paywall_hint INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, terms_status TEXT NOT NULL DEFAULT 'prüfen', last_fetch INTEGER, last_error TEXT )",
+  "CREATE TABLE IF NOT EXISTS feeds ( id TEXT PRIMARY KEY, publisher TEXT NOT NULL, country TEXT NOT NULL CHECK (country IN ('at','de','ch')), url TEXT NOT NULL, homepage TEXT NOT NULL, category TEXT NOT NULL, paywall_hint INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, terms_status TEXT NOT NULL DEFAULT 'prüfen', license TEXT NOT NULL DEFAULT 'nk', license_note TEXT, last_fetch INTEGER, last_error TEXT )",
   "CREATE TABLE IF NOT EXISTS articles ( id TEXT PRIMARY KEY, feed_id TEXT NOT NULL REFERENCES feeds(id), url TEXT NOT NULL UNIQUE, title TEXT NOT NULL, teaser TEXT, category TEXT NOT NULL, country TEXT NOT NULL, published INTEGER NOT NULL, fetched INTEGER NOT NULL, paywall INTEGER NOT NULL DEFAULT 0, tokens TEXT NOT NULL, cluster_id TEXT )",
   "CREATE INDEX IF NOT EXISTS idx_articles_cluster ON articles(cluster_id)",
   "CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published)",

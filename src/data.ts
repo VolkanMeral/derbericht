@@ -3,6 +3,7 @@
 import type { Category, Country } from "./sources.ts";
 import type { ArticleRow, ClusterRow, Env, Story } from "./types.ts";
 import { SCHEMA } from "./schema.ts";
+import { MIGRATIONS } from "./license.ts";
 import { tokens } from "./text.ts";
 
 export interface StoryQuery {
@@ -113,6 +114,9 @@ let schemaReady = false;
 export async function ensureSchema(env: Env): Promise<void> {
   if (schemaReady) return;
   await env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)));
+  for (const m of MIGRATIONS) {
+    try { await env.DB.prepare(m).run(); } catch { /* column exists already */ }
+  }
   schemaReady = true;
 }
 

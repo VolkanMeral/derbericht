@@ -13,6 +13,7 @@ import { escapeHtml as e } from "./text.ts";
 import { runIngest } from "./ingest.ts";
 import { getPage, PAGE_DEFAULTS, PAGE_SLUGS, savePage, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
+import { commercialMode, LICENSE_LABEL, LICENSES, type License } from "./license.ts";
 import { dayKey, loadReport, PERIODS, REPORT_CSS, reportBody, reportCsv } from "./report.ts";
 
 // ---------- rendering ----------
@@ -385,7 +386,12 @@ async function adsList(env: Env, user: User, url: URL): Promise<Response> {
   const state = (a: Ad) => !a.active ? '<span class="pill off">Pausiert</span>' : a.ends && a.ends < now ? '<span class="pill off">Abgelaufen</span>' : a.starts && a.starts > now ? '<span class="pill review">Geplant</span>' : '<span class="pill ok">Aktiv</span>';
   const rows = results.map((a) => `<tr><td><a href="/admin/werbung/${a.id}"><strong>${e(a.name)}</strong></a><br><span class="muted">${e(SLOT_LABEL[a.slot])}</span></td>
     <td>${state(a)}</td><td class="muted">${dt(a.starts)} – ${dt(a.ends)}</td><td>${a.impressions}</td><td>${a.clicks}${a.impressions ? ` <span class="muted">(${((a.clicks / a.impressions) * 100).toFixed(1)} %)</span>` : ""}</td></tr>`).join("");
-  return page("Werbung", `<div class="top"><h1>Werbung</h1><a class="btn" href="/admin/werbung/neu">+ Neues Banner</a></div>${flash(url)}
+  const nk = await env.DB.prepare("SELECT COUNT(*) AS n FROM feeds WHERE license = 'nk' AND active = 1").first<{ n: number }>();
+  const mode = await commercialMode(env);
+  const warn = nk?.n ? (mode.on
+    ? `<div class="msg err">Werbemodus aktiv (${e(mode.reason)}): ${nk.n} Quellen, die nur nicht-kommerziell genutzt werden dürfen, sind pausiert. <a href="/admin/quellen">Quellen ansehen</a></div>`
+    : `<div class="msg ok" style="background:#fbeccf;color:var(--warn)">Hinweis: Sobald ein Banner aktiv ist, werden ${nk.n} Quellen mit „Nur nicht-kommerziell“ automatisch pausiert und ihre Meldungen entfernt. <a href="/admin/quellen">Quellen ansehen</a></div>`) : "";
+  return page("Werbung", `<div class="top"><h1>Werbung</h1><a class="btn" href="/admin/werbung/neu">+ Neues Banner</a></div>${flash(url)}${warn}
     <div class="card tablewrap">${rows ? `<table><thead><tr><th>Banner</th><th>Status</th><th>Zeitraum</th><th>Einblendungen</th><th>Klicks</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted">Noch keine Banner. Jedes Banner wird auf der Website automatisch als „Anzeige“ gekennzeichnet.</p>'}</div>`, user, "/admin/werbung");
 }
 
@@ -465,6 +471,13 @@ async function sources(req: Request, env: Env, user: User, url: URL): Promise<Re
       await env.DB.prepare("UPDATE feeds SET active = 1 - active WHERE id = ?").bind(String(f.get("id"))).run();
       return back("/admin/quellen", "ok", "Quelle geändert.");
     }
+    if (action === "license") {
+      const lic = String(f.get("license")) as License;
+      if (!LICENSES.includes(lic)) return back("/admin/quellen", "err", "Unbekannte Lizenz.");
+      await env.DB.prepare("UPDATE feeds SET license = ?, license_note = ? WHERE id = ?")
+        .bind(lic, String(f.get("note") ?? "").trim().slice(0, 300), String(f.get("id"))).run();
+      return back("/admin/quellen", "ok", "Nutzungsrecht gespeichert.");
+    }
     if (action === "optout") {
       const domain = String(f.get("domain") ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
       if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) return back("/admin/quellen", "err", "Bitte eine Domain wie beispiel.at angeben.");
@@ -476,13 +489,27 @@ async function sources(req: Request, env: Env, user: User, url: URL): Promise<Re
       return back("/admin/quellen", "ok", "Opt-out entfernt.");
     }
   }
-  const feeds = await env.DB.prepare("SELECT id, publisher, country, url, active, last_fetch, last_error FROM feeds ORDER BY country, publisher")
-    .all<{ id: string; publisher: string; country: string; url: string; active: number; last_fetch: number | null; last_error: string | null }>();
+  const feeds = await env.DB.prepare("SELECT id, publisher, country, url, active, last_fetch, last_error, license, license_note FROM feeds ORDER BY country, publisher")
+    .all<{ id: string; publisher: string; country: string; url: string; active: number; last_fetch: number | null; last_error: string | null; license: License; license_note: string | null }>();
+  const mode = await commercialMode(env);
+  const paused = (lic: License) => lic === "erlaubnis" || (mode.on && lic === "nk");
+  const licPill = (lic: License) => `<span class="pill ${lic === "frei" ? "ok" : lic === "nk" ? "review" : "off"}">${LICENSE_LABEL[lic]}</span>`;
+  const licForm = (s: { id: string; license: License; license_note: string | null }) => `<details><summary style="cursor:pointer">${licPill(s.license)}</summary>
+    <form method="post" class="f" style="gap:8px;margin-top:8px;min-width:240px"><input type="hidden" name="id" value="${e(s.id)}">
+      <select name="license">${LICENSES.map((l) => `<option value="${l}"${l === s.license ? " selected" : ""}>${LICENSE_LABEL[l]}</option>`).join("")}</select>
+      <input type="text" name="note" value="${e(s.license_note ?? "")}" placeholder="Grundlage, z. B. E-Mail-Erlaubnis vom …">
+      <button class="btn small" name="action" value="license">Speichern</button></form></details>
+    ${s.license_note ? `<span class="muted" style="font-size:12px;display:block;margin-top:4px;max-width:320px">${e(s.license_note)}</span>` : ""}`;
+  const modeBox = `<div class="msg ${mode.on ? "err" : "ok"}" style="${mode.on ? "" : "background:#e8eef9;color:#244a8f"}">${mode.on
+    ? `Werbemodus aktiv (${e(mode.reason)}): Quellen mit „Nur nicht-kommerziell“ werden nicht abgerufen, ihre Meldungen sind entfernt.`
+    : "Kein Werbemodus: Der Bericht erzielt keine Einnahmen, daher werden auch Quellen mit „Nur nicht-kommerziell“ abgerufen. Sobald ein Banner aktiv ist (oder COMMERCIAL=on), pausieren sie automatisch."}
+    Quellen mit „Erlaubnis nötig“ werden erst abgerufen, wenn eine Erlaubnis vorliegt und hier eingetragen ist.</div>`;
   const opt = await env.DB.prepare("SELECT domain, added, note FROM optouts ORDER BY added DESC").all<{ domain: string; added: number; note: string | null }>();
-  return page("Quellen", `<div class="top"><h1>Quellen</h1><form method="post"><button class="btn" name="action" value="run">Jetzt abrufen</button></form></div>${flash(url)}
-    <div class="card tablewrap" style="margin-bottom:18px"><table><thead><tr><th>Quelle</th><th>Land</th><th>Status</th><th>Letzter Abruf</th><th></th></tr></thead><tbody>
+  return page("Quellen", `<div class="top"><h1>Quellen</h1><form method="post"><button class="btn" name="action" value="run">Jetzt abrufen</button></form></div>${flash(url)}${modeBox}
+    <div class="card tablewrap" style="margin-bottom:18px"><table><thead><tr><th>Quelle</th><th>Land</th><th>Nutzungsrecht</th><th>Status</th><th>Letzter Abruf</th><th></th></tr></thead><tbody>
       ${feeds.results.map((s) => `<tr><td><strong>${e(s.publisher)}</strong><br><span class="muted" style="font-size:12px">${e(s.url)}</span></td><td>${s.country.toUpperCase()}</td>
-        <td>${!s.active ? '<span class="pill off">Aus</span>' : s.last_error ? `<span class="pill review" title="${e(s.last_error)}">Fehler</span><br><span class="muted" style="font-size:12px">${e(s.last_error.slice(0, 60))}</span>` : '<span class="pill ok">OK</span>'}</td>
+        <td>${licForm(s)}</td>
+        <td>${!s.active ? '<span class="pill off">Aus</span>' : paused(s.license) ? '<span class="pill off">Pausiert (Nutzungsrecht)</span>' : s.last_error ? `<span class="pill review" title="${e(s.last_error)}">Fehler</span><br><span class="muted" style="font-size:12px">${e(s.last_error.slice(0, 60))}</span>` : '<span class="pill ok">OK</span>'}</td>
         <td class="muted">${dt(s.last_fetch)}</td>
         <td><form method="post"><input type="hidden" name="id" value="${e(s.id)}"><button class="btn small light" name="action" value="toggle">${s.active ? "Ausschalten" : "Einschalten"}</button></form></td></tr>`).join("")}
     </tbody></table></div>

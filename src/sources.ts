@@ -14,35 +14,42 @@ export interface FeedSeed {
   category: Category;
   paywallHint?: boolean; // publisher marks paid articles; we flag them "Abo"
   active: boolean;
+  license?: "frei" | "nk" | "erlaubnis"; // default "nk" (see license.ts)
+  note?: string;                        // where the licence comes from
 }
 
 export const FEEDS: FeedSeed[] = [
   // Österreich
-  { id: "orf-news", publisher: "ORF", country: "at", url: "https://rss.orf.at/news.xml", homepage: "https://orf.at", category: "politik", active: true },
-  { id: "orf-vbg", publisher: "ORF Vorarlberg", country: "at", url: "https://rss.orf.at/vorarlberg.xml", homepage: "https://vorarlberg.orf.at", category: "regional", active: true },
-  { id: "orf-sport", publisher: "ORF Sport", country: "at", url: "https://rss.orf.at/sport.xml", homepage: "https://sport.orf.at", category: "sport", active: true },
+  { id: "orf-news", publisher: "ORF", country: "at", url: "https://rss.orf.at/news.xml", homepage: "https://orf.at", category: "politik", active: true, license: "nk", note: "rss.orf.at: für nicht-kommerzielle Zwecke kostenlos" },
+  { id: "orf-vbg", publisher: "ORF Vorarlberg", country: "at", url: "https://rss.orf.at/vorarlberg.xml", homepage: "https://vorarlberg.orf.at", category: "regional", active: true, license: "nk", note: "rss.orf.at: für nicht-kommerzielle Zwecke kostenlos" },
+  { id: "orf-sport", publisher: "ORF Sport", country: "at", url: "https://rss.orf.at/sport.xml", homepage: "https://sport.orf.at", category: "sport", active: true, license: "nk", note: "rss.orf.at: für nicht-kommerzielle Zwecke kostenlos" },
   { id: "standard", publisher: "Der Standard", country: "at", url: "https://www.derstandard.at/rss", homepage: "https://www.derstandard.at", category: "politik", paywallHint: true, active: true },
   { id: "presse", publisher: "Die Presse", country: "at", url: "https://www.diepresse.com/rss/", homepage: "https://www.diepresse.com", category: "politik", paywallHint: true, active: true },
   { id: "kurier", publisher: "Kurier", country: "at", url: "https://kurier.at/xml/rssd", homepage: "https://kurier.at", category: "chronik", paywallHint: true, active: true },
-  { id: "vn", publisher: "Vorarlberger Nachrichten", country: "at", url: "https://www.vn.at/feed", homepage: "https://www.vn.at", category: "regional", paywallHint: true, active: true },
+  { id: "vn", publisher: "Vorarlberger Nachrichten", country: "at", url: "https://www.vn.at/feed", homepage: "https://www.vn.at", category: "regional", paywallHint: true, active: true, license: "nk", note: "AGB: kommerzielle Nutzung außerhalb der Plattform nur mit Zustimmung" },
 
   // Deutschland
-  { id: "tagesschau", publisher: "tagesschau", country: "de", url: "https://www.tagesschau.de/xml/rss2/", homepage: "https://www.tagesschau.de", category: "politik", active: true },
+  { id: "tagesschau", publisher: "tagesschau", country: "de", url: "https://www.tagesschau.de/xml/rss2/", homepage: "https://www.tagesschau.de", category: "politik", active: true, license: "nk", note: "Private, nicht-kommerzielle Nutzung erlaubt; kommerzielle Plattformen: Registrierung im ARD Publishing Portal" },
   { id: "spiegel", publisher: "Der Spiegel", country: "de", url: "https://www.spiegel.de/schlagzeilen/index.rss", homepage: "https://www.spiegel.de", category: "politik", paywallHint: true, active: true },
   { id: "zeit", publisher: "Zeit Online", country: "de", url: "https://newsfeed.zeit.de/index", homepage: "https://www.zeit.de", category: "politik", paywallHint: true, active: true },
-  { id: "faz", publisher: "FAZ", country: "de", url: "https://www.faz.net/rss/aktuell/", homepage: "https://www.faz.net", category: "politik", paywallHint: true, active: true },
+  { id: "faz", publisher: "FAZ", country: "de", url: "https://www.faz.net/rss/aktuell/", homepage: "https://www.faz.net", category: "politik", paywallHint: true, active: true, license: "nk", note: "Impressum: kommerzielles Text- und Data-Mining vorbehalten" },
   { id: "sz", publisher: "Süddeutsche Zeitung", country: "de", url: "https://rss.sueddeutsche.de/rss/Topthemen", homepage: "https://www.sueddeutsche.de", category: "politik", paywallHint: true, active: true },
   { id: "dw", publisher: "Deutsche Welle", country: "de", url: "https://rss.dw.com/xml/rss-de-all", homepage: "https://www.dw.com/de", category: "welt", active: true },
   { id: "kicker", publisher: "kicker", country: "de", url: "https://newsfeed.kicker.de/news/aktuell", homepage: "https://www.kicker.de", category: "sport", active: true },
   // heise erlaubt anderen Websites ausdrücklich die Übernahme seiner RSS-Feeds mit aktiven Links
   // (ohne Bilder, Link im neuen Fenster, kein Frame): heise.de/news-extern/news.html
-  { id: "heise", publisher: "heise online", country: "de", url: "https://www.heise.de/rss/heise-atom.xml", homepage: "https://www.heise.de", category: "wissen", active: true },
+  { id: "heise", publisher: "heise online", country: "de", url: "https://www.heise.de/rss/heise-atom.xml", homepage: "https://www.heise.de", category: "wissen", active: true, license: "frei", note: "heise.de/news-extern: Übernahme der RSS-Feeds mit aktiven Links erlaubt (ohne Bilder, neues Fenster)" },
+  // Nur nicht-kommerziell: die Bedingungen behalten (nur) kommerzielle Nutzung / kommerzielles TDM vor
+  { id: "handelsblatt", publisher: "Handelsblatt", country: "de", url: "https://www.handelsblatt.com/contentexport/feed/schlagzeilen", homepage: "https://www.handelsblatt.com", category: "wirtschaft", paywallHint: true, active: true, license: "nk", note: "Impressum: kommerzielles Text- und Data-Mining (§ 44b UrhG) vorbehalten" },
+  { id: "stern", publisher: "Stern", country: "de", url: "https://www.stern.de/feed/standard/alle-nachrichten/", homepage: "https://www.stern.de", category: "politik", paywallHint: true, active: true, license: "nk", note: "AGB 9.4: kommerzielles Text- und Data-Mining (§ 44b UrhG) nicht gestattet" },
+  { id: "tagesspiegel", publisher: "Tagesspiegel", country: "de", url: "https://www.tagesspiegel.de/contentexport/feed/home", homepage: "https://www.tagesspiegel.de", category: "politik", paywallHint: true, active: true, license: "nk", note: "Impressum: kommerzielles Text- und Data-Mining (§ 44b UrhG) vorbehalten" },
 
   // Schweiz
-  { id: "srf", publisher: "SRF", country: "ch", url: "https://www.srf.ch/news/bnf/rss/1646", homepage: "https://www.srf.ch/news", category: "politik", active: true },
-  { id: "nzz", publisher: "NZZ", country: "ch", url: "https://www.nzz.ch/recent.rss", homepage: "https://www.nzz.ch", category: "politik", paywallHint: true, active: true },
-  { id: "watson", publisher: "watson", country: "ch", url: "https://www.watson.ch/api/1.0/rss/index.xml", homepage: "https://www.watson.ch", category: "chronik", active: true },
-  { id: "swissinfo", publisher: "swissinfo.ch", country: "ch", url: "https://www.swissinfo.ch/ger/rss", homepage: "https://www.swissinfo.ch/ger", category: "welt", active: true },
+  { id: "srf", publisher: "SRF", country: "ch", url: "https://www.srf.ch/news/bnf/rss/1646", homepage: "https://www.srf.ch/news", category: "politik", active: true, license: "nk", note: "SRG-Nutzungsbedingungen: nur private, nicht-kommerzielle Zwecke" },
+  { id: "nzz", publisher: "NZZ", country: "ch", url: "https://www.nzz.ch/recent.rss", homepage: "https://www.nzz.ch", category: "politik", paywallHint: true, active: true, license: "nk", note: "AGB: automatisierter Abruf nur mit Zustimmung – Erlaubnis anfragen" },
+  { id: "watson", publisher: "watson", country: "ch", url: "https://www.watson.ch/api/1.0/rss/index.xml", homepage: "https://www.watson.ch", category: "chronik", active: true, license: "nk", note: "CH-Media-AGB: automatisierter Abruf nur mit Zustimmung – Erlaubnis anfragen" },
+  { id: "suedostschweiz", publisher: "Südostschweiz", country: "ch", url: "https://beta.suedostschweiz.ch/feed", homepage: "https://www.suedostschweiz.ch", category: "regional", active: true, license: "nk", note: "suedostschweiz.ch/rss-feeds: auf kommerziellen Plattformen nur mit vorheriger Zustimmung" },
+  { id: "swissinfo", publisher: "swissinfo.ch", country: "ch", url: "https://www.swissinfo.ch/ger/rss", homepage: "https://www.swissinfo.ch/ger", category: "welt", active: true, license: "nk", note: "Nutzungsbedingungen: kommerzielle Nutzung unzulässig" },
 ];
 
 export const COUNTRY_NAME: Record<Country, string> = { at: "Österreich", de: "Deutschland", ch: "Schweiz" };
