@@ -21,11 +21,13 @@ Volkan Meral
 Achstraße 42
 6922 Wolfurt, Österreich
 
-**Kontakt:** E-Mail: [office@derbericht.com](mailto:office@derbericht.com) · Telefon: [TELEFON]
+**Kontakt:** E-Mail: [office@derbericht.com](mailto:office@derbericht.com) · Telefon: +43 676 9419393
 
 **UID-Nummer:** ATU71572719
 **Unternehmensgegenstand:** Betrieb von Online-Informationsdiensten
-[Gewerbebehörde und Kammerzugehörigkeit, falls zutreffend, z. B. Bezirkshauptmannschaft Bregenz · Wirtschaftskammer Vorarlberg]
+**Kammerzugehörigkeit:** Mitglied der Wirtschaftskammer Vorarlberg
+**Gewerbebehörde:** Bezirkshauptmannschaft Bregenz
+**Anwendbare Rechtsvorschriften:** Gewerbeordnung ([www.ris.bka.gv.at](https://www.ris.bka.gv.at))
 
 ## Grundlegende Richtung (Blattlinie)
 
