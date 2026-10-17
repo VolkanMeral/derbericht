@@ -3,6 +3,7 @@
 import type { Category, Country } from "./sources.ts";
 import type { ArticleRow, ClusterRow, Env, Story } from "./types.ts";
 import { SCHEMA } from "./schema.ts";
+import { tokens } from "./text.ts";
 
 export interface StoryQuery {
   country?: Country;          // only stories with at least one source from this country
@@ -36,6 +37,27 @@ export async function getStory(env: Env, id: string): Promise<Story | null> {
   const c = await env.DB.prepare("SELECT * FROM clusters WHERE id = ?").bind(id).first<ClusterRow>();
   if (!c) return null;
   return (await attachArticles(env, [c]))[0] ?? null;
+}
+
+/** Search over the stored headlines and excerpts (last 14 days). Every word must match. */
+export async function searchStories(env: Env, query: string, limit = 40): Promise<Story[]> {
+  const raw = query.toLowerCase().split(/\s+/).map((w) => w.replace(/[%_"'„“”«».,:;!?()]/g, "")).filter((w) => w.length >= 2).slice(0, 6);
+  if (!raw.length) return [];
+  const where: string[] = [];
+  const args: unknown[] = [];
+  for (const w of raw) {
+    const t = tokens(w)[0]; // stemmed form, e.g. "wahlen" → matches "wahl", "wahlkampf"
+    const parts = ["a.title LIKE ?", "a.teaser LIKE ?"];
+    args.push(`%${w}%`, `%${w}%`);
+    if (t) { parts.push("(' ' || a.tokens) LIKE ?"); args.push(`% ${t}%`); }
+    where.push(`(${parts.join(" OR ")})`);
+  }
+  const now = Date.now();
+  const { results: clusters } = await env.DB.prepare(
+    `SELECT c.* FROM clusters c WHERE c.id IN (SELECT a.cluster_id FROM articles a WHERE ${where.join(" AND ")})
+     ORDER BY (c.source_count * 2.0 - (? - c.last_update) / 3600000.0 / 6) DESC LIMIT ?`,
+  ).bind(...args, now, limit).all<ClusterRow>();
+  return clusters.length ? attachArticles(env, clusters) : [];
 }
 
 async function attachArticles(env: Env, clusters: ClusterRow[]): Promise<Story[]> {

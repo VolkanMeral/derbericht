@@ -231,6 +231,15 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   assert.equal(http.headers.get("Location"), "https://derbericht.com/at?x=1");
   const secure = await worker.fetch(new Request("https://derbericht.com/at"), env);
   assert.ok(secure.headers.get("Strict-Transport-Security"), "HSTS");
+  const found = await (await worker.fetch(new Request("https://derbericht.com/suche?q=Haftung"), env)).text();
+  writeFileSync(new URL("./out/suche.html", import.meta.url), found);
+  assert.ok(/Treffer für „Haftung“/.test(found) && found.includes("KI-Haftung") && found.includes('class="card"'), "search finds the KI story");
+  const stem = await (await worker.fetch(new Request("https://derbericht.com/suche?q=haftungsregeln%20eu"), env)).text();
+  assert.ok(!stem.includes("Keine Treffer"), "stemmed / multi-word search");
+  const none = await (await worker.fetch(new Request("https://derbericht.com/suche?q=%3Cscript%3Exyzq"), env)).text();
+  assert.ok(none.includes("Keine Treffer") && !none.includes("<script>xyzq"), "no results, escaped");
+  const empty = await (await worker.fetch(new Request("https://derbericht.com/suche"), env)).text();
+  assert.ok(empty.includes("autofocus") && empty.includes('action="/suche"'), "empty search page");
   const card = await worker.fetch(new Request("https://derbericht.com/karte/" + c.id), env);
   const ch = await card.text();
   assert.equal(card.status, 200);

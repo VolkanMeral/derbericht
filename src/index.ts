@@ -1,13 +1,13 @@
 // Cloudflare Worker entry: web pages (fetch) + cron job (scheduled).
 
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
-import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, ensureSchema } from "./data.ts";
+import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, ensureSchema, searchStories } from "./data.ts";
 import { runIngest } from "./ingest.ts";
 import { loadImage } from "./images.ts";
 import { getReactions, handleReaction } from "./social.ts";
 import { handleAdmin } from "./admin.ts";
-import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, serveMedia, type AdSlots } from "./content.ts";
-import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, sheetBody, storyBody, type Edition, type PageMeta } from "./render.ts";
+import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, searchPosts, serveMedia, type AdSlots } from "./content.ts";
+import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, searchBody, sheetBody, storyBody, type Edition, type PageMeta } from "./render.ts";
 import { feedTable, getPage, pageHtml, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
 
@@ -116,6 +116,14 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
     return html(layout(meta(env, { title: `DACH-Vergleich | ${env.SITE_NAME}`, path, edition: saved ?? "dach", description: "Dieselbe Nachricht in Österreich, Deutschland und der Schweiz – Schlagzeilen im Vergleich." }), compareBody(list)));
   }
 
+  if (path === "/suche") {
+    const q = (url.searchParams.get("q") ?? "").trim().slice(0, 80);
+    const [list, posts] = q ? await Promise.all([searchStories(env, q), searchPosts(env, q)]) : [[], []];
+    const reactions = await getReactions(env, list.map((s) => s.id));
+    const title = q ? `„${q}“ – Suche | ${env.SITE_NAME}` : `Suche | ${env.SITE_NAME}`;
+    return html(layout(meta(env, { title, path, edition: saved ?? "dach", noindex: true, query: q }), searchBody(q, list, posts.length ? postCards(posts) : "", reactions)), 200, "public, max-age=60");
+  }
+
   if (seg[0] === "karte" && seg[1] && seg.length === 2) {
     let s = await getStory(env, seg[1]);
     if (!s) return new Response("Nicht gefunden", { status: 404 });
@@ -163,7 +171,7 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   }
 
   if (path === "/robots.txt") {
-    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\nDisallow: /karte/\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
+    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\nDisallow: /karte/\nDisallow: /suche\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
   }
   if (path === "/sitemap.xml") {
     const posts = await publishedPosts(env, 500);

@@ -54,6 +54,17 @@ export async function publishedPosts(env: Env, limit = 6, country?: Country): Pr
   return results;
 }
 
+export async function searchPosts(env: Env, query: string): Promise<Post[]> {
+  const words = query.toLowerCase().split(/\s+/).map((w) => w.replace(/[%_]/g, "")).filter((w) => w.length >= 2).slice(0, 6);
+  if (!words.length) return [];
+  const where = words.map(() => "(p.title LIKE ? OR p.teaser LIKE ? OR p.body LIKE ?)").join(" AND ");
+  const { results } = await env.DB.prepare(
+    `SELECT p.*, u.name AS author_name FROM posts p JOIN users u ON u.id = p.author_id
+     WHERE p.status = 'published' AND ${where} ORDER BY p.published_at DESC LIMIT 6`,
+  ).bind(...words.flatMap((w) => [`%${w}%`, `%${w}%`, `%${w}%`])).all<Post>();
+  return results;
+}
+
 export async function postBySlug(env: Env, slug: string): Promise<Post | null> {
   return env.DB.prepare(
     "SELECT p.*, u.name AS author_name FROM posts p JOIN users u ON u.id = p.author_id WHERE p.slug = ? AND p.status = 'published'",

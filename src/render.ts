@@ -27,6 +27,7 @@ export interface PageMeta {
   breaking?: { id: string; title: string; count: number } | null;
   topAd?: string;
   image?: string; // absolute URL for link previews (WhatsApp, Facebook …)
+  query?: string; // current search text
 }
 
 export interface HomeExtras { posts?: string; sideAd?: string; feedAd?: string; reactions?: Record<string, Counts>; siteUrl?: string }
@@ -49,6 +50,16 @@ header.top{border-bottom:1px solid var(--line);background:var(--card)}
 .bar{display:flex;align-items:center;gap:20px;padding:18px 0 14px}
 .logo{font:800 30px/1 var(--display);letter-spacing:-.04em;white-space:nowrap}.logo span{color:var(--accent)}
 .dateline{font-size:13px;color:var(--muted)}
+.search{flex:1 1 240px;max-width:380px;height:44px;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--surface);border-radius:999px;color:var(--muted);border:1px solid transparent}
+.search:focus-within{border-color:var(--ink);background:var(--card)}
+.search input{flex:1;min-width:0;border:0;background:none;font:400 15px var(--text);color:var(--ink);outline:none}
+.search input::-webkit-search-cancel-button{display:none}
+.sbtn{display:none;width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--card);align-items:center;justify-content:center;margin-left:auto;color:var(--ink)}
+.bigsearch{display:flex;gap:10px;margin:0 0 20px}.bigsearch .search{max-width:none;height:54px;flex:1;font-size:17px}.bigsearch .search input{font-size:17px}
+.bigsearch button{height:54px;padding:0 22px;border-radius:999px;border:0;background:var(--ink);color:var(--bg);font:600 15px var(--text);cursor:pointer}
+.hint{color:var(--muted);font-size:15px;margin:0 0 24px}
+.hint a{display:inline-block;margin:6px 6px 0 0;padding:6px 14px;border:1px solid var(--line);border-radius:999px;color:var(--ink);background:var(--card)}
+@media (max-width:1240px){.dateline-wide{display:none}}
 .seg{margin-left:auto;display:flex;padding:4px;background:var(--surface);border-radius:999px;gap:2px}
 .seg a{height:36px;padding:0 14px;border-radius:999px;display:flex;align-items:center;font-size:14px;font-weight:500;color:var(--muted)}
 .seg a[aria-current]{background:var(--ink);color:var(--bg);font-weight:600}
@@ -121,7 +132,7 @@ main{padding:28px 0 64px}
 .col .more{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
 .col .more a{font:500 15px/1.35 var(--text)}
 /* cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:28px 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:28px 24px}
 .card{display:flex;flex-direction:column;gap:12px;min-width:0}
 .card .t{font:600 21px/1.22 var(--display);letter-spacing:-.01em}
 .card .sub{font-size:13px;color:var(--muted)}
@@ -187,7 +198,9 @@ footer.foot nav{display:flex;gap:20px}footer.foot a{color:var(--ink)}
 @media (max-width:700px){
  .wrap{padding:0 16px}
  .bar{padding:14px 0 12px}.logo{font-size:26px}
- .seg,.dateline-wide{display:none}.edpick{display:block}
+ .seg,.dateline-wide{display:none}.edpick{display:block;margin-left:8px}
+ .bar .search{display:none}.sbtn{display:inline-flex}
+ .bigsearch button{display:none}
  main{padding:18px 0 32px}.stack{gap:32px}
  .lead .fig{aspect-ratio:4/3;border-radius:18px}.lead p{display:none}
  .avatars .btn{display:none}
@@ -419,7 +432,9 @@ ${m.noindex ? '<meta name="robots" content="noindex,follow">' : ""}${hreflang}
 <style>${CSS}${SOCIAL_CSS}</style></head><body>
 <header class="top"><div class="wrap">
   <div class="bar"><a href="/" class="logo">Der Bericht<span>.</span></a>
+    <form class="search" action="/suche" role="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" name="q" value="${e(m.query ?? "")}" placeholder="Nachrichten durchsuchen" aria-label="Nachrichten durchsuchen" maxlength="80" enterkeyhint="search"></form>
     <span class="dateline dateline-wide">${today}${m.stats && m.stats.articles ? ` · ${m.stats.articles} Meldungen aus ${m.stats.publishers} Redaktionen` : ""}</span>
+    <a class="sbtn" href="/suche" aria-label="Suche"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
     <nav class="seg" aria-label="Ausgabe">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="page"' : ""}>${ed === "dach" ? "" : flag(ed)}${EDITION_LABEL[ed]}</a>`).join("")}</nav>
     <details class="edpick"><summary aria-label="Ausgabe wählen: ${e(EDITION_LABEL[m.edition])}">${m.edition === "dach" ? "DACH" : `${flag(m.edition, 20)}${m.edition.toUpperCase()}`}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
       <div class="edmenu">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="true"' : ""}>${flag(ed)}${ed === "dach" ? "Alle Länder (DACH)" : EDITION_LABEL[ed]}</a>`).join("")}</div></details></div>
@@ -496,4 +511,16 @@ export function sheetBody(s: Story, siteUrl: string, counts: Counts = {}): strin
     ${shareBar(`${siteUrl}/story/${s.id}`, s.lead.title, true)}
     <a class="sgo" href="${e(s.lead.url)}">Bei ${e(s.lead.publisher ?? "der Quelle")} weiterlesen →</a>
     <small class="snote">${s.lead.paywall ? "Abo-Artikel · " : ""}Der vollständige Artikel öffnet sich beim Herausgeber</small>`;
+}
+
+const SEARCH_EXAMPLES = ["Budget", "Hochwasser", "Wahl", "Ukraine", "Bayern", "Klima"];
+
+/** /suche – search page. Results reuse the story cards (and their preview card on phones). */
+export function searchBody(q: string, list: Story[], posts = "", reactions: Record<string, Counts> = {}): string {
+  const form = `<form class="bigsearch" action="/suche" role="search"><label class="search">${'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>'}<input type="search" name="q" value="${e(q)}" placeholder="Wonach suchen Sie?" aria-label="Suchbegriff" maxlength="80" enterkeyhint="search"${q ? "" : " autofocus"}></label><button type="submit">Suchen</button></form>`;
+  const examples = `<p class="hint">Beispiele: ${SEARCH_EXAMPLES.map((w) => `<a href="/suche?q=${encodeURIComponent(w)}">${e(w)}</a>`).join("")}</p>`;
+  if (!q) return `<div class="sechead"><h2>Suche</h2></div>${form}<p class="hint">Durchsucht die Schlagzeilen aller Redaktionen der letzten 14 Tage.</p>${examples}`;
+  const head = `<div class="sechead"><h2>${list.length ? `${list.length}${list.length >= 40 ? "+" : ""} Treffer für „${e(q)}“` : `Keine Treffer für „${e(q)}“`}</h2></div>`;
+  if (!list.length && !posts) return `${form}${head}<p class="hint">Versuchen Sie ein anderes oder kürzeres Wort.</p>${examples}`;
+  return `${form}${head}${posts}${list.length ? `<div class="grid">${list.map((s) => card(s, reactions[s.id])).join("")}</div>` : ""}`;
 }
