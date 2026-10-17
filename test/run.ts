@@ -27,6 +27,24 @@ await test("teaser is cut to 120 chars on a word boundary", () => {
 await test("html entities and CDATA are decoded", () => {
   assert.equal(stripHtml("<![CDATA[Gr&uuml;ne &amp; NEOS]]>"), "Grüne & NEOS");
 });
+await test("double-encoded HTML in teasers is removed", () => {
+  const t = cutTeaser('&lt;img style="float: right" src="https://i.ds.at/x.jpg" /&gt;Die Regierung hat sich geeinigt.');
+  assert.equal(t, "Die Regierung hat sich geeinigt.");
+  assert.equal(stripHtml('<![CDATA[<img src="a.webp" hspace="5" align="left" >Neben mehreren Verletzten]]>'), "Neben mehreren Verletzten");
+});
+await test("[premium] marks paywall and is removed from the title", () => {
+  const [it] = parseFeed(`<rss><channel><item><title>Regierung bei Uni-Budget einig [premium]</title><link>https://www.diepresse.com/1</link></item></channel></rss>`);
+  assert.equal(it.title, "Regierung bei Uni-Budget einig");
+  assert.equal(it.paywall, true);
+});
+await test("keywords sort general-feed headlines into sections", async () => {
+  const { guessCategory } = await import("../src/ingest.ts");
+  assert.equal(guessCategory("27-Jähriger in Linz spurlos verschwunden", "politik"), "chronik");
+  assert.equal(guessCategory("Verdienter Sieg in Lustenau: Der LASK brauchte Geduld", "chronik"), "sport");
+  assert.equal(guessCategory("Brände in Indonesien: Höchste Alarmstufe", "politik"), "welt");
+  assert.equal(guessCategory("Nationalrat beschließt Budget für 2027", "politik"), "wirtschaft");
+  assert.equal(guessCategory("Hochwasser im Rheintal", "regional"), "regional");
+});
 await test("tokens drop stopwords and normalize umlauts", () => {
   assert.deepEqual(tokens("Die Grünen fordern mehr Geld für Schulen"), ["grun", "ford", "geld", "schul"]);
 });

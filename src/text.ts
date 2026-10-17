@@ -18,11 +18,14 @@ export function decodeEntities(s: string): string {
 }
 
 export function stripHtml(s: string): string {
-  return decodeEntities(
-    s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-      .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
-      .replace(/<[^>]+>/g, " "),
-  ).replace(/\s+/g, " ").trim();
+  // Feeds often double-encode HTML (&lt;img …&gt;), so strip, decode and strip again until stable.
+  let out = s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1");
+  for (let i = 0; i < 3; i++) {
+    const next = decodeEntities(out.replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]*>/g, " "));
+    if (next === out) break;
+    out = next;
+  }
+  return out.replace(/<[^>]*$/, "").replace(/\s+/g, " ").trim();
 }
 
 /** Legal rule: at most `max` characters, cut on a word boundary, never the whole story. */

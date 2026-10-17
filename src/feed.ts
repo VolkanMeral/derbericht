@@ -24,7 +24,7 @@ function atomLink(block: string): string | null {
   return href ? decodeEntities(href[1]) : null;
 }
 
-const PAYWALL = /(\bS\+|\bZ\+|\bF\+|\bSZ Plus\b|\bPremium\b|\bAbo\b|\[\+\]|^\+\s)/;
+const PAYWALL = /(\[(premium|plus|abo|\+)\]|\bS\+|\bZ\+|\bF\+|\bSZ Plus\b|^\s*(Premium|Abo)\s*[:|-]|^\+\s)/i;
 
 function parseDate(s: string | null): number {
   if (!s) return Date.now();
@@ -60,7 +60,7 @@ export function parseFeed(xml: string): FeedItem[] {
     const summary = tag(b, "description") ?? tag(b, "summary") ?? tag(b, "content") ?? "";
     const date = tag(b, "pubDate") ?? tag(b, "published") ?? tag(b, "updated") ?? tag(b, "dc:date");
     items.push({
-      title: title.replace(PAYWALL, "").trim(),
+      title: title.replace(PAYWALL, "").replace(/\s{2,}/g, " ").replace(/^[\s:|-]+|[\s:|-]+$/g, "").trim(),
       url,
       summary,
       published: parseDate(date),

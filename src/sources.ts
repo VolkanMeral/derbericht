@@ -52,9 +52,10 @@ export const CATEGORY_NAME: Record<Category, string> = {
 
 // Keyword hints so items from general feeds land in a sensible category.
 export const CATEGORY_HINTS: [Category, RegExp][] = [
-  ["sport", /\b(fussball|fußball|bundesliga|champions league|tor|ski|tennis|formel 1|wm|em|trainer|liga|olympia)\b/i],
-  ["wirtschaft", /\b(wirtschaft|börse|inflation|zinsen|konzern|unternehmen|aktie|ezb|arbeitsmarkt|insolvenz|preise|budget)\b/i],
-  ["welt", /\b(eu|usa|china|russland|ukraine|nahost|israel|gaza|eu-|un-|nato|trump|iran)\b/i],
-  ["kultur", /\b(film|musik|theater|festival|buch|ausstellung|konzert|oper|kino|kunst)\b/i],
-  ["wissen", /\b(studie|forscher|wissenschaft|klima|weltraum|nasa|medizin|künstliche intelligenz)\b/i],
+  ["sport", /\b(fu(ss|ß)ball|bundesliga|champions league|europa league|liga|derby|tabellenf(ü|ue)hrung|torjäger|trainer|ski|weltcup|slalom|abfahrt|tennis|formel 1|f1|olympia|wm|em|lask|rapid|austria wien|sturm graz|red bull salzburg|bayern|bvb|dortmund|sieg gegen|niederlage|remis|aufstieg|abstieg|meisterschaft)\b/i],
+  ["wirtschaft", /\b(wirtschaft|börse|inflation|zinsen?|leitzins|konzern|unternehmen|aktie|ezb|arbeitsmarkt|arbeitslos\w*|insolvenz|pleite|preise|budget|steuer\w*|pension\w*|rente\w*|lohn|löhne|gehalt|industrie|export|bilanz|gewinn|umsatz)\b/i],
+  ["welt", /\b(eu|usa|us-\w+|china|russland|ukraine|nahost|israel|gaza|westjordanland|iran|un-?\w*|nato|trump|putin|selenskyj?|frankreich|italien|spanien|grossbritannien|großbritannien|türkei|indien|indonesien|mexiko|brasilien|afrika|asien)\b/i],
+  ["chronik", /\b(polizei|vermisst|verschwunden|festgenommen|festnahme|unfall|verletzt\w*|brand|feuer|einbruch|diebstahl|gericht|prozess|urteil|haft|mord|tot|tote|leiche|rettung|feuerwehr|lawine|unwetter|hochwasser)\b/i],
+  ["kultur", /\b(film|musik|theater|festival|buch|roman|ausstellung|konzert|oper|kino|kunst|museum|kulturerbe)\b/i],
+  ["wissen", /\b(studie|forscher\w*|forschung|wissenschaft\w*|klima\w*|weltraum|nasa|esa|medizin|künstliche intelligenz|universität|uni-)\b/i],
 ];

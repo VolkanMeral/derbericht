@@ -29,10 +29,11 @@ export async function seedFeeds(env: Env): Promise<void> {
   );
 }
 
-function guessCategory(title: string, fallback: Category): Category {
+export function guessCategory(title: string, fallback: Category): Category {
+  // Regional and sport feeds keep their section; general feeds are sorted by keywords.
   if (fallback === "regional" || fallback === "sport") return fallback;
   for (const [cat, re] of CATEGORY_HINTS) if (re.test(title)) return cat;
-  return fallback;
+  return fallback === "politik" ? "politik" : fallback;
 }
 
 function domainOf(u: string): string {
@@ -118,6 +119,9 @@ async function cleanup(env: Env): Promise<void> {
     // Legal rule: teaser disappears after 48 hours, only headline + link remain.
     env.DB.prepare("UPDATE articles SET teaser = NULL WHERE teaser IS NOT NULL AND fetched < ?").bind(now - MAX_AGE_MS),
     env.DB.prepare("DELETE FROM articles WHERE published < ?").bind(now - KEEP_MS),
+    // Teasers stored before the double-encoding fix.
+    env.DB.prepare("UPDATE articles SET teaser = NULL WHERE teaser LIKE '%<img%' OR teaser LIKE '%&lt;%' OR teaser LIKE '%src=%'"),
+    env.DB.prepare("UPDATE articles SET paywall = 1, title = trim(replace(title, '[premium]', '')) WHERE title LIKE '%[premium]%'"),
     env.DB.prepare("DELETE FROM clusters WHERE last_update < ?").bind(now - KEEP_MS),
     env.DB.prepare(
       `DELETE FROM articles WHERE EXISTS (SELECT 1 FROM optouts o
