@@ -77,6 +77,21 @@ CREATE TABLE IF NOT EXISTS sessions (
   created  INTEGER NOT NULL
 );
 
+-- Emoji reactions: only counts; votes are a salted hash, kept 2 days against repeat voting
+CREATE TABLE IF NOT EXISTS reactions (
+  story_id  TEXT NOT NULL,
+  emoji     TEXT NOT NULL,
+  n         INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (story_id, emoji)
+);
+
+CREATE TABLE IF NOT EXISTS reaction_votes (
+  id        TEXT PRIMARY KEY,
+  story_id  TEXT NOT NULL,
+  emoji     TEXT NOT NULL,
+  created   INTEGER NOT NULL
+);
+
 -- AI illustrations when no R2 bucket is bound
 CREATE TABLE IF NOT EXISTS story_images (
   key      TEXT PRIMARY KEY,

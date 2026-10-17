@@ -51,6 +51,8 @@ Diese Website verwendet keine Tracking-Tools und lädt keine Schriften oder Skri
 - **Hosting:** Die Website läuft bei Cloudflare, Inc. Beim Aufruf verarbeitet Cloudflare technisch notwendige Daten (z. B. IP-Adresse, Zeitpunkt, aufgerufene Seite), um die Seite auszuliefern und vor Angriffen zu schützen (Art. 6 Abs. 1 lit. f DSGVO).
 - **Länderauswahl:** Aus der IP-Adresse wird nur das Land abgeleitet, um passende Nachrichten zu zeigen. Die IP-Adresse wird dafür nicht gespeichert.
 - **Cookie „edition“:** Wenn Sie eine Ausgabe (DACH, AT, DE, CH) wählen, speichern wir diese Wahl für ein Jahr in einem technisch notwendigen Cookie. Es enthält nur das Kürzel der Ausgabe.
+- **Emoji-Reaktionen:** Wenn Sie mit einem Emoji auf eine Nachricht reagieren, speichern wir nur die Zahl der Reaktionen. Damit nicht mehrfach abgestimmt werden kann, speichern wir für zwei Tage einen nicht umkehrbaren Prüfwert (Hash) aus IP-Adresse, Browserkennung und Nachricht; die IP-Adresse selbst wird nicht gespeichert (Art. 6 Abs. 1 lit. f DSGVO). Ihre eigene Auswahl merkt sich nur Ihr Browser (lokaler Speicher).
+- **Teilen:** Die Teilen-Schaltflächen sind einfache Links. Erst wenn Sie darauf klicken, werden Sie zu WhatsApp, Facebook, X oder Telegram weitergeleitet; vorher werden keine Daten an diese Dienste übertragen.
 - **Werbung:** Banner werden von unserem eigenen Server ausgeliefert. Wir zählen Einblendungen und Klicks ohne personenbezogene Daten.
 
 ## Externe Links

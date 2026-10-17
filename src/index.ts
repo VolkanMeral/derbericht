@@ -4,6 +4,7 @@ import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sour
 import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, ensureSchema } from "./data.ts";
 import { runIngest } from "./ingest.ts";
 import { loadImage } from "./images.ts";
+import { getReactions, handleReaction } from "./social.ts";
 import { handleAdmin } from "./admin.ts";
 import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, serveMedia, type AdSlots } from "./content.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
@@ -45,13 +46,14 @@ async function home(env: Env, ed: Edition, path: string, banner: PageMeta["banne
     ...CATEGORIES.map((c) => getStories(env, { country, category: c, limit: 8 })),
   ]);
   const seen = new Set(top.map((s) => s.id));
+  const reactions = top[0] ? await getReactions(env, [top[0].id]) : {};
   const byCat: [Category, typeof top][] = CATEGORIES.map((c, i) => [c, cats[i].filter((s) => !seen.has(s.id))]);
   const title = ed === "dach" ? `${env.SITE_NAME} – Nachrichten aus Österreich, Deutschland und der Schweiz` : `${env.SITE_NAME} ${COUNTRY_NAME[ed]} – Nachrichten aus ${COUNTRY_NAME[ed]}`;
   // The strip is for stories the visitor would otherwise miss; no need when it already leads the page.
   const strip = breaking && breaking.id !== top[0]?.id ? breaking : null;
   return layout(
     meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip, topAd: adHtml(ads.top) }),
-    homeBody(top, compare, byCat, base, latest, stats.articles, { posts: postCards(posts), sideAd: adHtml(ads.side), feedAd: adHtml(ads.feed) }),
+    homeBody(top, compare, byCat, base, latest, stats.articles, { posts: postCards(posts), sideAd: adHtml(ads.side), feedAd: adHtml(ads.feed), reactions }),
   );
 }
 
@@ -66,6 +68,7 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   const path = url.pathname.replace(/\/+$/, "") || "/";
   if (path === "/admin" || path.startsWith("/admin/")) return handleAdmin(req, env, url);
   if (path.startsWith("/media/")) return serveMedia(env, path.slice(7));
+  if (path === "/reagieren") return handleReaction(req, env);
   if (path.startsWith("/werbung/")) return adClick(env, path.slice(9));
   const saved = savedEdition(req);
   const geo = geoCountry(req);
@@ -112,8 +115,10 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
 
   if (seg[0] === "story" && seg[1]) {
     const s = await getStory(env, seg[1]);
+    const site = env.SITE_URL.replace(/\/$/, "");
     if (!s) return html(layout(meta(env, { title: "Nicht gefunden", path, edition: "dach", noindex: true }), '<div class="empty">Diese Meldung ist nicht mehr verfügbar.</div>'), 404);
-    return html(layout(meta(env, { title: `${s.lead.title} – ${s.articles.length} Quellen | ${env.SITE_NAME}`, path, edition: saved ?? "dach", noindex: true, description: `${s.articles.length} Redaktionen berichten. Schlagzeilen im Vergleich.` }), storyBody(s)));
+    return html(layout(meta(env, { title: `${s.lead.title} – ${s.articles.length} Quellen | ${env.SITE_NAME}`, path, edition: saved ?? "dach", noindex: true, description: `${s.articles.length} Redaktionen berichten. Schlagzeilen im Vergleich.`, image: s.image_status === "done" && s.image_key ? `${site}/img/${s.image_key}` : undefined }),
+      storyBody(s, `${site}/story/${s.id}`, (await getReactions(env, [s.id]))[s.id] ?? {})), 200, "public, max-age=60");
   }
 
   if (seg[0] === "artikel" && seg[1]) {
@@ -145,7 +150,7 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   }
 
   if (path === "/robots.txt") {
-    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
+    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
   }
   if (path === "/sitemap.xml") {
     const posts = await publishedPosts(env, 500);

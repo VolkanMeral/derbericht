@@ -2,6 +2,7 @@
 // Geist text, rounded cards, a dark DACH comparison band. Fonts are self-hosted under /fonts
 // (copied at build time, see scripts/fonts.mjs); no third-party requests (DSGVO).
 
+import { SOCIAL_CSS, SOCIAL_JS, reactBar, shareBar, type Counts } from "./social.ts";
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
 import { escapeHtml as e } from "./text.ts";
 import type { ArticleRow, Story } from "./types.ts";
@@ -25,9 +26,10 @@ export interface PageMeta {
   stats?: { articles: number; publishers: number } | null;
   breaking?: { id: string; title: string; count: number } | null;
   topAd?: string;
+  image?: string; // absolute URL for link previews (WhatsApp, Facebook …)
 }
 
-export interface HomeExtras { posts?: string; sideAd?: string; feedAd?: string }
+export interface HomeExtras { posts?: string; sideAd?: string; feedAd?: string; reactions?: Record<string, Counts> }
 
 const CSS = `
 @font-face{font-family:"Bricolage";src:url(/fonts/bricolage.woff2) format("woff2");font-weight:200 800;font-display:swap}
@@ -298,7 +300,7 @@ function storyHref(s: Story): { href: string; attrs: string } {
 
 // --- blocks ----------------------------------------------------------------
 
-function leadBlock(s: Story): string {
+function leadBlock(s: Story, counts?: Counts): string {
   const n = s.articles.length;
   const { href, attrs } = storyHref(s);
   const names = s.articles.filter((a) => a.id !== s.lead.id).slice(0, 3).map((a) => a.publisher).join(", ");
@@ -308,6 +310,7 @@ function leadBlock(s: Story): string {
     <h1>${ext(s.lead)}</h1>
     ${s.lead.teaser ? `<p>${e(s.lead.teaser)}</p>` : ""}
     <div class="avatars"><span class="src"><strong>${e(s.lead.publisher ?? "")}</strong>${abo(s.lead)}${names ? ` · auch ${e(names)}${n > 4 ? ` +${n - 4}` : ""}` : ""}</span>${bars(n)}${n > 1 ? `<a class="btn" href="/story/${e(s.id)}">Alle ${n} Quellen vergleichen →</a>` : ""}</div>
+    ${counts ? reactBar(s.id, counts, true) : ""}
   </article>`;
 }
 
@@ -389,10 +392,10 @@ export function layout(m: PageMeta, body: string, activeCat?: Category): string 
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${e(m.title)}</title><meta name="description" content="${e(m.description)}"><link rel="canonical" href="${e(url)}">
 ${m.noindex ? '<meta name="robots" content="noindex,follow">' : ""}${hreflang}
-<meta property="og:title" content="${e(m.title)}"><meta property="og:description" content="${e(m.description)}"><meta property="og:url" content="${e(url)}"><meta property="og:site_name" content="${e(m.siteName)}">
+<meta property="og:title" content="${e(m.title)}"><meta property="og:description" content="${e(m.description)}"><meta property="og:url" content="${e(url)}"><meta property="og:site_name" content="${e(m.siteName)}"><meta property="og:type" content="website"><meta property="og:locale" content="de_AT">${m.image ? `<meta property="og:image" content="${e(m.image)}"><meta property="og:image:alt" content="KI-Illustration"><meta name="twitter:card" content="summary_large_image">` : '<meta name="twitter:card" content="summary">'}
 <meta name="theme-color" content="#ffffff"><link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111113'/%3E%3Ccircle cx='23' cy='23' r='4' fill='%23c8321c'/%3E%3Ctext x='13' y='23' font-family='Arial' font-size='19' font-weight='800' fill='white' text-anchor='middle'%3Eb%3C/text%3E%3C/svg%3E">
-<style>${CSS}</style></head><body>
+<style>${CSS}${SOCIAL_CSS}</style></head><body>
 <header class="top"><div class="wrap">
   <div class="bar"><a href="/" class="logo">der bericht<span>.</span></a>
     <span class="dateline dateline-wide">${today}${m.stats && m.stats.articles ? ` · ${m.stats.articles} Meldungen aus ${m.stats.publishers} Redaktionen` : ""}</span>
@@ -405,6 +408,7 @@ ${m.topAd ? `<div class="wrap">${m.topAd}</div>` : ""}<main><div class="wrap">${
 <footer class="foot"><div class="wrap"><span style="max-width:680px">© ${new Date().getFullYear()} ${e(m.siteName)} · Wir zeigen Schlagzeilen und kurze Auszüge mit Link zum Originalartikel. Bilder mit dem Hinweis „KI-Illustration“ sind KI-generiert und zeigen keine realen Ereignisse.</span>
 <nav><a href="/quellen">Quellen &amp; Opt-out</a><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a></nav></div></footer>
 ${bottomNav(m, base)}
+${SOCIAL_JS}
 </body></html>`;
 }
 
@@ -414,7 +418,7 @@ export function homeBody(top: Story[], compare: Story[], byCat: [Category, Story
   if (!top.length) return `<div class="empty">Die ersten Meldungen werden gerade geladen. Bitte in ein paar Minuten wieder vorbeischauen.</div>`;
   const [first, ...rest] = top;
   const side = feedBlock(latest, todayCount).replace(/<\/aside>$/, `${extras.sideAd ?? ""}</aside>`);
-  const parts: string[] = [`<section class="hero">${leadBlock(first)}${side}</section>`];
+  const parts: string[] = [`<section class="hero">${leadBlock(first, extras.reactions?.[first.id] ?? {})}${side}</section>`];
   const band = compare.find((s) => s.id !== first.id);
   if (band) parts.push(compareBand(band));
   if (extras.posts) parts.push(extras.posts);
@@ -434,7 +438,7 @@ export function compareBody(list: Story[]): string {
   return `<div class="sechead"><h2>DACH-Vergleich</h2></div>${intro}${list.length ? `<div class="stack" style="gap:24px">${list.map((s) => compareBand(s)).join("")}</div>` : '<div class="empty">Gerade gibt es keine Geschichte, über die in mehreren Ländern berichtet wird.</div>'}`;
 }
 
-export function storyBody(s: Story): string {
+export function storyBody(s: Story, shareUrl = "", counts: Counts = {}): string {
   const by = byCountry(s);
   const max = Math.max(...COUNTRIES.map((c) => by[c]?.length ?? 0), 1);
   const fill: Record<Country, string> = { at: "#c8321c", de: "var(--ink)", ch: "#8a8a92" };
@@ -447,6 +451,10 @@ export function storyBody(s: Story): string {
       <h1>${e(s.lead.title)}</h1>
       <p>So berichten Redaktionen in Österreich, Deutschland und der Schweiz. Alle Artikel öffnen sich beim jeweiligen Herausgeber.</p>
     </div><div class="cover"><b>Berichterstattung nach Land</b>${cover}</div></div>
+    <section class="social" aria-label="Teilen und reagieren">
+      <h2>Wie finden Sie diese Nachricht?</h2>${reactBar(s.id, counts)}
+      <h2>Mit Freunden teilen</h2>${shareBar(shareUrl, s.lead.title)}
+    </section>
     <div class="ccols">${cols}</div>
     <p class="note">Wir zeigen nur Schlagzeilen und kurze Auszüge. Der vollständige Artikel erscheint beim Herausgeber.</p>`;
 }

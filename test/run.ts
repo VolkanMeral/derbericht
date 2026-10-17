@@ -205,6 +205,26 @@ await test("without R2 the illustration is stored in D1 and served from /img/", 
   assert.equal(new Uint8Array(await res.arrayBuffer())[0], 0xff);
 });
 
+await test("emoji reactions: counted once per visitor, switchable, can be taken back", async () => {
+  const c = sqlite.prepare("SELECT id FROM clusters ORDER BY source_count DESC LIMIT 1").get() as { id: string };
+  const vote = async (emoji: string, ip = "1.2.3.4") => {
+    const fd = new FormData(); fd.append("story", c.id); fd.append("emoji", emoji);
+    const r = await worker.fetch(new Request("https://derbericht.com/reagieren", { method: "POST", body: fd, headers: { "CF-Connecting-IP": ip, Origin: "https://derbericht.com" } }), env);
+    return { status: r.status, body: await r.json() as any };
+  };
+  let r = await vote("👍"); assert.equal(r.body.counts["👍"], 1); assert.equal(r.body.mine, "👍");
+  r = await vote("👍", "5.6.7.8"); assert.equal(r.body.counts["👍"], 2);
+  r = await vote("😮"); assert.equal(r.body.counts["👍"], 1); assert.equal(r.body.counts["😮"], 1);
+  r = await vote("😮"); assert.equal(r.body.counts["😮"], 0); assert.equal(r.body.mine, null);
+  r = await vote("💩"); assert.equal(r.status, 400);
+  const bad = await worker.fetch(new Request("https://derbericht.com/reagieren", { method: "POST", body: new FormData(), headers: { Origin: "https://evil.example" } }), env);
+  assert.equal(bad.status, 403);
+  assert.ok(!JSON.stringify(sqlite.prepare("SELECT * FROM reaction_votes").all()).includes("1.2.3.4"), "IP stored");
+  const page = await (await worker.fetch(new Request("https://derbericht.com/story/" + c.id), env)).text();
+  assert.ok(page.includes('class="react"') && page.includes("wa.me/?text=") && page.includes("Link kopieren"));
+  assert.ok(page.includes('og:image'), "og:image for link previews");
+});
+
 // ---------- pages ----------
 mkdirSync(new URL("./out/", import.meta.url), { recursive: true });
 async function page(path: string, headers: Record<string, string> = {}) {
