@@ -3,3 +3,5 @@ node_modules/
 .dev.vars
 test/out/
 public/fonts/*.woff2
+social/cikti/
+__pycache__/

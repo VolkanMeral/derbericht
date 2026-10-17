@@ -241,6 +241,8 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   assert.ok(none.includes("Keine Treffer") && !none.includes("<script>xyzq"), "no results, escaped");
   const empty = await (await worker.fetch(new Request("https://derbericht.com/suche"), env)).text();
   assert.ok(empty.includes("autofocus") && empty.includes('action="/suche"'), "empty search page");
+  const feed = await (await worker.fetch(new Request("https://derbericht.com/api/social.json?min=2"), env)).json() as any;
+  assert.ok(feed.stories.length >= 1 && feed.stories[0].image.startsWith("https://derbericht.com/img/") && feed.stories[0].url.includes("/story/"), "social feed");
   const card = await worker.fetch(new Request("https://derbericht.com/karte/" + c.id), env);
   const ch = await card.text();
   assert.equal(card.status, 200);

@@ -5,6 +5,8 @@ name: Deploy
 on:
   push:
     branches: [main]
+    # The social media bot commits its list of shared stories; that is no reason to redeploy.
+    paths-ignore: ["social/posted.json"]
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,98 @@
+# Der Bericht – automatische Beiträge auf Facebook, Instagram (und optional Threads).
+# Aufbau wie bei havadis-otomasyon. Einrichtung: social/README.md
+name: Social Media
+
+on:
+  schedule:
+    # Stündlich um :05, 06–20 UTC = Sommerzeit 08:05–22:05 Wien (Winterzeit 07:05–21:05)
+    - cron: "5 6-20 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Testmodus (1 = nichts teilen, nur Bild erzeugen)"
+        default: "1"
+      sadece_kontrol:
+        description: "1 = nur Verbindung zu Facebook/Instagram prüfen"
+        default: "0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: social
+  cancel-in-progress: false
+
+jobs:
+  teilen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: social
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || vars.DRY_RUN || '1' }}
+      META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
+      MIN_SOURCES: ${{ vars.MIN_SOURCES || '3' }}
+      MAX_AGE_HOURS: ${{ vars.MAX_AGE_HOURS || '8' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: social/requirements.txt
+
+      - run: pip install -r requirements.txt
+
+      - name: Nur Verbindung prüfen
+        if: github.event_name == 'workflow_dispatch' && inputs.sadece_kontrol == '1'
+        env:
+          CHECK_ONLY: "1"
+        run: python bot.py
+
+      - name: Gibt es eine neue Geschichte?
+        id: kontrol
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.sadece_kontrol == '1') }}
+        run: python bot.py --kontrol
+
+      - name: Browser aus dem Cache
+        if: steps.kontrol.outputs.neu == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('social/requirements.txt') }}
+
+      - name: Browser installieren
+        if: steps.kontrol.outputs.neu == 'true'
+        run: python -m playwright install --with-deps chromium
+
+      - name: Bild erzeugen und teilen
+        if: steps.kontrol.outputs.neu == 'true'
+        run: python bot.py
+
+      - name: Bild und Texte aufbewahren
+        if: always() && steps.kontrol.outputs.neu == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: beitrag-${{ github.run_number }}
+          path: social/cikti/
+          if-no-files-found: ignore
+
+      - name: Geteilte Geschichten speichern
+        if: always()
+        run: |
+          git config user.name "derbericht-bot"
+          git config user.email "office@derbericht.com"
+          git add posted.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Social: geteilte Geschichten aktualisiert"
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git pull --rebase -q || { git rebase --abort; exit 1; }
+            sleep 3
+          done
+          exit 1

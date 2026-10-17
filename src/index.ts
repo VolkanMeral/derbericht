@@ -170,8 +170,33 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
     return new Response(body, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=604800, immutable" } });
   }
 
+  // Feed for the social media bot (social/bot.py): ranked stories that have an own KI illustration.
+  if (path === "/api/social.json") {
+    const site = env.SITE_URL.replace(/\/$/, "");
+    const minSources = Math.max(2, Number(url.searchParams.get("min")) || 3);
+    const list = (await getStories(env, { hours: 6, minSources, limit: 15 })).filter((s) => s.image_status === "done" && s.image_key);
+    const reactions = await getReactions(env, list.map((s) => s.id));
+    const body = list.map((s) => ({
+      id: s.id,
+      title: s.lead.title,
+      publisher: s.lead.publisher,
+      category: s.category,
+      category_name: CATEGORY_NAME[s.category],
+      countries: s.countries.split(","),
+      sources: s.articles.length,
+      publishers: [...new Set(s.articles.map((a) => a.publisher))],
+      by_country: Object.fromEntries((["at", "de", "ch"] as Country[]).map((c) => [c, s.articles.filter((a) => a.country === c).length])),
+      image: `${site}/img/${s.image_key}`,
+      url: `${site}/story/${s.id}`,
+      first_seen: s.first_seen,
+      last_update: s.last_update,
+      reactions: reactions[s.id] ?? {},
+    }));
+    return new Response(JSON.stringify({ generated: Date.now(), stories: body }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=120", "X-Robots-Tag": "noindex" } });
+  }
+
   if (path === "/robots.txt") {
-    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\nDisallow: /karte/\nDisallow: /suche\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
+    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\nDisallow: /karte/\nDisallow: /suche\nDisallow: /api/\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
   }
   if (path === "/sitemap.xml") {
     const posts = await publishedPosts(env, 500);
