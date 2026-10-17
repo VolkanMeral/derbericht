@@ -226,6 +226,7 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   const card = await worker.fetch(new Request("https://derbericht.com/karte/" + c.id), env);
   const ch = await card.text();
   assert.equal(card.status, 200);
+  mkdirSync(new URL("./out/", import.meta.url), { recursive: true });
   writeFileSync(new URL("./out/karte.html", import.meta.url), ch);
   assert.ok(ch.includes("weiterlesen") && ch.includes('class="react"') && ch.includes("wa.me") && !ch.includes("<html"), "sheet fragment");
   const home = await (await worker.fetch(new Request("https://derbericht.com/"), env)).text();
