@@ -1,0 +1,33 @@
+# Manually started: copies the current AI illustrations from derbericht.com into the
+# "design-assets" branch so they can be used in design mockups.
+name: Design-Assets
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  grab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download illustrations
+        run: |
+          mkdir out && cd out
+          curl -sSf https://derbericht.com/ -o home.html
+          grep -o '/story/[a-f0-9]*' home.html | sort -u > stories.txt || true
+          : > list.tsv
+          for s in $(cat stories.txt); do
+            curl -sSf "https://derbericht.com$s" -o story.html || continue
+            img=$(grep -o '/img/story/[a-f0-9]*\.jpg' story.html | head -1)
+            [ -z "$img" ] && continue
+            title=$(grep -o '<h1[^>]*>[^<]*' story.html | head -1 | sed 's/<h1[^>]*>//')
+            name=$(basename "$img")
+            curl -sSf "https://derbericht.com$img" -o "$name" && printf '%s\t%s\n' "$name" "$title" >> list.tsv
+          done
+          rm -f home.html story.html stories.txt
+          ls -la; cat list.tsv
+      - name: Commit to design-assets branch
+        run: |
+          cd out
+          git init -q -b design-assets
+          git config user.name "github-actions"; git config user.email "actions@github.com"
+          git add -A && git commit -qm "AI illustrations $(date -u +%F)"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" design-assets
