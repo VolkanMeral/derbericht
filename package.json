@@ -1,0 +1,19 @@
+{
+  "name": "derbericht",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "derbericht.com – automatische Nachrichtenbrücke für den deutschsprachigen Raum",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute derbericht --remote --file=schema.sql",
+    "db:init:local": "wrangler d1 execute derbericht --local --file=schema.sql",
+    "test": "node --experimental-strip-types --no-warnings test/run.ts"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20261001.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.40.0"
+  }
+}

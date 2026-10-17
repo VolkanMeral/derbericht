@@ -1,0 +1,27 @@
+name = "derbericht"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# Every 10 minutes: fetch feeds, cluster, generate images, clean up.
+[triggers]
+crons = ["*/10 * * * *"]
+
+[vars]
+SITE_URL = "https://derbericht.com"
+SITE_NAME = "Der Bericht"
+IMAGE_AI = "on"            # "off" = only category icons
+IMAGE_DAILY_LIMIT = "60"   # max AI illustrations per day
+IMAGES_PER_RUN = "4"
+# Secret (not here): npx wrangler secret put ADMIN_TOKEN
+
+[[d1_databases]]
+binding = "DB"
+database_name = "derbericht"
+database_id = "REPLACE_WITH_ID"   # npx wrangler d1 create derbericht
+
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "derbericht-images"  # npx wrangler r2 bucket create derbericht-images
+
+[ai]
+binding = "AI"
