@@ -132,6 +132,11 @@ export const SOCIAL_JS = `<script>
     });
     box.addEventListener('sync',function(ev){paint(ev.detail.counts,ev.detail.mine)});
   });
+  // Smartphones: open publisher articles in the same tab, so "back" returns to Der Bericht
+  // (the browser restores the scroll position). Desktop keeps new tabs.
+  if(window.matchMedia('(max-width:700px), (pointer:coarse)').matches){
+    document.querySelectorAll('a[target="_blank"]').forEach(function(a){if(a.closest('.share'))return;a.removeAttribute('target');});
+  }
   document.querySelectorAll('.share').forEach(function(box){
     var url=box.dataset.url,title=box.dataset.title,nat=box.querySelector('.native');
     if(navigator.share){nat.hidden=false;nat.addEventListener('click',function(){navigator.share({title:title,url:url}).catch(function(){})});}
