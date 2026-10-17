@@ -1,0 +1,44 @@
+[
+ {
+  "id": "so",
+  "country": "ch",
+  "publisher": "Südostschweiz",
+  "category": "regional",
+  "url": "https://beta.suedostschweiz.ch/feed",
+  "status": 200,
+  "final_url": "https://www.suedostschweiz.ch/feed",
+  "ctype": "application/rss+xml; charset=utf-8",
+  "items": 50,
+  "newest_h": 3.5,
+  "with_teaser": 40,
+  "sample": [
+   "Auch Davos kann die Löwen nicht stoppen: Der HCD geht im Klassiker unter",
+   "Chur feiert Schützenfest gegen die GCK Lions – EHC Arosa verliert auch im Kellerduell",
+   "Warum die Ukraine auf Starlink und US-Informationen angewiesen ist"
+  ],
+  "rights": "© 2026 Somedia AG",
+  "robots_allowed": false,
+  "robots_note": "robots ok"
+ },
+ {
+  "id": "so2",
+  "country": "ch",
+  "publisher": "Südostschweiz",
+  "category": "regional",
+  "url": "https://www.suedostschweiz.ch/feed",
+  "status": 200,
+  "final_url": "https://www.suedostschweiz.ch/feed",
+  "ctype": "application/rss+xml; charset=utf-8",
+  "items": 50,
+  "newest_h": 3.5,
+  "with_teaser": 40,
+  "sample": [
+   "Auch Davos kann die Löwen nicht stoppen: Der HCD geht im Klassiker unter",
+   "Chur feiert Schützenfest gegen die GCK Lions – EHC Arosa verliert auch im Kellerduell",
+   "Warum die Ukraine auf Starlink und US-Informationen angewiesen ist"
+  ],
+  "rights": "© 2026 Somedia AG",
+  "robots_allowed": true,
+  "robots_note": "robots ok"
+ }
+]
