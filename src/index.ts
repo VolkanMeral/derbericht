@@ -51,8 +51,13 @@ async function home(env: Env, req: Request, ed: Edition, path: string, banner: P
 }
 
 async function handle(req: Request, env: Env): Promise<Response> {
-  await ensureSchema(env);
   const url = new URL(req.url);
+  // www.derbericht.com → derbericht.com (one address for search engines)
+  if (url.hostname.startsWith("www.")) {
+    url.hostname = url.hostname.slice(4);
+    return Response.redirect(url.toString(), 301);
+  }
+  await ensureSchema(env);
   const path = url.pathname.replace(/\/+$/, "") || "/";
   const saved = savedEdition(req);
   const geo = geoCountry(req);

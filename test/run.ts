@@ -239,6 +239,11 @@ await test("/wechseln sets cookie and only redirects to local paths", async () =
   r = await worker.fetch(new Request("https://derbericht.com/wechseln?e=ch&r=//evil.com"), env);
   assert.equal(r.headers.get("Location"), "/");
 });
+await test("www redirects to the bare domain", async () => {
+  const r = await worker.fetch(new Request("https://www.derbericht.com/at?x=1"), env);
+  assert.equal(r.status, 301);
+  assert.equal(r.headers.get("Location"), "https://derbericht.com/at?x=1");
+});
 await test("story page is noindex and groups by country", async () => {
   const id = (sqlite.prepare("SELECT id FROM clusters ORDER BY source_count DESC LIMIT 1").get() as { id: string }).id;
   const { body } = await page(`/story/${id}`);
