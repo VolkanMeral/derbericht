@@ -6,6 +6,7 @@ import { cutTeaser, hashId, tokens } from "./text.ts";
 import { assignClusters, type Clusterable } from "./cluster.ts";
 import { generateImages } from "./images.ts";
 import type { Env } from "./types.ts";
+import { ensureSchema } from "./data.ts";
 
 const UA = "DerBerichtBot/1.0 (+https://derbericht.com/quellen)";
 const MAX_AGE_MS = 48 * 3600 * 1000;   // ignore older items; teasers are removed after 48h
@@ -112,7 +113,7 @@ async function cleanup(env: Env): Promise<void> {
   const old = await env.DB.prepare(
     "SELECT image_key FROM clusters WHERE last_update < ? AND image_key IS NOT NULL",
   ).bind(now - KEEP_MS).all<{ image_key: string }>();
-  for (const r of old.results) await env.IMAGES.delete(r.image_key);
+  if (env.IMAGES) for (const r of old.results) await env.IMAGES.delete(r.image_key);
   await env.DB.batch([
     // Legal rule: teaser disappears after 48 hours, only headline + link remain.
     env.DB.prepare("UPDATE articles SET teaser = NULL WHERE teaser IS NOT NULL AND fetched < ?").bind(now - MAX_AGE_MS),
@@ -126,6 +127,7 @@ async function cleanup(env: Env): Promise<void> {
 }
 
 export async function runIngest(env: Env): Promise<{ feeds: number; items: number; errors: number; images: number }> {
+  await ensureSchema(env);
   await seedFeeds(env);
   const { results: feeds } = await env.DB.prepare(
     "SELECT id, publisher, country, url, category, paywall_hint, active FROM feeds WHERE active = 1 AND terms_status != 'verboten'",

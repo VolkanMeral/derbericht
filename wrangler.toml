@@ -14,14 +14,18 @@ IMAGE_DAILY_LIMIT = "60"   # max AI illustrations per day
 IMAGES_PER_RUN = "4"
 # Secret (not here): npx wrangler secret put ADMIN_TOKEN
 
+# D1 database: create "derbericht" in the Cloudflare dashboard (Storage & Databases → D1)
+# and put its Database ID here. Tables are created automatically on the first run.
 [[d1_databases]]
 binding = "DB"
 database_name = "derbericht"
-database_id = "REPLACE_WITH_ID"   # npx wrangler d1 create derbericht
+database_id = "REPLACE_WITH_ID"
 
-[[r2_buckets]]
-binding = "IMAGES"
-bucket_name = "derbericht-images"  # npx wrangler r2 bucket create derbericht-images
+# KI images: enable R2 in the dashboard, create bucket "derbericht-images", then remove the "#" below.
+# Without it the site works and shows category icons instead of KI illustrations.
+# [[r2_buckets]]
+# binding = "IMAGES"
+# bucket_name = "derbericht-images"
 
 [ai]
 binding = "AI"

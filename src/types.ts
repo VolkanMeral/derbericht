@@ -2,8 +2,8 @@ import type { Category, Country } from "./sources.ts";
 
 export interface Env {
   DB: D1Database;
-  IMAGES: R2Bucket;
-  AI: Ai;
+  IMAGES?: R2Bucket; // optional: without it, cards show category icons
+  AI?: Ai;
   SITE_URL: string;
   SITE_NAME: string;
   IMAGE_AI: string;

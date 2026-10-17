@@ -48,7 +48,7 @@ function base64ToBytes(b64: string): Uint8Array {
 
 /** Generates illustrations for the most important stories that do not have one yet. */
 export async function generateImages(env: Env): Promise<number> {
-  if (env.IMAGE_AI !== "on") return 0;
+  if (env.IMAGE_AI !== "on" || !env.IMAGES || !env.AI) return 0;
   const limit = parseInt(env.IMAGE_DAILY_LIMIT || "60", 10);
   const perRun = parseInt(env.IMAGES_PER_RUN || "4", 10);
 
@@ -77,7 +77,7 @@ export async function generateImages(env: Env): Promise<number> {
       else if (out?.image) bytes = base64ToBytes(out.image);
       else throw new Error("no image in response");
       const key = `story/${c.id}.jpg`;
-      await env.IMAGES.put(key, bytes, { httpMetadata: { contentType: "image/jpeg" } });
+      await env.IMAGES!.put(key, bytes, { httpMetadata: { contentType: "image/jpeg" } });
       await env.DB.batch([
         env.DB.prepare("UPDATE clusters SET image_status = 'done', image_key = ? WHERE id = ?").bind(key, c.id),
         env.DB.prepare("INSERT INTO usage (day, images) VALUES (?, 1) ON CONFLICT(day) DO UPDATE SET images = images + 1").bind(today()),

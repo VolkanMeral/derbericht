@@ -1,7 +1,8 @@
 // Cloudflare Worker entry: web pages (fetch) + cron job (scheduled).
 
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
-import { getStories, getStory, getFeedList, getStats, getBreaking } from "./data.ts";
+import { getStories, getStory, getFeedList, getStats, getBreaking, ensureSchema } from "./data.ts";
+import { seedFeeds } from "./ingest.ts";
 import { runIngest } from "./ingest.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
 import { datenschutz, impressum, quellen } from "./legal.ts";
@@ -50,6 +51,7 @@ async function home(env: Env, req: Request, ed: Edition, path: string, banner: P
 }
 
 async function handle(req: Request, env: Env): Promise<Response> {
+  await ensureSchema(env);
   const url = new URL(req.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
   const saved = savedEdition(req);
@@ -112,7 +114,7 @@ async function handle(req: Request, env: Env): Promise<Response> {
   if (seg[0] === "img" && seg.length >= 2) {
     const key = seg.slice(1).join("/");
     if (!/^story\/[a-f0-9]+\.jpg$/.test(key)) return new Response("Not found", { status: 404 });
-    const obj = await env.IMAGES.get(key);
+    const obj = env.IMAGES ? await env.IMAGES.get(key) : null;
     if (!obj) return new Response("Not found", { status: 404 });
     return new Response(obj.body, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=604800, immutable" } });
   }
@@ -132,6 +134,7 @@ async function handle(req: Request, env: Env): Promise<Response> {
     const ok = env.ADMIN_TOKEN && req.headers.get("Authorization") === `Bearer ${env.ADMIN_TOKEN}`;
     if (!ok) return new Response("Forbidden", { status: 403 });
     if (seg[1] === "run") return Response.json(await runIngest(env));
+    if (seg[1] === "seed") { await seedFeeds(env); return Response.json({ ok: true }); }
     if (seg[1] === "feeds") return Response.json(await getFeedList(env));
   }
 

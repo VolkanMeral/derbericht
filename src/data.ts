@@ -2,6 +2,7 @@
 
 import type { Category, Country } from "./sources.ts";
 import type { ArticleRow, ClusterRow, Env, Story } from "./types.ts";
+import { SCHEMA } from "./schema.ts";
 
 export interface StoryQuery {
   country?: Country;          // only stories with at least one source from this country
@@ -83,4 +84,12 @@ export async function getBreaking(env: Env, country?: Country): Promise<{ id: st
   const [s] = await getStories(env, { country, minSources: 4, hours: 3, limit: 5 });
   if (!s || now - s.first_seen > 3 * 3600 * 1000) return null;
   return { id: s.id, title: s.lead.title, count: s.articles.length };
+}
+
+let schemaReady = false;
+/** Creates missing tables once per worker instance, so no manual database setup is needed. */
+export async function ensureSchema(env: Env): Promise<void> {
+  if (schemaReady) return;
+  await env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)));
+  schemaReady = true;
 }
