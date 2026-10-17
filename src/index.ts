@@ -1,9 +1,9 @@
 // Cloudflare Worker entry: web pages (fetch) + cron job (scheduled).
 
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
-import { getStories, getStory, getFeedList } from "./data.ts";
+import { getStories, getStory, getFeedList, getStats, getBreaking } from "./data.ts";
 import { runIngest } from "./ingest.ts";
-import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
+import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
 import { datenschutz, impressum, quellen } from "./legal.ts";
 import type { Env } from "./types.ts";
 
@@ -34,6 +34,7 @@ function meta(env: Env, p: Partial<PageMeta> & Pick<PageMeta, "title" | "path" |
 async function home(env: Env, req: Request, ed: Edition, path: string, banner: PageMeta["banner"]): Promise<string> {
   const country = ed === "dach" ? undefined : ed;
   const base = ed === "dach" ? "" : `/${ed}`;
+  const [stats, breaking] = await Promise.all([getStats(env), getBreaking(env, country)]);
   const [top, compare, ...cats] = await Promise.all([
     // Homepage "/": ranked for the visitor's country without changing the URL.
     getStories(env, path === "/" ? { boost: country, limit: 9 } : { country, limit: 9 }),
@@ -43,7 +44,9 @@ async function home(env: Env, req: Request, ed: Edition, path: string, banner: P
   const seen = new Set(top.map((s) => s.id));
   const byCat: [Category, typeof top][] = CATEGORIES.map((c, i) => [c, cats[i].filter((s) => !seen.has(s.id))]);
   const title = ed === "dach" ? `${env.SITE_NAME} – Nachrichten aus Österreich, Deutschland und der Schweiz` : `${env.SITE_NAME} ${COUNTRY_NAME[ed]} – Nachrichten aus ${COUNTRY_NAME[ed]}`;
-  return layout(meta(env, { title, path, edition: ed, hreflang: true, banner }), homeBody(top, compare, byCat, base));
+  // The strip is for stories the visitor would otherwise miss; no need when it already leads the page.
+  const strip = breaking && breaking.id !== top[0]?.id ? breaking : null;
+  return layout(meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip }), homeBody(top, compare, byCat, base));
 }
 
 async function handle(req: Request, env: Env): Promise<Response> {
@@ -98,6 +101,10 @@ async function handle(req: Request, env: Env): Promise<Response> {
     return html(layout(meta(env, { title: `${s.lead.title} – ${s.articles.length} Quellen | ${env.SITE_NAME}`, path, edition: saved ?? "dach", noindex: true, description: `${s.articles.length} Redaktionen berichten. Schlagzeilen im Vergleich.` }), storyBody(s)));
   }
 
+  if (path === "/ausgabe") {
+    return html(layout(meta(env, { title: `Ausgabe wählen | ${env.SITE_NAME}`, path, edition: saved ?? geo ?? "dach", noindex: true }), editionChooser(saved ?? geo ?? "dach")), 200, "private, no-store");
+  }
+
   if (path === "/impressum") return html(layout(meta(env, { title: `Impressum | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), impressum()), 200, "public, max-age=3600");
   if (path === "/datenschutz") return html(layout(meta(env, { title: `Datenschutz | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), datenschutz()), 200, "public, max-age=3600");
   if (path === "/quellen") return html(layout(meta(env, { title: `Quellen & Opt-out | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), quellen(await getFeedList(env))), 200, "public, max-age=3600");
@@ -111,7 +118,7 @@ async function handle(req: Request, env: Env): Promise<Response> {
   }
 
   if (path === "/robots.txt") {
-    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /admin\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
+    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
   }
   if (path === "/sitemap.xml") {
     const paths = ["/", "/at", "/de", "/ch", "/vergleich", "/quellen", "/impressum",

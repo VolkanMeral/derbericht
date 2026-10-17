@@ -19,6 +19,8 @@ export interface PageMeta {
   noindex?: boolean;
   hreflang?: boolean;
   banner?: { country: Country; path: string } | null;
+  stats?: { articles: number; publishers: number } | null;
+  breaking?: { id: string; title: string; count: number } | null;
 }
 
 const CSS = `
@@ -35,8 +37,10 @@ header.top{border-bottom:3px double var(--ink);background:var(--paper)}
 .tag{font-size:13px;color:var(--muted)}
 .ed{display:flex;gap:4px;flex-wrap:wrap}.ed a{font-size:13px;padding:5px 10px;border:1px solid var(--rule);border-radius:999px}
 .ed a[aria-current]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-nav.cats{display:flex;gap:18px;overflow-x:auto;padding:8px 0;font-size:14px;border-top:1px solid var(--rule);scrollbar-width:none}
-nav.cats a{white-space:nowrap;color:var(--muted)}nav.cats a[aria-current]{color:var(--ink);font-weight:600}
+nav.cats{display:flex;gap:22px;overflow-x:auto;font-size:15px;border-top:1px solid var(--rule);scrollbar-width:none;margin-top:10px}
+nav.cats a{white-space:nowrap;color:var(--muted);padding:10px 0 12px;border-bottom:2px solid transparent}
+nav.cats a[aria-current]{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.dateline{font-size:13px;color:var(--muted);margin-top:4px}
 .banner{background:var(--chip);font-size:14px;padding:10px 0}.banner .wrap{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .banner a{font-weight:600;text-decoration:underline}
 main{padding:24px 0 48px}
@@ -71,6 +75,42 @@ ul.more a{display:block}ul.more span{color:var(--muted);font-size:12px;display:b
 footer{border-top:1px solid var(--rule);padding:24px 0 40px;font-size:13px;color:var(--muted)}
 footer .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}footer nav{display:flex;gap:16px;flex-wrap:wrap}
 footer a{text-decoration:underline}
+.edpick{display:none;position:relative}
+.edpick summary{list-style:none;height:44px;padding:0 14px;border-radius:999px;background:var(--ink);color:var(--paper);font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.edpick summary::-webkit-details-marker{display:none}
+.edmenu{display:none;position:absolute;right:0;top:52px;z-index:40;background:var(--card);border:1px solid var(--rule);border-radius:8px;flex-direction:column;min-width:200px;overflow:hidden}
+.edpick[open] .edmenu{display:flex}.edmenu a{padding:13px 16px;font-size:15px;border-bottom:1px solid var(--rule)}.edmenu a:last-child{border-bottom:0}
+.edmenu a[aria-current]{font-weight:600;color:var(--accent)}
+.breaking{display:flex;gap:10px;align-items:center;background:var(--accent);color:#fff;border-radius:6px;padding:10px 12px;font-size:14px;margin-bottom:18px}
+.breaking b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.75);border-radius:3px;padding:2px 6px;font-weight:600;white-space:nowrap}
+.avatars{display:none;align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.avatars .avs{display:flex;padding-left:6px}.avatars strong{color:var(--ink);font-weight:600;margin-left:auto;white-space:nowrap}
+.av{width:30px;height:30px;border-radius:50%;color:#fff;font-size:9px;letter-spacing:-.02em;font-weight:600;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--card);margin-left:-6px}
+.bottomnav{display:none}
+.edlist{display:flex;flex-direction:column;gap:10px;max-width:420px}
+.edlist a{display:flex;justify-content:space-between;align-items:center;min-height:56px;padding:0 18px;border:1px solid var(--rule);border-radius:8px;background:var(--card);font-size:17px}
+.edlist a[aria-current]{border-color:var(--ink);font-weight:600}
+@media (max-width:640px){
+ header.top{border-bottom:1px solid var(--rule)}
+ .ed,.tag{display:none}.edpick{display:block}
+ .mast{align-items:center;flex-wrap:nowrap;padding:16px 0 4px}.logo{font-size:30px}
+ main{padding:16px 0 32px}
+ h2.sec{margin:28px 0 4px}
+ .grid{display:flex;flex-direction:column;gap:0}
+ .grid .card:not(.cmpcard){flex-direction:row-reverse;gap:12px;background:none;border:0;border-bottom:1px solid var(--rule);border-radius:0;padding:14px 0;align-items:flex-start}
+ .grid .card:not(.cmpcard) .fig{width:84px;height:84px;aspect-ratio:auto;border-radius:6px;flex-shrink:0}
+ .grid .card:not(.cmpcard) .ki{left:3px;bottom:3px;font-size:9px;padding:1px 4px}
+ .grid .card:not(.cmpcard) .body{padding:0;gap:6px}
+ .grid .card:not(.cmpcard) .h{font-size:18px;line-height:1.22}
+ .grid .card:not(.cmpcard) :is(.teaser,ul.more,.all){display:none}
+ .cmpcard{margin-bottom:14px}.cmpcard .fig{display:none}.cmp{grid-template-columns:1fr}
+ .lead{border-radius:6px}.lead .h{font-size:24px;line-height:1.18}
+ .lead :is(ul.more,.all){display:none}.lead .avatars{display:flex}
+ .bottomnav{display:grid;position:fixed;left:0;right:0;bottom:0;z-index:30;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--paper);border-top:1px solid var(--rule);padding:6px 8px calc(10px + env(safe-area-inset-bottom))}
+ .bottomnav a{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--muted)}
+ .bottomnav a[aria-current]{color:var(--accent);font-weight:600}
+ footer{padding-bottom:110px}
+}
 `;
 
 // --- helpers ---------------------------------------------------------------
@@ -102,6 +142,20 @@ function icon(cat: Category): string {
     regional: `<path d="M100 140 L170 60 L210 105 L245 75 L310 140 Z" fill="${c}" opacity=".85"/><path d="M160 72 L170 60 L180 72 Z" fill="#fff" opacity=".8"/>`,
   };
   return `<svg viewBox="0 0 400 180" role="img" aria-label="${e(CATEGORY_NAME[cat])}" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="180" fill="${c}" opacity=".1"/>${shapes[cat]}</svg>`;
+}
+
+function initials(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean);
+  if (/^[A-ZÄÖÜ]{2,4}$/.test(words[0] ?? "")) return words[0];
+  if (words.length > 1) return words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+  return (words[0] ?? "?").slice(0, 2).toUpperCase();
+}
+
+function avatarColor(name: string): string {
+  const hues = Object.values(CAT_HUE);
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return hues[h % hues.length];
 }
 
 function figure(s: Story): string {
@@ -136,6 +190,7 @@ export function card(s: Story, big = false): string {
     ${srcLine(s.lead)}
     ${s.lead.teaser ? `<p class="teaser">${e(s.lead.teaser)}</p>` : ""}
     ${more ? `<ul class="more">${more}</ul>` : ""}
+    ${big && others.length ? `<a class="avatars" href="/story/${e(s.id)}"><span class="avs">${others.slice(0, 3).map((a) => `<span class="av" style="background:${avatarColor(a.publisher ?? "")}" aria-hidden="true">${e(initials(a.publisher ?? ""))}</span>`).join("")}</span><span>+${others.length} weitere</span><strong>Vergleichen →</strong></a>` : ""}
     ${n > 1 ? `<a class="all" href="/story/${e(s.id)}">Alle ${n} Quellen vergleichen →</a>` : ""}
   </div></div>`;
 }
@@ -146,7 +201,7 @@ export function compareCard(s: Story): string {
   const cols = (["at", "de", "ch"] as Country[]).filter((c) => by[c]?.length).map((c) =>
     `<div><h4>${COUNTRY_FLAG[c]} ${COUNTRY_NAME[c]}</h4>${by[c]!.slice(0, 3).map((a) =>
       `<a href="${e(a.url)}" target="_blank" rel="noopener">${e(a.title)}<span>${e(a.publisher ?? "")}${a.paywall ? " · Abo" : ""} · ${ago(a.published)}</span></a>`).join("")}</div>`).join("");
-  return `<div class="card">${figure(s)}<div class="body">
+  return `<div class="card cmpcard">${figure(s)}<div class="body">
     <div class="meta"><b>${e(CATEGORY_NAME[s.category])}</b><span>${s.articles.length} Quellen aus ${s.countries.split(",").length} Ländern</span></div>
     <div class="cmp">${cols}</div>
     <a class="all" href="/story/${e(s.id)}">Zum Vergleich →</a>
@@ -156,6 +211,29 @@ export function compareCard(s: Story): string {
 // --- layout ----------------------------------------------------------------
 
 function editionPath(ed: Edition): string { return ed === "dach" ? "/" : `/${ed}`; }
+
+const ICON = {
+  top: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg>',
+  cmp: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg>',
+  reg: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l6-11 4 6 3-4 5 9z"/></svg>',
+  ed: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+};
+
+function bottomNav(m: PageMeta, base: string): string {
+  const home = base || "/";
+  const items: [string, string, string, boolean][] = [
+    [home, "Top", ICON.top, m.path === home],
+    ["/vergleich", "Vergleich", ICON.cmp, m.path === "/vergleich"],
+    [`${base}/regional`, "Regional", ICON.reg, m.path === `${base}/regional`],
+    ["/ausgabe", "Ausgabe", ICON.ed, m.path === "/ausgabe"],
+  ];
+  return `<nav class="bottomnav" aria-label="Schnellmenü">${items.map(([href, label, icon, cur]) => `<a href="${href}"${cur ? ' aria-current="page"' : ""}>${icon}${label}</a>`).join("")}</nav>`;
+}
+
+export function editionChooser(current: Edition): string {
+  return `<h2 class="sec" style="margin-top:0">Ausgabe wählen</h2><p class="teaser" style="margin:-4px 0 16px">Welche Nachrichten sollen zuerst erscheinen?</p><div class="edlist">${EDITIONS.map((ed) =>
+    `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === current ? ' aria-current="true"' : ""}><span>${ed === "dach" ? "Alle Länder (DACH)" : `${COUNTRY_FLAG[ed]} ${EDITION_LABEL[ed]}`}</span>${ed === current ? "<span>✓</span>" : ""}</a>`).join("")}</div>`;
+}
 
 export function layout(m: PageMeta, body: string, activeCat?: Category): string {
   const url = m.siteUrl + m.path;
@@ -174,13 +252,17 @@ ${m.noindex ? '<meta name="robots" content="noindex,follow">' : ""}${hreflang}
 <style>${CSS}</style></head><body>
 <header class="top"><div class="wrap">
   <div class="mast"><a href="/" class="logo">Der Bericht<span>.</span></a>
-    <div class="ed" aria-label="Ausgabe">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="page"' : ""}>${ed === "dach" ? "DACH" : `${COUNTRY_FLAG[ed]} ${ed.toUpperCase()}`}</a>`).join("")}</div></div>
+    <div class="ed" aria-label="Ausgabe">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="page"' : ""}>${ed === "dach" ? "DACH" : `${COUNTRY_FLAG[ed]} ${ed.toUpperCase()}`}</a>`).join("")}</div>
+    <details class="edpick"><summary aria-label="Ausgabe wählen: ${e(EDITION_LABEL[m.edition])}">${m.edition === "dach" ? "DACH" : m.edition.toUpperCase()}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="edmenu">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="true"' : ""}>${ed === "dach" ? "Alle Länder (DACH)" : `${COUNTRY_FLAG[ed]} ${EDITION_LABEL[ed]}`}</a>`).join("")}</div></details></div>
   <div class="tag">Nachrichten aus Österreich, Deutschland und der Schweiz – aus vielen Redaktionen, auf einen Blick. Volltext immer beim Herausgeber.</div>
+  <div class="dateline">${new Date().toLocaleDateString("de-AT", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Vienna" })}${m.stats && m.stats.articles ? ` · ${m.stats.articles} Meldungen aus ${m.stats.publishers} Redaktionen` : ""}</div>
   <nav class="cats"><a href="${base || "/"}"${!activeCat ? ' aria-current="page"' : ""}>Top</a><a href="/vergleich">DACH-Vergleich</a>${CATEGORIES.map((c) => `<a href="${base}/${c}"${c === activeCat ? ' aria-current="page"' : ""}>${CATEGORY_NAME[c]}</a>`).join("")}</nav>
 </div></header>${banner}
-<main><div class="wrap">${body}</div></main>
+<main><div class="wrap">${m.breaking ? `<a class="breaking" href="/story/${e(m.breaking.id)}"><b>Eilmeldung</b><span>${e(m.breaking.title)} – ${m.breaking.count} Quellen</span></a>` : ""}${body}</div></main>
 <footer><div class="wrap"><div>© ${new Date().getFullYear()} ${e(m.siteName)} · Wir zeigen Schlagzeilen und kurze Auszüge mit Link zum Originalartikel. Bilder mit dem Hinweis „KI-Illustration“ sind KI-generiert und zeigen keine realen Ereignisse.</div>
 <nav><a href="/quellen">Quellen &amp; Opt-out</a><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a></nav></div></footer>
+${bottomNav(m, base)}
 </body></html>`;
 }
 

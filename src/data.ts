@@ -69,3 +69,18 @@ export async function getFeedList(env: Env) {
   ).all<{ publisher: string; country: Country; homepage: string; active: number; terms_status: string; last_fetch: number | null; last_error: string | null }>();
   return results;
 }
+
+export async function getStats(env: Env): Promise<{ articles: number; publishers: number }> {
+  const r = await env.DB.prepare(
+    "SELECT COUNT(*) AS articles, COUNT(DISTINCT f.publisher) AS publishers FROM articles a JOIN feeds f ON f.id = a.feed_id WHERE a.published > ?",
+  ).bind(Date.now() - 24 * 3600 * 1000).first<{ articles: number; publishers: number }>();
+  return r ?? { articles: 0, publishers: 0 };
+}
+
+/** "Eilmeldung": a story that reached 4+ newsrooms within the last 3 hours. */
+export async function getBreaking(env: Env, country?: Country): Promise<{ id: string; title: string; count: number } | null> {
+  const now = Date.now();
+  const [s] = await getStories(env, { country, minSources: 4, hours: 3, limit: 5 });
+  if (!s || now - s.first_seen > 3 * 3600 * 1000) return null;
+  return { id: s.id, title: s.lead.title, count: s.articles.length };
+}

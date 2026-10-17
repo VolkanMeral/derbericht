@@ -192,6 +192,18 @@ await test("home page renders with stories, DACH comparison and hreflang", async
   assert.ok(body.includes("KI-Illustration"));
   assert.ok(!/fonts\.googleapis|googletagmanager/.test(body), "third-party request");
 });
+await test("breaking strip, dateline and mobile menu are rendered", async () => {
+  const { body } = await page("/at", { Cookie: "edition=at" });
+  // The KI story is breaking (5 sources) but already leads the page, so no duplicate strip.
+  assert.ok(!body.includes('class="breaking"'), "no duplicate strip");
+  assert.ok(/Meldungen aus \d+ Redaktionen/.test(body), "dateline");
+  assert.ok(body.includes('class="bottomnav"') && body.includes('href="/at/regional"'), "bottom nav");
+  assert.ok(body.includes('class="edpick"'), "edition picker");
+  assert.ok(body.includes('class="avatars"'), "source avatars on lead card");
+  const ed = await page("/ausgabe", { Cookie: "edition=at" });
+  assert.equal(ed.res.status, 200);
+  assert.ok(ed.body.includes("Ausgabe wählen"));
+});
 await test("edition page /de shows a banner for a visitor from Austria, no redirect", async () => {
   const { res, body } = await page("/de", { "CF-IPCountry": "AT" });
   assert.equal(res.status, 200);
