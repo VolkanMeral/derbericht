@@ -1,37 +1,3 @@
 # id | country | publisher | category | url
-kleine|at|Kleine Zeitung|politik|https://www.kleinezeitung.at/rss/politik
-kleine2|at|Kleine Zeitung|politik|https://www.kleinezeitung.at/rss/hp_stmk
-sn|at|Salzburger Nachrichten|politik|https://www.sn.at/xml/rss
-oon|at|Oberösterreichische Nachrichten|politik|https://www.nachrichten.at/rss
-tt|at|Tiroler Tageszeitung|politik|https://www.tt.com/rss
-profil|at|profil|politik|https://www.profil.at/rss
-wz|at|Wiener Zeitung|politik|https://www.wienerzeitung.at/rss
-vol|at|Vorarlberg Online|regional|https://www.vol.at/rss
-vol2|at|Vorarlberg Online|regional|https://www.vol.at/rss/vorarlberg
-orftirol|at|ORF Tirol|regional|https://rss.orf.at/tirol.xml
-orfsci|at|ORF Science|wissen|https://rss.orf.at/science.xml
-zdf|de|ZDFheute|politik|https://www.zdf.de/rss/zdf/nachrichten
-welt|de|Die Welt|politik|https://www.welt.de/feeds/latest.rss
-hb|de|Handelsblatt|wirtschaft|https://www.handelsblatt.com/contentexport/feed/schlagzeilen
-ntv|de|n-tv|politik|https://www.n-tv.de/rss
-tsp|de|Tagesspiegel|politik|https://www.tagesspiegel.de/contentexport/feed/home
-taz|de|taz|politik|https://taz.de/!p4608;rss/
-stern|de|Stern|politik|https://www.stern.de/feed/standard/alle-nachrichten/
-br24|de|BR24|politik|https://www.br.de/nachrichten/meldungen/rss
-ndr|de|NDR|politik|https://www.ndr.de/nachrichten/index-rss.xml
-mdr|de|MDR|politik|https://www.mdr.de/nachrichten/index-rss.xml
-wdr|de|WDR|politik|https://www1.wdr.de/uebersicht-100.feed
-dlf|de|Deutschlandfunk|politik|https://www.deutschlandfunk.de/nachrichten-100.rss
-tonline|de|t-online|politik|https://www.t-online.de/feed.rss
-heise|de|heise online|wissen|https://www.heise.de/rss/heise-atom.xml
-spektrum|de|Spektrum der Wissenschaft|wissen|https://www.spektrum.de/alias/rss/spektrum-de-rss-feed/996406
-sz2|de|Süddeutsche Zeitung|politik|https://rss.sueddeutsche.de/rss/Topthemen
-tagi|ch|Tages-Anzeiger|politik|https://www.tagesanzeiger.ch/rss.xml
-tagi2|ch|Tages-Anzeiger|politik|https://partner-feeds.publishing.tamedia.ch/rss/tagesanzeiger/front
-az|ch|Aargauer Zeitung|politik|https://www.aargauerzeitung.ch/schweiz.rss
-tagblatt|ch|St. Galler Tagblatt|regional|https://www.tagblatt.ch/ostschweiz.rss
-luzern|ch|Luzerner Zeitung|politik|https://www.luzernerzeitung.ch/schweiz.rss
-vaterland|ch|Liechtensteiner Vaterland|regional|https://www.vaterland.li/rss
-volksblatt|ch|Liechtensteiner Volksblatt|regional|https://www.volksblatt.li/rss
-bernerz|ch|Berner Zeitung|politik|https://partner-feeds.publishing.tamedia.ch/rss/bernerzeitung/front
-srfsport|ch|SRF Sport|sport|https://www.srf.ch/sport/bnf/rss/718
+so|ch|Südostschweiz|regional|https://beta.suedostschweiz.ch/feed
+so2|ch|Südostschweiz|regional|https://www.suedostschweiz.ch/feed
