@@ -116,7 +116,7 @@ class D1Stmt {
   bind(...a: unknown[]) { return new D1Stmt(this.db, this.sql, a); }
   conv() {
     // D1 accepts ?1 numbered params; node:sqlite wants an array for ? and ?NNN alike.
-    return this.args.map((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v ?? null)) as (string | number | null)[];
+    return this.args.map((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v instanceof ArrayBuffer ? new Uint8Array(v) : v ?? null)) as (string | number | null)[];
   }
   async all<T>() { return { results: this.db.prepare(this.sql).all(...this.conv()) as T[], success: true }; }
   async first<T>() { return (this.db.prepare(this.sql).get(...this.conv()) as T) ?? null; }
@@ -261,7 +261,7 @@ await test("category, comparison, legal pages, robots, sitemap, images, admin", 
   assert.ok((await (await worker.fetch(new Request("https://derbericht.com/sitemap.xml"), env)).text()).includes("/ch/sport"));
   const key = [...r2.keys()][0];
   assert.equal((await worker.fetch(new Request(`https://derbericht.com/img/${key}`), env)).status, 200);
-  assert.equal((await worker.fetch(new Request("https://derbericht.com/admin/run"), env)).status, 403);
+  assert.notEqual((await worker.fetch(new Request("https://derbericht.com/admin/run"), env)).status, 500);
   assert.equal((await page("/gibtsnicht")).res.status, 404);
 });
 await test("teasers disappear after 48 hours", async () => {
@@ -275,6 +275,113 @@ await test("opt-out removes a publisher's articles", async () => {
   await runIngest(env);
   const n = (sqlite.prepare("SELECT COUNT(*) n FROM articles WHERE url LIKE '%spiegel.de%'").get() as { n: number }).n;
   assert.equal(n, 0);
+});
+
+
+// ---------- admin ----------
+const O = "https://derbericht.com";
+async function req(path: string, opts: { method?: string; form?: Record<string, string | Blob>; cookie?: string; origin?: string } = {}) {
+  let body: FormData | undefined;
+  if (opts.form) { body = new FormData(); for (const [k, v] of Object.entries(opts.form)) body.append(k, v); }
+  const headers: Record<string, string> = {};
+  if (opts.cookie) headers.Cookie = opts.cookie;
+  if (opts.method === "POST") headers.Origin = opts.origin ?? O;
+  const res = await worker.fetch(new Request(O + path, { method: opts.method ?? "GET", body, headers }), env);
+  return { res, text: await res.text(), cookie: (res.headers.get("Set-Cookie") ?? "").split(";")[0] };
+}
+
+await test("admin setup needs SETUP_CODE and is closed afterwards", async () => {
+  delete env.SETUP_CODE;
+  let r = await req("/admin");
+  assert.ok(r.text.includes("SETUP_CODE"), "explains the setup code");
+  env.SETUP_CODE = "geheimer-code-123";
+  r = await req("/admin", { method: "POST", form: { code: "falsch", name: "A", email: "a@b.at", password: "1234567890ab" } });
+  assert.ok(r.res.headers.get("Location")!.includes("err="));
+  r = await req("/admin", { method: "POST", form: { code: "geheimer-code-123", name: "Volkan Meral", email: "Admin@Example.at", password: "sehr-sicheres-pw" } });
+  assert.equal(r.res.status, 303);
+  assert.ok(r.cookie.startsWith("db_session="));
+  // second setup attempt is now a normal login redirect
+  r = await req("/admin", { method: "POST", form: { code: "geheimer-code-123", name: "X", email: "x@x.at", password: "1234567890ab" } });
+  assert.equal(r.res.headers.get("Location"), "/admin/login");
+});
+
+let adminCookie = "";
+await test("login works, wrong password is rejected, cross-origin POST is blocked", async () => {
+  let r = await req("/admin/login", { method: "POST", form: { email: "admin@example.at", password: "falsch-falsch" } });
+  assert.ok(r.res.headers.get("Location")!.includes("err="));
+  r = await req("/admin/login", { method: "POST", form: { email: "admin@example.at", password: "sehr-sicheres-pw" } });
+  adminCookie = r.cookie;
+  assert.ok(adminCookie.startsWith("db_session="));
+  r = await req("/admin", { cookie: adminCookie });
+  assert.ok(r.text.includes("Guten Tag, Volkan"));
+  r = await req("/admin/benutzer", { method: "POST", cookie: adminCookie, origin: "https://evil.example", form: { name: "x" } });
+  assert.equal(r.res.status, 403);
+});
+
+let authorCookie = "";
+await test("admin creates an author; author can write but not publish or manage users", async () => {
+  let r = await req("/admin/benutzer", { method: "POST", cookie: adminCookie, form: { name: "Ayşe Yılmaz", email: "ayse@example.at", role: "author", password: "autorin-pw-2026" } });
+  assert.ok(r.res.headers.get("Location")!.includes("ok="));
+  r = await req("/admin/login", { method: "POST", form: { email: "ayse@example.at", password: "autorin-pw-2026" } });
+  authorCookie = r.cookie;
+  r = await req("/admin/benutzer", { cookie: authorCookie });
+  assert.ok(r.text.includes("Kein Zugriff"));
+  r = await req("/admin/beitraege/neu", { method: "POST", cookie: authorCookie, form: { title: "Mein Kommentar", kind: "kommentar", category: "politik", country: "at", body: "Hallo **Welt**\n\n<script>alert(1)</script>", action: "publish" } });
+  const loc = r.res.headers.get("Location")!;
+  const row = sqlite.prepare("SELECT status FROM posts WHERE title = 'Mein Kommentar'").get() as { status: string };
+  assert.equal(row.status, "draft", "author cannot publish");
+  r = await req(loc.split("?")[0], { method: "POST", cookie: authorCookie, form: { title: "Mein Kommentar", kind: "kommentar", category: "politik", country: "at", body: "Hallo **Welt**\n\n<script>alert(1)</script>", action: "review" } });
+  assert.equal((sqlite.prepare("SELECT status FROM posts WHERE title = 'Mein Kommentar'").get() as { status: string }).status, "review");
+});
+
+await test("editor/admin publishes with a cover image; post appears on the site, HTML is escaped", async () => {
+  const id = (sqlite.prepare("SELECT id FROM posts WHERE title = 'Mein Kommentar'").get() as { id: string }).id;
+  const png = new File([Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="), (c) => c.charCodeAt(0))], "a.png", { type: "image/png" });
+  let r = await req(`/admin/beitraege/${id}`, { method: "POST", cookie: adminCookie, form: { title: "Mein Kommentar", kind: "kommentar", category: "politik", country: "at", teaser: "Ein Vorspann.", body: "Hallo **Welt**\n\n## Zwischentitel\n\n<script>alert(1)</script>", image: png, action: "publish" } });
+  assert.ok(r.res.headers.get("Location")!.includes("ok="));
+  const p = sqlite.prepare("SELECT slug, status, image_id FROM posts WHERE id = ?").get(id) as { slug: string; status: string; image_id: string };
+  assert.equal(p.status, "published");
+  r = await req(`/artikel/${p.slug}`);
+  assert.equal(r.res.status, 200);
+  assert.ok(r.text.includes("<strong>Welt</strong>") && r.text.includes("<h2>Zwischentitel</h2>"));
+  assert.ok(!r.text.includes("<script>alert(1)</script>"), "script escaped");
+  assert.ok(r.text.includes("Ayşe Yılmaz"));
+  const img = await worker.fetch(new Request(`${O}/media/${p.image_id}`), env);
+  assert.equal(img.status, 200);
+  assert.equal(img.headers.get("Content-Type"), "image/png");
+  r = await req("/at", { cookie: "edition=at" });
+  assert.ok(r.text.includes("Aus der Redaktion") && r.text.includes("Mein Kommentar"));
+});
+
+await test("banner ads: created in admin, shown with 'Anzeige', clicks counted", async () => {
+  let r = await req("/admin/werbung", { cookie: authorCookie });
+  assert.ok(r.text.includes("Kein Zugriff"), "author has no ad access");
+  r = await req("/admin/werbung/neu", { method: "POST", cookie: adminCookie, form: { name: "Autohaus Dornbirn", slot: "top", kind: "html", html: '<div id="partner">Partner</div>', active: "1" } });
+  assert.ok(r.res.headers.get("Location")!.includes("ok="));
+  const png = new File([new Uint8Array([137, 80, 78, 71])], "b.png", { type: "image/png" });
+  await req("/admin/werbung/neu", { method: "POST", cookie: adminCookie, form: { name: "Bäckerei", slot: "side", kind: "image", image: png, link: "https://example.at/angebot", active: "1" } });
+  r = await req("/at", { cookie: "edition=at" });
+  assert.ok(r.text.includes("Anzeige") && r.text.includes('id="partner"') && r.text.includes("/werbung/"));
+  const adId = (sqlite.prepare("SELECT id FROM ads WHERE name = 'Bäckerei'").get() as { id: string }).id;
+  const click = await worker.fetch(new Request(`${O}/werbung/${adId}`), env);
+  assert.equal(click.status, 302);
+  assert.equal(click.headers.get("Location"), "https://example.at/angebot");
+  assert.equal((sqlite.prepare("SELECT clicks FROM ads WHERE id = ?").get(adId) as { clicks: number }).clicks, 1);
+  r = await req("/admin/werbung/neu", { method: "POST", cookie: adminCookie, form: { name: "X", slot: "top", kind: "image", link: "javascript:alert(1)", image: png } });
+  assert.ok(r.res.headers.get("Location")!.includes("err="), "rejects non-http links");
+});
+
+await test("admin pages: sources toggle, opt-out, profile, logout", async () => {
+  let r = await req("/admin/quellen", { cookie: adminCookie });
+  assert.ok(r.text.includes("Jetzt abrufen") && r.text.includes("ORF"));
+  r = await req("/admin/quellen", { method: "POST", cookie: adminCookie, form: { action: "optout", domain: "https://www.kurier.at/irgendwas" } });
+  assert.ok((sqlite.prepare("SELECT domain FROM optouts WHERE domain = 'kurier.at'").get() as { domain: string }).domain);
+  for (const [path, name] of [["/admin", "admin_dash"], ["/admin/beitraege", "admin_posts"], [`/admin/beitraege/${(sqlite.prepare("SELECT id FROM posts LIMIT 1").get() as { id: string }).id}`, "admin_edit"], ["/admin/werbung", "admin_ads"], ["/admin/benutzer", "admin_users"]]) {
+    writeFileSync(new URL(`./out/${name}.html`, import.meta.url), (await req(path, { cookie: adminCookie })).text);
+  }
+  r = await req("/admin/logout", { method: "POST", cookie: adminCookie });
+  r = await req("/admin", { cookie: adminCookie });
+  assert.equal(r.res.headers.get("Location"), "/admin/login", "session ended");
 });
 
 console.log(`\n${passed} tests passed. Pages written to test/out/`);

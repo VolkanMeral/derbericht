@@ -2,8 +2,9 @@
 
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
 import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, ensureSchema } from "./data.ts";
-import { seedFeeds } from "./ingest.ts";
 import { runIngest } from "./ingest.ts";
+import { handleAdmin } from "./admin.ts";
+import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, serveMedia, type AdSlots } from "./content.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
 import { datenschutz, impressum, quellen } from "./legal.ts";
 import type { Env } from "./types.ts";
@@ -32,10 +33,10 @@ function meta(env: Env, p: Partial<PageMeta> & Pick<PageMeta, "title" | "path" |
   };
 }
 
-async function home(env: Env, req: Request, ed: Edition, path: string, banner: PageMeta["banner"]): Promise<string> {
+async function home(env: Env, ed: Edition, path: string, banner: PageMeta["banner"], ads: AdSlots): Promise<string> {
   const country = ed === "dach" ? undefined : ed;
   const base = ed === "dach" ? "" : `/${ed}`;
-  const [stats, breaking, latest] = await Promise.all([getStats(env), getBreaking(env, country), getLatest(env, country)]);
+  const [stats, breaking, latest, posts] = await Promise.all([getStats(env), getBreaking(env, country), getLatest(env, country), publishedPosts(env, 4, country)]);
   const [top, compare, ...cats] = await Promise.all([
     // Homepage "/": ranked for the visitor's country without changing the URL.
     getStories(env, path === "/" ? { boost: country, limit: 9 } : { country, limit: 9 }),
@@ -47,10 +48,13 @@ async function home(env: Env, req: Request, ed: Edition, path: string, banner: P
   const title = ed === "dach" ? `${env.SITE_NAME} – Nachrichten aus Österreich, Deutschland und der Schweiz` : `${env.SITE_NAME} ${COUNTRY_NAME[ed]} – Nachrichten aus ${COUNTRY_NAME[ed]}`;
   // The strip is for stories the visitor would otherwise miss; no need when it already leads the page.
   const strip = breaking && breaking.id !== top[0]?.id ? breaking : null;
-  return layout(meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip }), homeBody(top, compare, byCat, base, latest, stats.articles));
+  return layout(
+    meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip, topAd: adHtml(ads.top) }),
+    homeBody(top, compare, byCat, base, latest, stats.articles, { posts: postCards(posts), sideAd: adHtml(ads.side), feedAd: adHtml(ads.feed) }),
+  );
 }
 
-async function handle(req: Request, env: Env): Promise<Response> {
+async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
   // www.derbericht.com → derbericht.com (one address for search engines)
   if (url.hostname.startsWith("www.")) {
@@ -59,6 +63,9 @@ async function handle(req: Request, env: Env): Promise<Response> {
   }
   await ensureSchema(env);
   const path = url.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/admin" || path.startsWith("/admin/")) return handleAdmin(req, env, url);
+  if (path.startsWith("/media/")) return serveMedia(env, path.slice(7));
+  if (path.startsWith("/werbung/")) return adClick(env, path.slice(9));
   const saved = savedEdition(req);
   const geo = geoCountry(req);
 
@@ -74,7 +81,7 @@ async function handle(req: Request, env: Env): Promise<Response> {
 
   if (path === "/") {
     const ed: Edition = saved ?? geo ?? "dach";
-    return html(await home(env, req, ed, "/", null), 200, "private, max-age=60");
+    return html(await home(env, ed, "/", null, await pickAds(env, ctx)), 200, "private, max-age=60");
   }
 
   const seg = path.split("/").filter(Boolean);
@@ -85,7 +92,7 @@ async function handle(req: Request, env: Env): Promise<Response> {
   const banner = (ed: Edition, p: string): PageMeta["banner"] => (!saved && geo && geo !== ed ? { country: geo, path: p } : null);
   if (seg.length === 1 && isEd(seg[0])) {
     const b = banner(seg[0], path);
-    return html(await home(env, req, seg[0], path, b), 200, b ? "private, max-age=60" : "public, max-age=120");
+    return html(await home(env, seg[0], path, b, await pickAds(env, ctx)), 200, b ? "private, max-age=60" : "public, max-age=120");
   }
 
   // Category pages: /politik (DACH) or /at/politik
@@ -108,6 +115,16 @@ async function handle(req: Request, env: Env): Promise<Response> {
     return html(layout(meta(env, { title: `${s.lead.title} – ${s.articles.length} Quellen | ${env.SITE_NAME}`, path, edition: saved ?? "dach", noindex: true, description: `${s.articles.length} Redaktionen berichten. Schlagzeilen im Vergleich.` }), storyBody(s)));
   }
 
+  if (seg[0] === "artikel" && seg[1]) {
+    const p = await postBySlug(env, seg[1]);
+    if (!p) return html(layout(meta(env, { title: "Nicht gefunden", path, edition: saved ?? "dach", noindex: true }), '<div class="empty">Dieser Beitrag ist nicht verfügbar.</div>'), 404);
+    const ads = await pickAds(env, ctx);
+    return html(layout(meta(env, { title: `${p.title} | ${env.SITE_NAME}`, path, edition: saved ?? "dach", description: p.teaser ?? p.title, topAd: adHtml(ads.top) }), postPage(p) + adHtml(ads.feed)), 200, "public, max-age=60");
+  }
+  if (path === "/redaktion") {
+    return html(layout(meta(env, { title: `Aus der Redaktion | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), postList(await publishedPosts(env, 60))), 200, "public, max-age=120");
+  }
+
   if (path === "/ausgabe") {
     return html(layout(meta(env, { title: `Ausgabe wählen | ${env.SITE_NAME}`, path, edition: saved ?? geo ?? "dach", noindex: true }), editionChooser(saved ?? geo ?? "dach")), 200, "private, no-store");
   }
@@ -128,28 +145,20 @@ async function handle(req: Request, env: Env): Promise<Response> {
     return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
   }
   if (path === "/sitemap.xml") {
-    const paths = ["/", "/at", "/de", "/ch", "/vergleich", "/quellen", "/impressum",
+    const posts = await publishedPosts(env, 500);
+    const paths = ["/", "/at", "/de", "/ch", "/vergleich", "/redaktion", "/quellen", "/impressum", ...posts.map((p) => `/artikel/${p.slug}`),
       ...CATEGORIES.flatMap((c) => [`/${c}`, `/at/${c}`, `/de/${c}`, `/ch/${c}`])];
     const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${paths.map((p) => `<url><loc>${env.SITE_URL}${p}</loc><changefreq>hourly</changefreq></url>`).join("")}</urlset>`;
     return new Response(xml, { headers: { "Content-Type": "application/xml" } });
-  }
-
-  // Admin: run the job by hand / see feed status. Requires the ADMIN_TOKEN secret.
-  if (seg[0] === "admin") {
-    const ok = env.ADMIN_TOKEN && req.headers.get("Authorization") === `Bearer ${env.ADMIN_TOKEN}`;
-    if (!ok) return new Response("Forbidden", { status: 403 });
-    if (seg[1] === "run") return Response.json(await runIngest(env));
-    if (seg[1] === "seed") { await seedFeeds(env); return Response.json({ ok: true }); }
-    if (seg[1] === "feeds") return Response.json(await getFeedList(env));
   }
 
   return html(layout(meta(env, { title: "Seite nicht gefunden", path, edition: saved ?? "dach", noindex: true }), '<div class="empty">Diese Seite gibt es nicht. <a href="/">Zur Startseite</a></div>'), 404);
 }
 
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      return await handle(req, env);
+      return await handle(req, env, ctx);
     } catch (err) {
       console.error(err);
       return new Response("Fehler – bitte später erneut versuchen.", { status: 500 });

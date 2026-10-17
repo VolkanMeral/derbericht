@@ -24,7 +24,10 @@ export interface PageMeta {
   banner?: { country: Country; path: string } | null;
   stats?: { articles: number; publishers: number } | null;
   breaking?: { id: string; title: string; count: number } | null;
+  topAd?: string;
 }
+
+export interface HomeExtras { posts?: string; sideAd?: string; feedAd?: string }
 
 const CSS = `
 @font-face{font-family:"Bricolage";src:url(/fonts/bricolage.woff2) format("woff2");font-weight:200 800;font-display:swap}
@@ -154,6 +157,23 @@ footer.foot{border-top:1px solid var(--line);background:var(--surface);padding:3
 footer.foot .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
 footer.foot nav{display:flex;gap:20px}footer.foot a{color:var(--ink)}
 .bottomnav{display:none}
+/* ads (always labelled "Anzeige") */
+.ad{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ad img{max-width:100%;height:auto;border-radius:10px}
+.adlabel{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ad-top{padding:16px 0 0}.ad-feed{padding:8px 0}.ad-side{margin-top:24px}
+.adcode{width:100%;display:flex;justify-content:center}
+/* own posts */
+.card.own .fig{display:flex;align-items:center;justify-content:center;background:var(--ink)}
+.ownmark{font:800 26px var(--display);letter-spacing:-.03em;color:#fff}
+.post{max-width:760px;margin:0 auto}
+.post h1{margin:10px 0 14px;font:700 clamp(32px,4.5vw,50px)/1.05 var(--display);letter-spacing:-.035em}
+.post .lede{font-size:20px;line-height:1.5;color:var(--muted);margin:0 0 16px}
+.post .byline{font-size:14px;color:var(--muted);padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:24px}.post .byline strong{color:var(--ink)}
+.post figure{margin:0 0 24px}.post figure img{width:100%;border-radius:18px}
+.post .body{font-size:18px;line-height:1.7}.post .body h2{font:700 26px/1.2 var(--display);margin:32px 0 10px}.post .body h3{font:700 21px var(--display);margin:24px 0 8px}
+.post .body p{margin:0 0 18px}.post .body a{color:var(--accent);text-decoration:underline}
+.post .body blockquote{margin:24px 0;padding:4px 0 4px 20px;border-left:3px solid var(--accent);font:600 22px/1.4 var(--display)}
 /* phone */
 @media (max-width:700px){
  .wrap{padding:0 16px}
@@ -363,7 +383,7 @@ ${m.noindex ? '<meta name="robots" content="noindex,follow">' : ""}${hreflang}
       <div class="edmenu">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="true"' : ""}>${ed === "dach" ? "Alle Länder (DACH)" : EDITION_LABEL[ed]}</a>`).join("")}</div></details></div>
   <nav class="chips" aria-label="Rubriken"><a href="${base || "/"}"${!activeCat && (m.path === "/" || m.path === base) ? ' aria-current="page"' : ""}>Top</a><a href="/vergleich"${m.path === "/vergleich" ? ' aria-current="page"' : ""}>DACH-Vergleich</a>${CATEGORIES.map((c) => `<a href="${base}/${c}"${c === activeCat ? ' aria-current="page"' : ""}>${CATEGORY_NAME[c]}</a>`).join("")}</nav>
 </div></header>${banner}
-<main><div class="wrap">${m.breaking ? `<a class="breaking" href="/story/${e(m.breaking.id)}"><b>Eilmeldung</b><span>${e(m.breaking.title)} – ${m.breaking.count} Quellen</span></a>` : ""}${body}</div></main>
+${m.topAd ? `<div class="wrap">${m.topAd}</div>` : ""}<main><div class="wrap">${m.breaking ? `<a class="breaking" href="/story/${e(m.breaking.id)}"><b>Eilmeldung</b><span>${e(m.breaking.title)} – ${m.breaking.count} Quellen</span></a>` : ""}${body}</div></main>
 <footer class="foot"><div class="wrap"><span style="max-width:680px">© ${new Date().getFullYear()} ${e(m.siteName)} · Wir zeigen Schlagzeilen und kurze Auszüge mit Link zum Originalartikel. Bilder mit dem Hinweis „KI-Illustration“ sind KI-generiert und zeigen keine realen Ereignisse.</span>
 <nav><a href="/quellen">Quellen &amp; Opt-out</a><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a></nav></div></footer>
 ${bottomNav(m, base)}
@@ -372,13 +392,16 @@ ${bottomNav(m, base)}
 
 // --- pages -----------------------------------------------------------------
 
-export function homeBody(top: Story[], compare: Story[], byCat: [Category, Story[]][], base: string, latest: ArticleRow[] = [], todayCount?: number): string {
+export function homeBody(top: Story[], compare: Story[], byCat: [Category, Story[]][], base: string, latest: ArticleRow[] = [], todayCount?: number, extras: HomeExtras = {}): string {
   if (!top.length) return `<div class="empty">Die ersten Meldungen werden gerade geladen. Bitte in ein paar Minuten wieder vorbeischauen.</div>`;
   const [first, ...rest] = top;
-  const parts: string[] = [`<section class="hero">${leadBlock(first)}${feedBlock(latest, todayCount)}</section>`];
+  const side = feedBlock(latest, todayCount).replace(/<\/aside>$/, `${extras.sideAd ?? ""}</aside>`);
+  const parts: string[] = [`<section class="hero">${leadBlock(first)}${side}</section>`];
   const band = compare.find((s) => s.id !== first.id);
   if (band) parts.push(compareBand(band));
+  if (extras.posts) parts.push(extras.posts);
   if (rest.length) parts.push(`<section><div class="sechead"><h2>Meistberichtet</h2><a href="/vergleich">DACH-Vergleich →</a></div><div class="grid">${rest.slice(0, 8).map(card).join("")}</div></section>`);
+  if (extras.feedAd) parts.push(extras.feedAd);
   const lists = byCat.filter(([, l]) => l.length).map(([c, l]) => listBlock(c, l, base));
   if (lists.length) parts.push(`<section class="lists">${lists.join("")}</section>`);
   return `<div class="stack">${parts.join("")}</div>`;

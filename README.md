@@ -20,6 +20,18 @@ Cloudflare Workers üzerinde çalışır: D1 (veritabanı), R2 (KI görselleri),
 | SEO | hreflang (de-AT/de-DE/de-CH/x-default), sitemap, robots; tekil hikâye sayfaları `noindex` |
 | Gizlilik | Harici font, script, takip yok |
 
+## Admin paneli (/admin)
+
+| Rol | Yetki |
+| --- | --- |
+| Administrator | Her şey + kullanıcı ekleme, rol verme, hesap kapatma |
+| Redakteur | Tüm yazıları yayınlar, banner reklamlar, kaynaklar ve opt-out |
+| Autor | Kendi yazılarını yazar ve onaya gönderir |
+
+- **İlk kurulum:** Cloudflare → Worker `derbericht` → Settings → Variables and Secrets → Secret `SETUP_CODE`. Sonra `/admin` açılır ve kod ile ilk admin oluşturulur. Bu sayfa yalnızca bir kez çalışır.
+- **Kendi yazılar:** Nachricht veya Kommentar; Markdown (## başlık, **kalın**, *italik*, [link](https://…), liste, > alıntı); kapak görseli (en fazla 1,5 MB, veritabanında saklanır). Yayınlananlar `/artikel/<slug>` adresinde, ana sayfada „Aus der Redaktion“ bölümünde ve `/redaktion` sayfasında görünür.
+- **Werbung:** Yerler: üst, yan sütun, rubrikler arası. Görsel + link veya reklam kodu; başlangıç/bitiş tarihi; gösterim ve tıklama sayacı. Her reklam otomatik olarak „Anzeige“ etiketi alır (§ 26 MedienG).
+
 ## Sayfalar
 
 `/` · `/at` `/de` `/ch` · `/<kategori>` ve `/at/<kategori>` · `/vergleich` · `/story/<id>` · `/quellen` · `/impressum` · `/datenschutz`

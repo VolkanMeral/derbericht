@@ -9,7 +9,7 @@ export interface Env {
   IMAGE_AI: string;
   IMAGE_DAILY_LIMIT: string;
   IMAGES_PER_RUN: string;
-  ADMIN_TOKEN?: string;
+  SETUP_CODE?: string; // secret: needed once to create the first administrator
 }
 
 export interface ArticleRow {
