@@ -59,9 +59,11 @@ async function home(env: Env, ed: Edition, path: string, banner: PageMeta["banne
 
 async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
-  // www.derbericht.com → derbericht.com (one address for search engines)
-  if (url.hostname.startsWith("www.")) {
-    url.hostname = url.hostname.slice(4);
+  // http → https and www.derbericht.com → derbericht.com (one secure address)
+  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  if ((url.protocol === "http:" && !local) || url.hostname.startsWith("www.")) {
+    url.protocol = "https:";
+    if (url.hostname.startsWith("www.")) url.hostname = url.hostname.slice(4);
     return Response.redirect(url.toString(), 301);
   }
   await ensureSchema(env);
@@ -177,7 +179,12 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      return await handle(req, env, ctx);
+      const res = await handle(req, env, ctx);
+      if (new URL(req.url).protocol !== "https:") return res;
+      // Browsers remember to use https only (no "not secure" warning, no http detour).
+      const out = new Response(res.body, res);
+      out.headers.set("Strict-Transport-Security", "max-age=31536000");
+      return out;
     } catch (err) {
       console.error(err);
       return new Response("Fehler – bitte später erneut versuchen.", { status: 500 });

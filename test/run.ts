@@ -226,6 +226,11 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   const other = sqlite.prepare("SELECT a.id, a.title FROM articles a JOIN clusters c ON c.id = a.cluster_id WHERE c.id = ? AND a.id != c.lead_id LIMIT 1").get(c.id) as { id: string; title: string };
   const picked = await (await worker.fetch(new Request(`https://derbericht.com/karte/${c.id}?a=${other.id}`), env)).text();
   assert.ok(picked.includes(other.title.slice(0, 20)), "card shows the tapped headline");
+  const http = await worker.fetch(new Request("http://derbericht.com/at?x=1"), env);
+  assert.equal(http.status, 301);
+  assert.equal(http.headers.get("Location"), "https://derbericht.com/at?x=1");
+  const secure = await worker.fetch(new Request("https://derbericht.com/at"), env);
+  assert.ok(secure.headers.get("Strict-Transport-Security"), "HSTS");
   const card = await worker.fetch(new Request("https://derbericht.com/karte/" + c.id), env);
   const ch = await card.text();
   assert.equal(card.status, 200);
