@@ -3,6 +3,10 @@ main = "src/index.ts"
 compatibility_date = "2026-09-01"
 account_id = "0d1797af93af9eb08da716133d56b1a9"
 
+# Static files (self-hosted fonts) served before the worker.
+[assets]
+directory = "./public"
+
 # Every 10 minutes: fetch feeds, cluster, generate images, clean up.
 [triggers]
 crons = ["*/10 * * * *"]

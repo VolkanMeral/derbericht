@@ -93,3 +93,15 @@ export async function ensureSchema(env: Env): Promise<void> {
   await env.DB.batch(SCHEMA.map((s) => env.DB.prepare(s)));
   schemaReady = true;
 }
+
+/** Latest single articles for the "Neueste Meldungen" column. */
+export async function getLatest(env: Env, country?: Country, limit = 6): Promise<ArticleRow[]> {
+  const where = country ? "AND a.country = ?" : "";
+  const args: unknown[] = [Date.now() - 12 * 3600 * 1000, ...(country ? [country] : []), limit];
+  const { results } = await env.DB.prepare(
+    `SELECT a.id, a.feed_id, a.url, a.title, a.teaser, a.category, a.country, a.published, a.paywall, a.cluster_id, f.publisher
+     FROM articles a JOIN feeds f ON f.id = a.feed_id
+     WHERE a.published > ? ${where} ORDER BY a.published DESC LIMIT ?`,
+  ).bind(...args).all<ArticleRow>();
+  return results;
+}

@@ -1,7 +1,7 @@
 // Cloudflare Worker entry: web pages (fetch) + cron job (scheduled).
 
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
-import { getStories, getStory, getFeedList, getStats, getBreaking, ensureSchema } from "./data.ts";
+import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, ensureSchema } from "./data.ts";
 import { seedFeeds } from "./ingest.ts";
 import { runIngest } from "./ingest.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
@@ -35,7 +35,7 @@ function meta(env: Env, p: Partial<PageMeta> & Pick<PageMeta, "title" | "path" |
 async function home(env: Env, req: Request, ed: Edition, path: string, banner: PageMeta["banner"]): Promise<string> {
   const country = ed === "dach" ? undefined : ed;
   const base = ed === "dach" ? "" : `/${ed}`;
-  const [stats, breaking] = await Promise.all([getStats(env), getBreaking(env, country)]);
+  const [stats, breaking, latest] = await Promise.all([getStats(env), getBreaking(env, country), getLatest(env, country)]);
   const [top, compare, ...cats] = await Promise.all([
     // Homepage "/": ranked for the visitor's country without changing the URL.
     getStories(env, path === "/" ? { boost: country, limit: 9 } : { country, limit: 9 }),
@@ -47,7 +47,7 @@ async function home(env: Env, req: Request, ed: Edition, path: string, banner: P
   const title = ed === "dach" ? `${env.SITE_NAME} – Nachrichten aus Österreich, Deutschland und der Schweiz` : `${env.SITE_NAME} ${COUNTRY_NAME[ed]} – Nachrichten aus ${COUNTRY_NAME[ed]}`;
   // The strip is for stories the visitor would otherwise miss; no need when it already leads the page.
   const strip = breaking && breaking.id !== top[0]?.id ? breaking : null;
-  return layout(meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip }), homeBody(top, compare, byCat, base));
+  return layout(meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip }), homeBody(top, compare, byCat, base, latest, stats.articles));
 }
 
 async function handle(req: Request, env: Env): Promise<Response> {

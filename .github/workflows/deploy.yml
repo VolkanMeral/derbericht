@@ -17,6 +17,7 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm test
+      - run: npm run fonts
       - name: Deploy to Cloudflare
         run: npx wrangler deploy
         env:

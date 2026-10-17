@@ -206,6 +206,8 @@ await test("home page renders with stories, DACH comparison and hreflang", async
   assert.equal(res.status, 200);
   assert.ok(body.includes("Jetzt wichtig"));
   assert.ok(body.includes("DACH-Vergleich"));
+  assert.ok(body.includes("Neueste Meldungen"), "latest column");
+  assert.ok(body.includes("Meistberichtet"), "most covered grid");
   assert.ok(body.includes('hreflang="de-AT"'));
   assert.ok(body.includes("KI-Illustration"));
   assert.ok(!/fonts\.googleapis|googletagmanager/.test(body), "third-party request");
