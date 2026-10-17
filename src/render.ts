@@ -109,6 +109,7 @@ main{padding:28px 0 64px}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
 .col{background:var(--band-card);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px}
 .col .pill{align-self:flex-start;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px}
+.pill .short{display:none}
 .pill-at{background:#c8321c;color:#fff}.pill-de{background:#fff;color:#111113}.pill-ch{border:1px solid #fff}
 .col a{font:600 20px/1.22 var(--display);color:#fff}.col a:hover{color:var(--accent-soft)}
 .col small{font-size:13px;color:var(--band-muted)}
@@ -184,8 +185,9 @@ footer.foot nav{display:flex;gap:20px}footer.foot a{color:var(--ink)}
  .avatars .btn{display:none}
  .band{padding:20px;border-radius:18px;gap:16px}
  .band .head .btn{display:none}
- .cols{gap:0}.col{background:none;padding:12px 0 0;border-top:1px solid var(--band-line);border-radius:0;display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 10px}
- .col .pill{grid-row:span 2;align-self:start;padding:3px 0;width:40px;text-align:center}
+ .cols{gap:0}.col{background:none;padding:12px 0 0;border-top:1px solid var(--band-line);border-radius:0;display:grid;grid-template-columns:58px minmax(0,1fr);gap:4px 12px}
+ .col .pill{grid-row:span 2;align-self:start;justify-self:start;padding:3px 8px;border-radius:7px;white-space:nowrap;font-size:11px}
+ .pill .long{display:none}.pill .short{display:inline}
  .col a{font:500 15px/1.3 var(--text)}.col .more{display:none}
  .grid{display:flex;flex-direction:column;gap:0}
  .card{display:grid;grid-template-columns:minmax(0,1fr) 84px;grid-template-areas:"sub fig" "t fig";gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}
@@ -305,7 +307,7 @@ export function compareBand(s: Story, withButton = true): string {
   const by = byCountry(s);
   const cols = COUNTRIES.filter((c) => by[c]?.length).map((c) => {
     const [first, ...rest] = by[c]!;
-    return `<div class="col"><span class="pill pill-${c}">${COUNTRY_NAME[c]} · ${by[c]!.length}</span>
+    return `<div class="col"><span class="pill pill-${c}"><span class="long">${COUNTRY_NAME[c]} · ${by[c]!.length}</span><span class="short">${c.toUpperCase()} · ${by[c]!.length}</span></span>
       ${ext(first, "")}
       <small>${by[c]!.slice(0, 3).map((a) => e(a.publisher ?? "")).join(" · ")}</small>
       ${rest.length ? `<div class="more">${rest.slice(0, 2).map((a) => ext(a, "")).join("")}</div>` : ""}</div>`;
@@ -412,7 +414,7 @@ export function listBody(title: string, list: Story[], intro = ""): string {
 }
 
 export function compareBody(list: Story[]): string {
-  const intro = `<p style="margin:-8px 0 24px;color:var(--muted);font-size:17px">Dieselbe Nachricht, drei Länder: So titeln Redaktionen in Österreich, Deutschland und der Schweiz.</p>`;
+  const intro = `<p style="margin:0 0 24px;color:var(--muted);font-size:17px">Dieselbe Nachricht, drei Länder: So titeln Redaktionen in Österreich, Deutschland und der Schweiz.</p>`;
   return `<div class="sechead"><h2>DACH-Vergleich</h2></div>${intro}${list.length ? `<div class="stack" style="gap:24px">${list.map((s) => compareBand(s)).join("")}</div>` : '<div class="empty">Gerade gibt es keine Geschichte, über die in mehreren Ländern berichtet wird.</div>'}`;
 }
 
