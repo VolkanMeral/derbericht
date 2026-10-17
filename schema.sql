@@ -119,3 +119,12 @@ CREATE TABLE IF NOT EXISTS ads (
   clicks       INTEGER NOT NULL DEFAULT 0,
   created      INTEGER NOT NULL
 );
+
+-- Editable info pages (Impressum, Datenschutz, Quellen-Text)
+CREATE TABLE IF NOT EXISTS pages (
+  slug        TEXT PRIMARY KEY,
+  title       TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  updated     INTEGER NOT NULL,
+  updated_by  TEXT
+);

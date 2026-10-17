@@ -14,4 +14,5 @@ export const SCHEMA: string[] = [
   "CREATE TABLE IF NOT EXISTS posts ( id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK (kind IN ('news','kommentar')), title TEXT NOT NULL, teaser TEXT, body TEXT NOT NULL DEFAULT '', category TEXT NOT NULL, country TEXT NOT NULL, author_id TEXT NOT NULL REFERENCES users(id), status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','review','published')), image_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL, published_at INTEGER )",
   "CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status, published_at)",
   "CREATE TABLE IF NOT EXISTS ads ( id TEXT PRIMARY KEY, name TEXT NOT NULL, slot TEXT NOT NULL CHECK (slot IN ('top','side','feed')), kind TEXT NOT NULL CHECK (kind IN ('image','html')), image_id TEXT, link TEXT, html TEXT, active INTEGER NOT NULL DEFAULT 1, starts INTEGER, ends INTEGER, impressions INTEGER NOT NULL DEFAULT 0, clicks INTEGER NOT NULL DEFAULT 0, created INTEGER NOT NULL )",
+  "CREATE TABLE IF NOT EXISTS pages ( slug TEXT PRIMARY KEY, title TEXT NOT NULL, body TEXT NOT NULL, updated INTEGER NOT NULL, updated_by TEXT )",
 ];

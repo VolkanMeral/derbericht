@@ -6,7 +6,7 @@ import { runIngest } from "./ingest.ts";
 import { handleAdmin } from "./admin.ts";
 import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, serveMedia, type AdSlots } from "./content.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
-import { datenschutz, impressum, quellen } from "./legal.ts";
+import { feedTable, getPage, pageHtml, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
 
 const GEO: Record<string, Country> = { AT: "at", DE: "de", LU: "de", CH: "ch", LI: "ch" };
@@ -129,9 +129,11 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
     return html(layout(meta(env, { title: `Ausgabe wählen | ${env.SITE_NAME}`, path, edition: saved ?? geo ?? "dach", noindex: true }), editionChooser(saved ?? geo ?? "dach")), 200, "private, no-store");
   }
 
-  if (path === "/impressum") return html(layout(meta(env, { title: `Impressum | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), impressum()), 200, "public, max-age=3600");
-  if (path === "/datenschutz") return html(layout(meta(env, { title: `Datenschutz | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), datenschutz()), 200, "public, max-age=3600");
-  if (path === "/quellen") return html(layout(meta(env, { title: `Quellen & Opt-out | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), quellen(await getFeedList(env))), 200, "public, max-age=3600");
+  if (path === "/impressum" || path === "/datenschutz" || path === "/quellen") {
+    const p = await getPage(env, path.slice(1) as PageSlug);
+    const extra = path === "/quellen" ? feedTable(await getFeedList(env)) : "";
+    return html(layout(meta(env, { title: `${p.title} | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), pageHtml(p, extra)), 200, "public, max-age=300");
+  }
 
   if (seg[0] === "img" && seg.length >= 2) {
     const key = seg.slice(1).join("/");

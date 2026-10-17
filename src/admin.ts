@@ -11,6 +11,7 @@ import { CATEGORY_NAME, COUNTRY_NAME, type Category } from "./sources.ts";
 import { CATEGORIES } from "./render.ts";
 import { escapeHtml as e } from "./text.ts";
 import { runIngest } from "./ingest.ts";
+import { getPage, PAGE_DEFAULTS, PAGE_SLUGS, savePage, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
 
 // ---------- rendering ----------
@@ -64,6 +65,7 @@ function page(title: string, body: string, user?: User | null, active = ""): Res
       ${navItem("/admin/beitraege", "Beiträge", active)}
       ${can.ads(user) ? navItem("/admin/werbung", "Werbung", active) : ""}
       ${can.sources(user) ? navItem("/admin/quellen", "Quellen", active) : ""}
+      ${can.pages(user) ? navItem("/admin/seiten", "Seiten", active) : ""}
       ${can.users(user) ? navItem("/admin/benutzer", "Benutzer", active) : ""}
       ${navItem("/admin/profil", "Mein Profil", active)}
       <a class="nav" href="/" target="_blank">Website ansehen ↗</a>
@@ -140,6 +142,8 @@ export async function handleAdmin(req: Request, env: Env, url: URL): Promise<Res
   if (path === "/admin/werbung" && can.ads(user)) return adsList(env, user, url);
   if ((path === "/admin/werbung/neu" || /^\/admin\/werbung\/[a-f0-9]+$/.test(path)) && can.ads(user)) return adEdit(req, env, user, url, path.split("/").pop()!);
   if (path === "/admin/quellen" && can.sources(user)) return sources(req, env, user, url);
+  if (path === "/admin/seiten" && can.pages(user)) return pagesList(env, user, url);
+  if (/^\/admin\/seiten\/(impressum|datenschutz|quellen)$/.test(path) && can.pages(user)) return pageEdit(req, env, user, url, path.split("/").pop() as PageSlug);
   if (path === "/admin/benutzer" && can.users(user)) return usersList(req, env, user, url);
   if (/^\/admin\/benutzer\/[a-f0-9]+$/.test(path) && can.users(user)) return userEdit(req, env, user, url, path.split("/").pop()!);
   return page("Kein Zugriff", `<div class="card"><h1>Kein Zugriff</h1><p class="muted">Diese Seite gibt es nicht oder Ihre Rolle hat keine Berechtigung.</p></div>`, user);
@@ -474,6 +478,48 @@ async function sources(req: Request, env: Env, user: User, url: URL): Promise<Re
         <button class="btn" name="action" value="optout">Hinzufügen</button></form>
       ${opt.results.length ? `<table style="margin-top:12px">${opt.results.map((o) => `<tr><td><strong>${e(o.domain)}</strong></td><td class="muted">${e(o.note ?? "")}</td><td class="muted">${dt(o.added)}</td><td><form method="post"><input type="hidden" name="domain" value="${e(o.domain)}"><button class="btn small light" name="action" value="optout-remove">Entfernen</button></form></td></tr>`).join("")}</table>` : ""}
     </div>`, user, "/admin/quellen");
+}
+
+// ---------- pages (Impressum, Datenschutz, Quellen) ----------
+
+async function pagesList(env: Env, user: User, url: URL): Promise<Response> {
+  const rows = await Promise.all(PAGE_SLUGS.map(async (slug) => {
+    const p = await getPage(env, slug);
+    const open = /\[[A-ZÄÖÜ][^\]]*\]/.test(p.body);
+    return `<tr><td><a href="/admin/seiten/${slug}"><strong>${e(p.title)}</strong></a><br><span class="muted">${e(PAGE_DEFAULTS[slug].hint)}</span></td>
+      <td>${open ? '<span class="pill review">Platzhalter offen</span>' : '<span class="pill ok">Ausgefüllt</span>'}</td>
+      <td class="muted">${p.updated ? `${dt(p.updated)}${p.updated_by_name ? ` · ${e(p.updated_by_name)}` : ""}` : "Standardtext"}</td>
+      <td><a href="/${slug}" target="_blank">ansehen ↗</a></td></tr>`;
+  }));
+  return page("Seiten", `<div class="top"><h1>Seiten</h1></div>${flash(url)}
+    <div class="card tablewrap"><table><thead><tr><th>Seite</th><th>Status</th><th>Zuletzt geändert</th><th></th></tr></thead><tbody>${rows.join("")}</tbody></table></div>
+    <p class="muted" style="margin-top:14px">Rechtstexte vor der Veröffentlichung bitte von einer Juristin oder einem Juristen prüfen lassen.</p>`, user, "/admin/seiten");
+}
+
+async function pageEdit(req: Request, env: Env, user: User, url: URL, slug: PageSlug): Promise<Response> {
+  if (req.method === "POST") {
+    const f = await req.formData();
+    if (f.get("action") === "reset") {
+      await env.DB.prepare("DELETE FROM pages WHERE slug = ?").bind(slug).run();
+      return back(url.pathname, "ok", "Auf den Standardtext zurückgesetzt.");
+    }
+    const title = String(f.get("title") ?? "").trim() || PAGE_DEFAULTS[slug].title;
+    const body = String(f.get("body") ?? "");
+    if (!body.trim()) return back(url.pathname, "err", "Der Text darf nicht leer sein.");
+    await savePage(env, slug, title.slice(0, 120), body, user.id);
+    return back(url.pathname, "ok", "Gespeichert und online.");
+  }
+  const p = await getPage(env, slug);
+  return page(p.title, `<div class="top"><h1>${e(p.title)}</h1><a class="btn light" href="/${slug}" target="_blank">Seite ansehen ↗</a></div>${flash(url)}
+    <form class="f card" method="post">
+      <p class="muted" style="margin:0">${e(PAGE_DEFAULTS[slug].hint)} Ersetzen Sie alle Angaben in [eckigen Klammern].</p>
+      <label>Seitentitel<input type="text" name="title" maxlength="120" value="${e(p.title)}"></label>
+      <label>Text <small>## Zwischentitel · **fett** · *kursiv* · [Link](https://…) · - Liste · Zeilenumbruch bleibt erhalten · Leerzeile = neuer Absatz</small>
+        <textarea name="body" style="min-height:460px">${e(p.body)}</textarea></label>
+      <div class="actions"><button class="btn">Speichern</button>${p.updated ? `<button class="btn danger" name="action" value="reset" formnovalidate>Auf Standardtext zurücksetzen</button>` : ""}</div>
+      ${p.updated ? `<p class="muted" style="margin:0">Zuletzt geändert ${dt(p.updated)}${p.updated_by_name ? ` von ${e(p.updated_by_name)}` : ""}.</p>` : ""}
+    </form>
+    <div class="card" style="margin-top:18px"><h2 style="font-size:18px">Vorschau</h2><div class="preview">${renderMarkdown(p.body)}</div></div>`, user, "/admin/seiten");
 }
 
 // ---------- users ----------

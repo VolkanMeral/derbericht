@@ -379,6 +379,20 @@ await test("admin pages: sources toggle, opt-out, password reset with code, logo
   for (const [path, name] of [["/admin", "admin_dash"], ["/admin/beitraege", "admin_posts"], [`/admin/beitraege/${(sqlite.prepare("SELECT id FROM posts LIMIT 1").get() as { id: string }).id}`, "admin_edit"], ["/admin/werbung", "admin_ads"], ["/admin/benutzer", "admin_users"]]) {
     writeFileSync(new URL(`./out/${name}.html`, import.meta.url), (await req(path, { cookie: adminCookie })).text);
   }
+  r = await req("/admin/seiten", { cookie: adminCookie });
+  assert.ok(r.text.includes("Impressum") && r.text.includes("Platzhalter offen"));
+  r = await req("/admin/seiten/impressum", { method: "POST", cookie: adminCookie, form: { title: "Impressum", body: "**Medieninhaber:**\nFastRoute GmbH\nMusterstraße 1\n6850 Dornbirn\n\n<b>x</b>" } });
+  assert.ok(r.res.headers.get("Location")!.includes("ok="));
+  let pub = await (await worker.fetch(new Request(`${O}/impressum`), env)).text();
+  assert.ok(pub.includes("FastRoute GmbH<br>Musterstraße 1<br>6850 Dornbirn"), "line breaks kept");
+  assert.ok(!pub.includes("<b>x</b>"), "HTML escaped");
+  r = await req("/admin/seiten/impressum", { method: "POST", cookie: adminCookie, form: { action: "reset" } });
+  pub = await (await worker.fetch(new Request(`${O}/impressum`), env)).text();
+  assert.ok(pub.includes("[NAME / FIRMA]"), "back to default");
+  r = await req("/admin/seiten", { cookie: authorCookie });
+  assert.ok(r.text.includes("Kein Zugriff"), "author cannot edit legal pages");
+  pub = await (await worker.fetch(new Request(`${O}/quellen`), env)).text();
+  assert.ok(pub.includes("Herausgeber") && pub.includes("Sie möchten nicht verlinkt werden?"));
   r = await req("/admin/zuruecksetzen", { method: "POST", form: { code: "falsch", email: "admin@example.at", password: "neues-passwort-1" } });
   assert.ok(r.res.headers.get("Location")!.includes("err="));
   r = await req("/admin/zuruecksetzen", { method: "POST", form: { code: "geheimer-code-123", email: "ADMIN@example.at", password: "neues-passwort-1" } });

@@ -1,6 +1,6 @@
 // Minimal, safe Markdown for own articles. Everything is HTML-escaped first; only a small set of
 // constructs is turned back into markup: ## / ### headings, paragraphs, - lists, 1. lists,
-// > quotes, **bold**, *italic*, [text](https://…) links.
+// > quotes, **bold**, *italic*, [text](https://… or /path) links; a single line break stays a line break.
 
 import { escapeHtml } from "./text.ts";
 
@@ -8,8 +8,8 @@ function inline(s: string): string {
   return s
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<em>$2</em>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_m, text: string, url: string) =>
-      `<a href="${url.replace(/"/g, "&quot;")}" rel="noopener nofollow" target="_blank">${text}</a>`);
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[a-z0-9\-/]*)\)/g, (_m, text: string, url: string) =>
+      url.startsWith("/") ? `<a href="${url}">${text}</a>` : `<a href="${url.replace(/"/g, "&quot;")}" rel="noopener nofollow" target="_blank">${text}</a>`);
 }
 
 export function renderMarkdown(src: string): string {
@@ -19,7 +19,7 @@ export function renderMarkdown(src: string): string {
   let list: { tag: "ul" | "ol"; items: string[] } | null = null;
   let quote: string[] = [];
 
-  const flushPara = () => { if (para.length) { out.push(`<p>${inline(para.join(" "))}</p>`); para = []; } };
+  const flushPara = () => { if (para.length) { out.push(`<p>${para.map(inline).join("<br>")}</p>`); para = []; } };
   const flushList = () => { if (list) { out.push(`<${list.tag}>${list.items.map((i) => `<li>${inline(i)}</li>`).join("")}</${list.tag}>`); list = null; } };
   const flushQuote = () => { if (quote.length) { out.push(`<blockquote>${inline(quote.join(" "))}</blockquote>`); quote = []; } };
   const flushAll = () => { flushPara(); flushList(); flushQuote(); };
