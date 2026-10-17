@@ -1,5 +1,5 @@
-// Server-rendered HTML in the "modern" design: white ground, Bricolage Grotesque headlines,
-// Geist text, rounded cards, a dark DACH comparison band. Fonts are self-hosted under /fonts
+// Server-rendered HTML in the calm design: warm off-white ground, one accent colour, KI illustrations
+// carry the colour. Bricolage Grotesque headlines, Geist text, light DACH comparison band. Fonts are self-hosted under /fonts
 // (copied at build time, see scripts/fonts.mjs); no third-party requests (DSGVO).
 
 import { SOCIAL_CSS, SOCIAL_JS, reactBar, shareBar, type Counts } from "./social.ts";
@@ -29,12 +29,12 @@ export interface PageMeta {
   image?: string; // absolute URL for link previews (WhatsApp, Facebook …)
 }
 
-export interface HomeExtras { posts?: string; sideAd?: string; feedAd?: string; reactions?: Record<string, Counts> }
+export interface HomeExtras { posts?: string; sideAd?: string; feedAd?: string; reactions?: Record<string, Counts>; siteUrl?: string }
 
 const CSS = `
 @font-face{font-family:"Bricolage";src:url(/fonts/bricolage.woff2) format("woff2");font-weight:200 800;font-display:swap}
 @font-face{font-family:"Geist";src:url(/fonts/geist.woff2) format("woff2");font-weight:100 900;font-display:swap}
-:root{--bg:#fff;--surface:#f4f4f1;--card:#fff;--ink:#111113;--muted:#5c5c63;--line:#e6e6e1;--accent:#c8321c;--accent-soft:#f08a74;
+:root{--bg:#fafaf8;--surface:#f1f0ec;--card:#fff;--ink:#111113;--muted:#6b6b72;--line:#e8e7e3;--accent:#c8321c;--accent-soft:#f08a74;
 --band:#111113;--band-card:#1d1d21;--band-muted:#a9a9b0;--band-line:#2c2c31;
 --display:"Bricolage","Avenir Next","Segoe UI",system-ui,sans-serif;--text:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif}
 @media (prefers-color-scheme:dark){:root{--bg:#0f0f11;--surface:#1a1a1d;--card:#151518;--ink:#efefea;--muted:#a3a3aa;--line:#2a2a2e;--accent:#ef5a40;
@@ -45,16 +45,16 @@ a{color:inherit;text-decoration:none}a:hover .t,a.t:hover{color:var(--accent)}
 img{display:block}
 .wrap{max-width:1280px;margin:0 auto;padding:0 32px}
 /* header */
-header.top{border-bottom:1px solid var(--line);background:var(--bg)}
+header.top{border-bottom:1px solid var(--line);background:var(--card)}
 .bar{display:flex;align-items:center;gap:20px;padding:18px 0 14px}
 .logo{font:800 30px/1 var(--display);letter-spacing:-.04em;white-space:nowrap}.logo span{color:var(--accent)}
 .dateline{font-size:13px;color:var(--muted)}
 .seg{margin-left:auto;display:flex;padding:4px;background:var(--surface);border-radius:999px;gap:2px}
 .seg a{height:36px;padding:0 14px;border-radius:999px;display:flex;align-items:center;font-size:14px;font-weight:500;color:var(--muted)}
 .seg a[aria-current]{background:var(--ink);color:var(--bg);font-weight:600}
-.chips{display:flex;gap:8px;padding:0 0 14px;overflow-x:auto;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
-.chips a{flex-shrink:0;height:36px;padding:0 16px;border-radius:999px;display:flex;align-items:center;font-size:14px;font-weight:500;border:1px solid var(--line)}
-.chips a[aria-current]{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.chips{display:flex;gap:26px;padding:0;overflow-x:auto;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chips a{flex-shrink:0;padding:8px 0 13px;display:flex;align-items:center;font-size:15px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.chips a:hover{color:var(--ink)}.chips a[aria-current]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
 .edpick{display:none;position:relative;margin-left:auto}
 .edpick summary{list-style:none;height:44px;padding:0 14px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;cursor:pointer}
 .edpick summary::-webkit-details-marker{display:none}
@@ -92,6 +92,7 @@ main{padding:28px 0 64px}
 .btn{height:44px;padding:0 20px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:14px;font-weight:600;display:inline-flex;align-items:center;white-space:nowrap}
 .btn:hover{opacity:.9}
 .avatars .btn{margin-left:auto}
+.leadsocial{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--line)}.leadsocial .share{margin-left:auto}
 .feed{flex:1 1 320px;min-width:0;display:flex;flex-direction:column}
 .feed h2{margin:0;padding-bottom:12px;border-bottom:2px solid var(--ink);font:700 22px var(--display);letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0}
@@ -101,36 +102,38 @@ main{padding:28px 0 64px}
 .feed .t{font-size:16px;font-weight:500;line-height:1.35;display:block}
 .feed small{font-size:13px;color:var(--muted)}
 /* DACH band */
-.band{background:var(--band);color:#fff;border-radius:24px;padding:40px;display:flex;flex-direction:column;gap:28px}
-.band .eyebrow{color:var(--accent-soft)}
+.band{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:24px;padding:32px;display:flex;flex-direction:column;gap:24px}
 .band h2{margin:6px 0 0;font:700 clamp(24px,3vw,34px)/1.12 var(--display);letter-spacing:-.02em;max-width:780px}
 .band .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.band .btn{background:#fff;color:#111113}
+.band h2{font-size:clamp(22px,2.6vw,30px)}
 .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
-.col{background:var(--band-card);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px}
-.col .pill{align-self:flex-start;font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;background:#2c2c31;color:#fff;display:inline-flex;align-items:center}
+.col{border-left:1px solid var(--line);padding:0 0 0 22px;display:flex;flex-direction:column;gap:10px}
+.col .pill{align-self:flex-start;font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--surface);color:var(--ink);display:inline-flex;align-items:center}
 .flag{display:inline-block;vertical-align:-2px;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.12);flex-shrink:0}
 .flags{display:inline-flex;gap:4px;align-items:center}
 .seg a .flag,.edmenu .flag,.edlist .flag,.edpick summary .flag{margin-right:6px}
 .seg a .flags,.edmenu .flags,.edlist .flags{margin-right:6px;gap:2px}
-.pill .flag{margin-right:6px;vertical-align:-2px;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.pill .flag{margin-right:6px;vertical-align:-2px}
 .pill .short{display:none}
 .pill-at{background:#c8321c;color:#fff}.pill-de{background:#fff;color:#111113}.pill-ch{border:1px solid #fff}
-.col a{font:600 20px/1.22 var(--display);color:#fff}.col a:hover{color:var(--accent-soft)}
-.col small{font-size:13px;color:var(--band-muted)}
-.col .more{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px solid var(--band-line)}
+.col a{font:600 19px/1.25 var(--display);color:var(--ink)}.col a:hover{color:var(--accent)}
+.col small{font-size:13px;color:var(--muted)}
+.col .more{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
 .col .more a{font:500 15px/1.35 var(--text)}
 /* cards */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:28px 24px}
 .card{display:flex;flex-direction:column;gap:12px;min-width:0}
 .card .t{font:600 21px/1.22 var(--display);letter-spacing:-.01em}
 .card .sub{font-size:13px;color:var(--muted)}
+.card .fig{border-radius:16px}
+.rx{font-size:13px;color:var(--muted);letter-spacing:.01em}
 /* lists */
 .lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:32px}
-.list h3{margin:0 0 4px;font:700 24px var(--display);letter-spacing:-.02em;display:flex;justify-content:space-between;align-items:baseline}
+.list h3{margin:0 0 4px;padding-bottom:10px;border-bottom:2px solid var(--ink);font:700 22px var(--display);letter-spacing:-.02em;display:flex;justify-content:space-between;align-items:baseline}
 .list h3 a{font:600 14px var(--text)}
 .list a.row{display:block;padding:14px 0;border-bottom:1px solid var(--line)}
 .list a.row:last-child{border-bottom:0}
+.list a.row.th{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;align-items:start}.list .th img{width:84px;height:84px;border-radius:12px;object-fit:cover}
 .list .t{font-size:16px;font-weight:500;line-height:1.35}
 .list small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
 /* story page */
@@ -190,7 +193,7 @@ footer.foot nav{display:flex;gap:20px}footer.foot a{color:var(--ink)}
  .avatars .btn{display:none}
  .band{padding:20px;border-radius:18px;gap:16px}
  .band .head .btn{display:none}
- .cols{gap:0}.col{background:none;padding:12px 0 0;border-top:1px solid var(--band-line);border-radius:0;display:grid;grid-template-columns:58px minmax(0,1fr);gap:4px 12px}
+ .cols{gap:0}.col{padding:12px 0 0;border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:58px minmax(0,1fr);gap:4px 12px}
  .col .pill{grid-row:span 2;align-self:start;justify-self:start;padding:3px 8px;border-radius:7px;white-space:nowrap;font-size:11px}
  .pill .long{display:none}.pill .short{display:inline}
  .col a{font:500 15px/1.3 var(--text)}.col .more{display:none}
@@ -198,7 +201,9 @@ footer.foot nav{display:flex;gap:20px}footer.foot a{color:var(--ink)}
  .card{display:grid;grid-template-columns:minmax(0,1fr) 84px;grid-template-areas:"sub fig" "t fig";gap:4px 12px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start}
  .card .fig{grid-area:fig;width:84px;height:84px;border-radius:12px;aspect-ratio:auto}
  .card .ki{display:none}
- .card .sub{grid-area:sub}.card .t{grid-area:t;font-size:17px}
+ .card{grid-template-areas:"sub fig" "t fig" "rx fig";grid-template-columns:minmax(0,1fr) 96px}.card .fig{width:96px;height:96px;border-radius:14px}
+ .card .sub{grid-area:sub}.card .t{grid-area:t;font-size:17px}.card .rx{grid-area:rx;font-size:12px}
+ .leadsocial .share{margin-left:0}
  .sechead h2{font-size:22px}.sechead{margin-bottom:6px}
  .bottomnav{display:grid;position:fixed;left:0;right:0;bottom:0;z-index:30;grid-template-columns:repeat(4,minmax(0,1fr));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:6px 8px calc(10px + env(safe-area-inset-bottom))}
  .bottomnav a{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--muted)}
@@ -293,14 +298,23 @@ function byCountry(s: Story): Partial<Record<Country, ArticleRow[]>> {
 
 /** Link target for a story: comparison page when there are several sources, else the article. */
 function storyHref(s: Story): { href: string; attrs: string } {
+  // data-sheet: on phones the preview card (bottom sheet) opens instead of leaving the page.
+  const sheet = ` data-sheet="${e(s.id)}"`;
   return s.articles.length > 1
-    ? { href: `/story/${e(s.id)}`, attrs: "" }
-    : { href: e(s.lead.url), attrs: ' target="_blank" rel="noopener"' };
+    ? { href: `/story/${e(s.id)}`, attrs: sheet }
+    : { href: e(s.lead.url), attrs: ` target="_blank" rel="noopener"${sheet}` };
+}
+
+/** "😡 214 · 😢 96" – the three most used reactions. */
+function topReactions(c?: Counts): string {
+  if (!c) return "";
+  const top = Object.entries(c).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return top.length ? `<span class="rx">${top.map(([em, n]) => `${em} ${n}`).join(" · ")}</span>` : "";
 }
 
 // --- blocks ----------------------------------------------------------------
 
-function leadBlock(s: Story, counts?: Counts): string {
+function leadBlock(s: Story, counts?: Counts, siteUrl = ""): string {
   const n = s.articles.length;
   const { href, attrs } = storyHref(s);
   const names = s.articles.filter((a) => a.id !== s.lead.id).slice(0, 3).map((a) => a.publisher).join(", ");
@@ -310,7 +324,7 @@ function leadBlock(s: Story, counts?: Counts): string {
     <h1>${ext(s.lead)}</h1>
     ${s.lead.teaser ? `<p>${e(s.lead.teaser)}</p>` : ""}
     <div class="avatars"><span class="src"><strong>${e(s.lead.publisher ?? "")}</strong>${abo(s.lead)}${names ? ` · auch ${e(names)}${n > 4 ? ` +${n - 4}` : ""}` : ""}</span>${bars(n)}${n > 1 ? `<a class="btn" href="/story/${e(s.id)}">Alle ${n} Quellen vergleichen →</a>` : ""}</div>
-    ${counts ? reactBar(s.id, counts, true) : ""}
+    ${counts ? `<div class="leadsocial">${reactBar(s.id, counts, true)}${siteUrl ? shareBar(`${siteUrl}/story/${s.id}`, s.lead.title, true) : ""}</div>` : ""}
   </article>`;
 }
 
@@ -337,18 +351,20 @@ export function compareBand(s: Story, withButton = true): string {
   </section>`;
 }
 
-export function card(s: Story): string {
+export function card(s: Story, counts?: Counts): string {
   const n = s.articles.length;
   const { href, attrs } = storyHref(s);
   return `<a class="card" href="${href}"${attrs}>${figure(s)}
     <span class="sub"><span class="cat">${e(CATEGORY_NAME[s.category])}</span> ${countryCodes(s.countries)} · ${n > 1 ? newsrooms(n) : `${e(s.lead.publisher ?? "")}${s.lead.paywall ? " · Abo" : ""}`} · ${ago(s.last_update)}</span>
-    <span class="t">${e(s.lead.title)}</span></a>`;
+    <span class="t">${e(s.lead.title)}</span>${topReactions(counts)}</a>`;
 }
 
 function listBlock(cat: Category, list: Story[], base: string): string {
-  return `<div class="list"><h3>${CATEGORY_NAME[cat]}<a href="${base}/${cat}">Mehr →</a></h3>${list.slice(0, 4).map((s) => {
+  return `<div class="list"><h3>${CATEGORY_NAME[cat]}<a href="${base}/${cat}">Mehr →</a></h3>${list.slice(0, 4).map((s, i) => {
     const { href, attrs } = storyHref(s);
-    return `<a class="row" href="${href}"${attrs}><span class="t">${e(s.lead.title)}</span><small>${countryCodes(s.countries)} ${s.articles.length > 1 ? newsrooms(s.articles.length) : e(s.lead.publisher ?? "")} · ${ago(s.last_update)}</small></a>`;
+    const img = i === 0 && s.image_status === "done" && s.image_key ? `<img src="/img/${e(s.image_key)}" alt="" loading="lazy" width="84" height="84">` : "";
+    const text = `<span class="t">${e(s.lead.title)}</span><small>${countryCodes(s.countries)} ${s.articles.length > 1 ? newsrooms(s.articles.length) : e(s.lead.publisher ?? "")} · ${ago(s.last_update)}</small>`;
+    return `<a class="row${img ? " th" : ""}" href="${href}"${attrs}>${img ? `${img}<span>${text}</span>` : text}</a>`;
   }).join("")}</div>`;
 }
 
@@ -394,10 +410,10 @@ export function layout(m: PageMeta, body: string, activeCat?: Category): string 
 ${m.noindex ? '<meta name="robots" content="noindex,follow">' : ""}${hreflang}
 <meta property="og:title" content="${e(m.title)}"><meta property="og:description" content="${e(m.description)}"><meta property="og:url" content="${e(url)}"><meta property="og:site_name" content="${e(m.siteName)}"><meta property="og:type" content="website"><meta property="og:locale" content="de_AT">${m.image ? `<meta property="og:image" content="${e(m.image)}"><meta property="og:image:alt" content="KI-Illustration"><meta name="twitter:card" content="summary_large_image">` : '<meta name="twitter:card" content="summary">'}
 <meta name="theme-color" content="#ffffff"><link rel="preload" href="/fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111113'/%3E%3Ccircle cx='23' cy='23' r='4' fill='%23c8321c'/%3E%3Ctext x='13' y='23' font-family='Arial' font-size='19' font-weight='800' fill='white' text-anchor='middle'%3Eb%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111113'/%3E%3Ccircle cx='23' cy='23' r='4' fill='%23c8321c'/%3E%3Ctext x='13' y='23' font-family='Arial' font-size='19' font-weight='800' fill='white' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
 <style>${CSS}${SOCIAL_CSS}</style></head><body>
 <header class="top"><div class="wrap">
-  <div class="bar"><a href="/" class="logo">der bericht<span>.</span></a>
+  <div class="bar"><a href="/" class="logo">Der Bericht<span>.</span></a>
     <span class="dateline dateline-wide">${today}${m.stats && m.stats.articles ? ` · ${m.stats.articles} Meldungen aus ${m.stats.publishers} Redaktionen` : ""}</span>
     <nav class="seg" aria-label="Ausgabe">${EDITIONS.map((ed) => `<a href="/wechseln?e=${ed}&amp;r=${encodeURIComponent(editionPath(ed))}"${ed === m.edition ? ' aria-current="page"' : ""}>${ed === "dach" ? "" : flag(ed)}${EDITION_LABEL[ed]}</a>`).join("")}</nav>
     <details class="edpick"><summary aria-label="Ausgabe wählen: ${e(EDITION_LABEL[m.edition])}">${m.edition === "dach" ? "DACH" : `${flag(m.edition, 20)}${m.edition.toUpperCase()}`}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
@@ -418,19 +434,19 @@ export function homeBody(top: Story[], compare: Story[], byCat: [Category, Story
   if (!top.length) return `<div class="empty">Die ersten Meldungen werden gerade geladen. Bitte in ein paar Minuten wieder vorbeischauen.</div>`;
   const [first, ...rest] = top;
   const side = feedBlock(latest, todayCount).replace(/<\/aside>$/, `${extras.sideAd ?? ""}</aside>`);
-  const parts: string[] = [`<section class="hero">${leadBlock(first, extras.reactions?.[first.id] ?? {})}${side}</section>`];
+  const parts: string[] = [`<section class="hero">${leadBlock(first, extras.reactions?.[first.id] ?? {}, extras.siteUrl)}${side}</section>`];
   const band = compare.find((s) => s.id !== first.id);
   if (band) parts.push(compareBand(band));
   if (extras.posts) parts.push(extras.posts);
-  if (rest.length) parts.push(`<section><div class="sechead"><h2>Meistberichtet</h2><a href="/vergleich">DACH-Vergleich →</a></div><div class="grid">${rest.slice(0, 8).map(card).join("")}</div></section>`);
+  if (rest.length) parts.push(`<section><div class="sechead"><h2>Meistberichtet</h2><a href="/vergleich">DACH-Vergleich →</a></div><div class="grid">${rest.slice(0, 8).map((s) => card(s, extras.reactions?.[s.id])).join("")}</div></section>`);
   if (extras.feedAd) parts.push(extras.feedAd);
   const lists = byCat.filter(([, l]) => l.length).map(([c, l]) => listBlock(c, l, base));
   if (lists.length) parts.push(`<section class="lists">${lists.join("")}</section>`);
   return `<div class="stack">${parts.join("")}</div>`;
 }
 
-export function listBody(title: string, list: Story[], intro = ""): string {
-  return `<div class="sechead"><h2>${e(title)}</h2></div>${intro}${list.length ? `<div class="grid">${list.map(card).join("")}</div>` : '<div class="empty">Zurzeit keine Meldungen.</div>'}`;
+export function listBody(title: string, list: Story[], intro = "", reactions: Record<string, Counts> = {}): string {
+  return `<div class="sechead"><h2>${e(title)}</h2></div>${intro}${list.length ? `<div class="grid">${list.map((s) => card(s, reactions[s.id])).join("")}</div>` : '<div class="empty">Zurzeit keine Meldungen.</div>'}`;
 }
 
 export function compareBody(list: Story[]): string {
@@ -457,4 +473,22 @@ export function storyBody(s: Story, shareUrl = "", counts: Counts = {}): string 
     </section>
     <div class="ccols">${cols}</div>
     <p class="note">Wir zeigen nur Schlagzeilen und kurze Auszüge. Der vollständige Artikel erscheint beim Herausgeber.</p>`;
+}
+
+/** Preview card for phones (bottom sheet), loaded from /karte/<id>. Same legal rules as everywhere:
+ *  headline, ≤120-character excerpt, link to the publisher. */
+export function sheetBody(s: Story, siteUrl: string, counts: Counts = {}): string {
+  const n = s.articles.length;
+  const others = s.articles.filter((a) => a.id !== s.lead.id).slice(0, 3);
+  const img = s.image_status === "done" && s.image_key
+    ? `<span class="sfig"><img src="/img/${e(s.image_key)}" alt="" width="92" height="92"><span class="ki">KI</span></span>`
+    : `<span class="sfig">${icon(s.category)}</span>`;
+  return `<div class="shead">${img}<div><div class="meta"><span class="cat">${e(CATEGORY_NAME[s.category])}</span>${countryCodes(s.countries)}<span>${newsrooms(n)} · ${ago(s.last_update)}</span></div>
+    <h2 id="sheet-title">${e(s.lead.title)}</h2></div></div>
+    ${s.lead.teaser ? `<p class="steaser">${e(s.lead.teaser)}</p>` : ""}
+    ${others.length ? `<div class="sothers"><span>So berichten andere</span>${others.map((a) => `<a href="${e(a.url)}">${flag(a.country)}<span><strong>${e(a.publisher ?? "")}</strong> ${e(a.title)}</span></a>`).join("")}${n > 1 ? `<a class="all" href="/story/${e(s.id)}">Alle ${n} Quellen vergleichen<span>→</span></a>` : ""}</div>` : ""}
+    ${reactBar(s.id, counts)}
+    ${shareBar(`${siteUrl}/story/${s.id}`, s.lead.title, true)}
+    <a class="sgo" href="${e(s.lead.url)}">Bei ${e(s.lead.publisher ?? "der Quelle")} weiterlesen →</a>
+    <small class="snote">${s.lead.paywall ? "Abo-Artikel · " : ""}Der vollständige Artikel öffnet sich beim Herausgeber</small>`;
 }

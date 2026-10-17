@@ -215,7 +215,7 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   let r = await vote("👍"); assert.equal(r.body.counts["👍"], 1); assert.equal(r.body.mine, "👍");
   r = await vote("👍", "5.6.7.8"); assert.equal(r.body.counts["👍"], 2);
   r = await vote("😮"); assert.equal(r.body.counts["👍"], 1); assert.equal(r.body.counts["😮"], 1);
-  r = await vote("😮"); assert.equal(r.body.counts["😮"], 0); assert.equal(r.body.mine, null);
+  r = await vote("😮"); assert.equal(r.body.counts["😮"] ?? 0, 0); assert.equal(r.body.mine, null);
   r = await vote("💩"); assert.equal(r.status, 400);
   const bad = await worker.fetch(new Request("https://derbericht.com/reagieren", { method: "POST", body: new FormData(), headers: { Origin: "https://evil.example" } }), env);
   assert.equal(bad.status, 403);
@@ -223,6 +223,15 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   const page = await (await worker.fetch(new Request("https://derbericht.com/story/" + c.id), env)).text();
   assert.ok(page.includes('class="react"') && page.includes("wa.me/?text=") && page.includes("Link kopieren"));
   assert.ok(page.includes('og:image'), "og:image for link previews");
+  const card = await worker.fetch(new Request("https://derbericht.com/karte/" + c.id), env);
+  const ch = await card.text();
+  assert.equal(card.status, 200);
+  writeFileSync(new URL("./out/karte.html", import.meta.url), ch);
+  assert.ok(ch.includes("weiterlesen") && ch.includes('class="react"') && ch.includes("wa.me") && !ch.includes("<html"), "sheet fragment");
+  const home = await (await worker.fetch(new Request("https://derbericht.com/"), env)).text();
+  assert.ok(home.includes("data-sheet="), "sheet links");
+  assert.ok(home.includes("Der Bericht<span>.</span>"), "logo");
+  assert.ok(home.includes('class="leadsocial"') && home.includes("wa.me"), "lead: reactions + WhatsApp");
 });
 
 // ---------- pages ----------

@@ -60,7 +60,7 @@ textarea{min-height:360px;line-height:1.6;resize:vertical}
 
 function page(title: string, body: string, user?: User | null, active = ""): Response {
   const nav = user
-    ? `<nav class="side"><a class="logo" href="/admin">der bericht<span>.</span> admin</a>
+    ? `<nav class="side"><a class="logo" href="/admin">Der Bericht<span>.</span> admin</a>
       ${navItem("/admin", "Übersicht", active)}
       ${navItem("/admin/beitraege", "Beiträge", active)}
       ${can.ads(user) ? navItem("/admin/werbung", "Werbung", active) : ""}
@@ -196,7 +196,7 @@ async function login(req: Request, env: Env, url: URL): Promise<Response> {
     attempts.delete(ip);
     return redirect("/admin", await startSession(env, user.id));
   }
-  return page("Anmelden", `<div class="login"><div class="card"><h1 style="margin-bottom:18px">der bericht<span style="color:var(--accent)">.</span> admin</h1>${flash(url)}
+  return page("Anmelden", `<div class="login"><div class="card"><h1 style="margin-bottom:18px">Der Bericht<span style="color:var(--accent)">.</span> admin</h1>${flash(url)}
     <form class="f" method="post">
       <label>E-Mail<input type="email" name="email" required autocomplete="username"></label>
       <label>Passwort<input type="password" name="password" required autocomplete="current-password"></label>

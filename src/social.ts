@@ -13,11 +13,14 @@ export type Counts = Record<string, number>;
 
 export async function getReactions(env: Env, ids: string[]): Promise<Record<string, Counts>> {
   const out: Record<string, Counts> = {};
-  if (!ids.length) return out;
-  const { results } = await env.DB.prepare(
-    `SELECT story_id, emoji, n FROM reactions WHERE story_id IN (${ids.map(() => "?").join(",")})`,
-  ).bind(...ids).all<{ story_id: string; emoji: string; n: number }>();
-  for (const r of results) (out[r.story_id] ??= {})[r.emoji] = r.n;
+  // D1 allows at most 100 bound parameters per query.
+  for (let i = 0; i < ids.length; i += 90) {
+    const part = ids.slice(i, i + 90);
+    const { results } = await env.DB.prepare(
+      `SELECT story_id, emoji, n FROM reactions WHERE story_id IN (${part.map(() => "?").join(",")}) AND n > 0`,
+    ).bind(...part).all<{ story_id: string; emoji: string; n: number }>();
+    for (const r of results) (out[r.story_id] ??= {})[r.emoji] = r.n;
+  }
   return out;
 }
 
@@ -80,13 +83,13 @@ const SVG = {
 };
 
 /** Share links. Plain links, so no tracking scripts from social networks are loaded. */
-export function shareBar(url: string, title: string): string {
+export function shareBar(url: string, title: string, mini = false): string {
   const u = encodeURIComponent(url);
   const t = encodeURIComponent(title);
   const wa = encodeURIComponent(`${title} ${url}`);
   const link = (cls: string, href: string, label: string, icon: string) =>
     `<a class="sh ${cls}" href="${href}" target="_blank" rel="noopener nofollow">${icon}<span>${label}</span></a>`;
-  return `<div class="share" data-url="${e(url)}" data-title="${e(title)}">
+  return `<div class="share${mini ? " mini" : ""}" data-url="${e(url)}" data-title="${e(title)}">
     <button type="button" class="sh native" hidden>${SVG.share}<span>Teilen</span></button>
     ${link("wa", `https://wa.me/?text=${wa}`, "WhatsApp", SVG.chat)}
     ${link("fb", `https://www.facebook.com/sharer/sharer.php?u=${u}`, "Facebook", SVG.share)}
@@ -102,26 +105,60 @@ export const SOCIAL_CSS = `
 .react button span{font-size:18px;line-height:1}.react button b{font-weight:600;font-size:13px}
 .react button:hover{border-color:var(--ink)}.react button:active{transform:scale(.94)}
 .react button[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--card))}
-.react.compact button{height:34px;min-width:44px;padding:0 9px}.react.compact button span{font-size:16px}
+.react.compact{gap:6px}.react.compact button{height:36px;min-width:0;padding:0 11px}.react.compact button span{font-size:16px}
 .share{display:flex;flex-wrap:wrap;gap:8px}
-.sh{height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 14px var(--text);display:inline-flex;align-items:center;gap:7px;cursor:pointer}
-.sh:hover{border-color:var(--ink)}
+.sh{height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:500 14px var(--text);display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+.sh:hover{border-color:var(--ink)}.sh[hidden]{display:none}
 .sh.wa{background:#1f9d55;border-color:#1f9d55;color:#fff}.sh.wa:hover{background:#178246}
 .sh.native{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.share.mini .sh.fb,.share.mini .sh.x,.share.mini .sh.tg{display:none}
+.share.mini .sh{height:36px;font-size:13px;font-weight:600}.share.mini .sh.native{background:var(--card);color:var(--ink);border-color:var(--line)}
+.share.mini:not(.nonative) .sh.copy{display:none}
 .social{display:flex;flex-direction:column;gap:14px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:4px 0 32px}
 .social h2{margin:0;font:600 13px var(--text);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-@media (max-width:700px){.react button{min-width:0;flex:1 1 0;padding:0 6px}.react.compact button{flex:0 0 auto}.sh.fb,.sh.x,.sh.tg{display:none}.share.nonative .sh.fb,.share.nonative .sh.x,.share.nonative .sh.tg{display:inline-flex}.sh span{font-size:13px}}
+/* preview card (bottom sheet, phones) */
+.sheetwrap{position:fixed;inset:0;z-index:60;display:none}
+.sheetwrap.open{display:block}
+.sheetback{position:absolute;inset:0;background:rgba(17,17,19,.45);opacity:0;transition:opacity .2s}
+.sheetwrap.show .sheetback{opacity:1}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow-y:auto;overscroll-behavior:contain;background:var(--card);border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;transform:translateY(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+.sheetwrap.show .sheet{transform:none}
+.sbody{display:flex;flex-direction:column;gap:14px}
+.sgrip{align-self:center;width:44px;height:5px;border-radius:999px;background:var(--line);border:0;padding:0;cursor:pointer;flex-shrink:0}
+.sload{padding:40px 0;text-align:center;color:var(--muted)}
+.shead{display:grid;grid-template-columns:92px minmax(0,1fr);gap:14px;align-items:start}
+.sfig{position:relative;display:block;width:92px;height:92px;border-radius:14px;overflow:hidden;background:var(--surface)}
+.sfig img,.sfig svg{width:100%;height:100%;object-fit:cover}.sfig .ki{left:5px;bottom:5px;font-size:9px;padding:1px 6px}
+.shead .meta{font-size:12px;gap:6px}
+.shead h2{margin:6px 0 0;font:700 21px/1.14 var(--display);letter-spacing:-.01em}
+.steaser{margin:0;font-size:15px;color:var(--muted)}
+.sothers{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:16px}
+.sothers>span{padding:10px 14px;font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line)}
+.sothers a{display:flex;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-size:14px}
+.sothers a>span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sothers a:last-child{border-bottom:0}
+.sothers a.all{justify-content:space-between;font-weight:600}
+.sheet .react button{flex:1 1 0;min-width:0;padding:0 4px}
+.sheet .share .sh{flex:1}
+.sgo{height:54px;border-radius:16px;background:var(--ink);color:var(--bg);font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 12px}
+.snote{text-align:center;font-size:11px;color:var(--muted);margin-top:-6px}
+body.sheet-open{overflow:hidden}
+@media (max-width:700px){.react button{min-width:0;flex:1 1 0;padding:0 6px}.react.compact button{flex:0 0 auto}.sh.fb,.sh.x,.sh.tg{display:none}.share.nonative:not(.mini) .sh.fb,.share.nonative:not(.mini) .sh.x,.share.nonative:not(.mini) .sh.tg{display:inline-flex}.sh span{font-size:13px}}
 `;
 
-export const SOCIAL_JS = `<script>
+export const SOCIAL_JS = `<div class="sheetwrap" id="sheet" aria-hidden="true"><div class="sheetback"></div><section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><button type="button" class="sgrip" aria-label="Schließen"></button><div class="sbody"></div></section></div>
+<script>
 (function(){
+  var mobile=window.matchMedia('(max-width:700px), (pointer:coarse)').matches;
   function store(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
-  document.querySelectorAll('.react').forEach(function(box){
-    var id=box.dataset.story,mine=store('r:'+id);
+  function initReact(root){root.querySelectorAll('.react').forEach(function(box){
+    if(box.dataset.ready)return;box.dataset.ready='1';
+    var id=box.dataset.story;
     function paint(counts,m){box.querySelectorAll('button').forEach(function(b){var em=b.dataset.emoji;if(counts){var n=counts[em]||0;b.querySelector('b').textContent=n||'';}b.setAttribute('aria-pressed',em===m?'true':'false');});}
-    paint(null,mine);
+    paint(null,store('r:'+id));
     box.addEventListener('click',function(ev){
       var b=ev.target.closest('button');if(!b)return;
+      ev.preventDefault();ev.stopPropagation();
       var fd=new FormData();fd.append('story',id);fd.append('emoji',b.dataset.emoji);
       b.disabled=true;
       fetch('/reagieren',{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(d){
@@ -131,21 +168,61 @@ export const SOCIAL_JS = `<script>
       }).catch(function(){}).finally(function(){b.disabled=false});
     });
     box.addEventListener('sync',function(ev){paint(ev.detail.counts,ev.detail.mine)});
-  });
-  // Smartphones: open publisher articles in the same tab, so "back" returns to Der Bericht
-  // (the browser restores the scroll position). Desktop keeps new tabs.
-  if(window.matchMedia('(max-width:700px), (pointer:coarse)').matches){
-    document.querySelectorAll('a[target="_blank"]').forEach(function(a){if(a.closest('.share'))return;a.removeAttribute('target');});
-  }
-  document.querySelectorAll('.share').forEach(function(box){
+  });}
+  function initShare(root){root.querySelectorAll('.share').forEach(function(box){
+    if(box.dataset.ready)return;box.dataset.ready='1';
     var url=box.dataset.url,title=box.dataset.title,nat=box.querySelector('.native');
     if(navigator.share){nat.hidden=false;nat.addEventListener('click',function(){navigator.share({title:title,url:url}).catch(function(){})});}
     else box.classList.add('nonative');
     var c=box.querySelector('.copy');
     c.addEventListener('click',function(){
-      var done=function(){var s=c.querySelector('span'),o=s.textContent;s.textContent='Kopiert ✓';setTimeout(function(){s.textContent=o},1800)};
-      if(navigator.clipboard)navigator.clipboard.writeText(url).then(done,function(){prompt('Link:',url)});else prompt('Link:',url);
+      var s=c.querySelector('span'),o=s.textContent;
+      var done=function(){s.textContent='Kopiert ✓';setTimeout(function(){s.textContent=o},1800)};
+      if(navigator.clipboard)navigator.clipboard.writeText(url).then(done,function(){});
     });
-  });
+  });}
+  function sameTab(root){if(!mobile)return;root.querySelectorAll('a[target="_blank"]').forEach(function(a){if(!a.closest('.share'))a.removeAttribute('target');});}
+  initReact(document);initShare(document);
+  // Phones: publisher articles open in the same tab, so "back" returns to Der Bericht.
+  sameTab(document);
+
+  // Preview card: on phones a tap on a story opens a sheet from the bottom instead of leaving the page.
+  var wrap=document.getElementById('sheet'),body=wrap.querySelector('.sbody'),openId=null;
+  function show(id){
+    openId=id;body.innerHTML='<div class="sload">Wird geladen …</div>';
+    wrap.classList.add('open');wrap.setAttribute('aria-hidden','false');document.body.classList.add('sheet-open');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){wrap.classList.add('show')})});
+    return fetch('/karte/'+encodeURIComponent(id)).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(h){
+      if(openId!==id)return;body.innerHTML=h;initReact(body);initShare(body);
+      wrap.querySelector('.sgrip').focus({preventScroll:true});
+    });
+  }
+  function hide(){
+    openId=null;wrap.classList.remove('show');wrap.setAttribute('aria-hidden','true');document.body.classList.remove('sheet-open');
+    setTimeout(function(){if(!openId){wrap.classList.remove('open');body.innerHTML='';}},260);
+  }
+  function close(){if(history.state&&history.state.sheet)history.back();else hide();}
+  if(mobile){
+    document.addEventListener('click',function(ev){
+      var a=ev.target.closest('a[data-sheet]');
+      if(!a||ev.metaKey||ev.ctrlKey||ev.shiftKey)return;
+      ev.preventDefault();var id=a.dataset.sheet,href=a.href;
+      history.pushState({sheet:id},'');
+      show(id).catch(function(){hide();location.href=href;});
+    });
+    window.addEventListener('popstate',function(ev){
+      if(ev.state&&ev.state.sheet){if(openId!==ev.state.sheet)show(ev.state.sheet).catch(hide);}else if(openId)hide();
+    });
+    // Coming back from the publisher (back button) with the sheet still in history.
+    if(history.state&&history.state.sheet)show(history.state.sheet).catch(hide);
+    wrap.querySelector('.sheetback').addEventListener('click',close);
+    wrap.querySelector('.sgrip').addEventListener('click',close);
+    document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&openId)close();});
+    // Swipe down to close
+    var sh=wrap.querySelector('.sheet'),y0=null;
+    sh.addEventListener('touchstart',function(ev){y0=sh.scrollTop<=0?ev.touches[0].clientY:null},{passive:true});
+    sh.addEventListener('touchmove',function(ev){if(y0===null)return;var dy=ev.touches[0].clientY-y0;if(dy>0){sh.style.transition='none';sh.style.transform='translateY('+dy+'px)';}},{passive:true});
+    sh.addEventListener('touchend',function(ev){if(y0===null)return;var dy=ev.changedTouches[0].clientY-y0;sh.style.transition='';sh.style.transform='';y0=null;if(dy>90)close();});
+  }
 })();
 </script>`;

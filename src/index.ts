@@ -7,7 +7,7 @@ import { loadImage } from "./images.ts";
 import { getReactions, handleReaction } from "./social.ts";
 import { handleAdmin } from "./admin.ts";
 import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, serveMedia, type AdSlots } from "./content.ts";
-import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
+import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, sheetBody, storyBody, type Edition, type PageMeta } from "./render.ts";
 import { feedTable, getPage, pageHtml, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
 
@@ -46,14 +46,14 @@ async function home(env: Env, ed: Edition, path: string, banner: PageMeta["banne
     ...CATEGORIES.map((c) => getStories(env, { country, category: c, limit: 8 })),
   ]);
   const seen = new Set(top.map((s) => s.id));
-  const reactions = top[0] ? await getReactions(env, [top[0].id]) : {};
+  const reactions = await getReactions(env, [...new Set([...top, ...cats.flat()].map((s) => s.id))]);
   const byCat: [Category, typeof top][] = CATEGORIES.map((c, i) => [c, cats[i].filter((s) => !seen.has(s.id))]);
   const title = ed === "dach" ? `${env.SITE_NAME} – Nachrichten aus Österreich, Deutschland und der Schweiz` : `${env.SITE_NAME} ${COUNTRY_NAME[ed]} – Nachrichten aus ${COUNTRY_NAME[ed]}`;
   // The strip is for stories the visitor would otherwise miss; no need when it already leads the page.
   const strip = breaking && breaking.id !== top[0]?.id ? breaking : null;
   return layout(
     meta(env, { title, path, edition: ed, hreflang: true, banner, stats, breaking: strip, topAd: adHtml(ads.top) }),
-    homeBody(top, compare, byCat, base, latest, stats.articles, { posts: postCards(posts), sideAd: adHtml(ads.side), feedAd: adHtml(ads.feed), reactions }),
+    homeBody(top, compare, byCat, base, latest, stats.articles, { posts: postCards(posts), sideAd: adHtml(ads.side), feedAd: adHtml(ads.feed), reactions, siteUrl: env.SITE_URL.replace(/\/$/, "") }),
   );
 }
 
@@ -105,12 +105,20 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
     const cat = (seg.length === 2 ? seg[1] : seg[0]) as Category;
     const list = await getStories(env, { country: ed === "dach" ? undefined : ed, category: cat, limit: 40, hours: 48 });
     const title = `${CATEGORY_NAME[cat]} – ${EDITION_LABEL[ed]} | ${env.SITE_NAME}`;
-    return html(layout(meta(env, { title, path, edition: ed, description: `${CATEGORY_NAME[cat]}-Nachrichten aus ${EDITION_LABEL[ed]} auf einen Blick.` }), listBody(`${CATEGORY_NAME[cat]} · ${EDITION_LABEL[ed]}`, list), cat));
+    const reactions = await getReactions(env, list.map((s) => s.id));
+    return html(layout(meta(env, { title, path, edition: ed, description: `${CATEGORY_NAME[cat]}-Nachrichten aus ${EDITION_LABEL[ed]} auf einen Blick.` }), listBody(`${CATEGORY_NAME[cat]} · ${EDITION_LABEL[ed]}`, list, "", reactions), cat));
   }
 
   if (path === "/vergleich") {
     const list = await getStories(env, { multiCountry: true, limit: 30, hours: 48 });
     return html(layout(meta(env, { title: `DACH-Vergleich | ${env.SITE_NAME}`, path, edition: saved ?? "dach", description: "Dieselbe Nachricht in Österreich, Deutschland und der Schweiz – Schlagzeilen im Vergleich." }), compareBody(list)));
+  }
+
+  if (seg[0] === "karte" && seg[1] && seg.length === 2) {
+    const s = await getStory(env, seg[1]);
+    if (!s) return new Response("Nicht gefunden", { status: 404 });
+    const counts = (await getReactions(env, [s.id]))[s.id] ?? {};
+    return new Response(sheetBody(s, env.SITE_URL.replace(/\/$/, ""), counts), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=30", "X-Robots-Tag": "noindex", "X-Content-Type-Options": "nosniff" } });
   }
 
   if (seg[0] === "story" && seg[1]) {
@@ -150,7 +158,7 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   }
 
   if (path === "/robots.txt") {
-    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
+    return new Response(`User-agent: *\nAllow: /\nDisallow: /wechseln\nDisallow: /ausgabe\nDisallow: /admin\nDisallow: /reagieren\nDisallow: /karte/\n\nSitemap: ${env.SITE_URL}/sitemap.xml\n`, { headers: { "Content-Type": "text/plain" } });
   }
   if (path === "/sitemap.xml") {
     const posts = await publishedPosts(env, 500);

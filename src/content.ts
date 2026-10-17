@@ -72,7 +72,7 @@ export function postCards(posts: Post[]): string {
   if (!posts.length) return "";
   return `<section><div class="sechead"><h2>Aus der Redaktion</h2><a href="/redaktion">Alle Beiträge →</a></div><div class="grid">${posts.map((p) => `
     <a class="card own" href="/artikel/${e(p.slug)}">
-      <div class="fig">${p.image_id ? `<img src="/media/${e(p.image_id)}" alt="" loading="lazy">` : `<div class="ownmark">${p.kind === "kommentar" ? "Kommentar" : "der bericht."}</div>`}</div>
+      <div class="fig">${p.image_id ? `<img src="/media/${e(p.image_id)}" alt="" loading="lazy">` : `<div class="ownmark">${p.kind === "kommentar" ? "Kommentar" : "Der Bericht."}</div>`}</div>
       <span class="sub"><span class="cat">${kindLabel(p)}</span> · ${e(p.author_name ?? "")} · ${postDate(p.published_at ?? p.created)}</span>
       <span class="t">${e(p.title)}</span>
     </a>`).join("")}</div></section>`;
@@ -92,7 +92,7 @@ export function postPage(p: Post): string {
 
 export function postList(posts: Post[]): string {
   return `<div class="sechead"><h2>Aus der Redaktion</h2></div>${posts.length ? `<div class="grid">${posts.map((p) => `
-    <a class="card own" href="/artikel/${e(p.slug)}"><div class="fig">${p.image_id ? `<img src="/media/${e(p.image_id)}" alt="" loading="lazy">` : `<div class="ownmark">${p.kind === "kommentar" ? "Kommentar" : "der bericht."}</div>`}</div>
+    <a class="card own" href="/artikel/${e(p.slug)}"><div class="fig">${p.image_id ? `<img src="/media/${e(p.image_id)}" alt="" loading="lazy">` : `<div class="ownmark">${p.kind === "kommentar" ? "Kommentar" : "Der Bericht."}</div>`}</div>
     <span class="sub"><span class="cat">${kindLabel(p)}</span> · ${e(p.author_name ?? "")} · ${postDate(p.published_at ?? p.created)}</span><span class="t">${e(p.title)}</span></a>`).join("")}</div>` : '<div class="empty">Noch keine Beiträge.</div>'}`;
 }
 
