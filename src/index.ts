@@ -132,7 +132,7 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   if (path === "/impressum" || path === "/datenschutz" || path === "/quellen") {
     const p = await getPage(env, path.slice(1) as PageSlug);
     const extra = path === "/quellen" ? feedTable(await getFeedList(env)) : "";
-    return html(layout(meta(env, { title: `${p.title} | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), pageHtml(p, extra)), 200, "public, max-age=300");
+    return html(layout(meta(env, { title: `${p.title} | ${env.SITE_NAME}`, path, edition: saved ?? "dach" }), pageHtml(p, extra)), 200, "no-cache");
   }
 
   if (seg[0] === "img" && seg.length >= 2) {
