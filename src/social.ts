@@ -188,11 +188,11 @@ export const SOCIAL_JS = `<div class="sheetwrap" id="sheet" aria-hidden="true"><
 
   // Preview card: on phones a tap on a story opens a sheet from the bottom instead of leaving the page.
   var wrap=document.getElementById('sheet'),body=wrap.querySelector('.sbody'),openId=null;
-  function show(id){
+  function show(id,art){
     openId=id;body.innerHTML='<div class="sload">Wird geladen …</div>';
     wrap.classList.add('open');wrap.setAttribute('aria-hidden','false');document.body.classList.add('sheet-open');
     requestAnimationFrame(function(){requestAnimationFrame(function(){wrap.classList.add('show')})});
-    return fetch('/karte/'+encodeURIComponent(id)).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(h){
+    return fetch('/karte/'+encodeURIComponent(id)+(art?'?a='+encodeURIComponent(art):'')).then(function(r){if(!r.ok)throw 0;return r.text()}).then(function(h){
       if(openId!==id)return;body.innerHTML=h;initReact(body);initShare(body);
       wrap.querySelector('.sgrip').focus({preventScroll:true});
     });
@@ -206,15 +206,15 @@ export const SOCIAL_JS = `<div class="sheetwrap" id="sheet" aria-hidden="true"><
     document.addEventListener('click',function(ev){
       var a=ev.target.closest('a[data-sheet]');
       if(!a||ev.metaKey||ev.ctrlKey||ev.shiftKey)return;
-      ev.preventDefault();var id=a.dataset.sheet,href=a.href;
-      history.pushState({sheet:id},'');
-      show(id).catch(function(){hide();location.href=href;});
+      ev.preventDefault();var id=a.dataset.sheet,art=a.dataset.a||'',href=a.href;
+      history.pushState({sheet:id,a:art},'');
+      show(id,art).catch(function(){hide();location.href=href;});
     });
     window.addEventListener('popstate',function(ev){
-      if(ev.state&&ev.state.sheet){if(openId!==ev.state.sheet)show(ev.state.sheet).catch(hide);}else if(openId)hide();
+      if(ev.state&&ev.state.sheet){if(openId!==ev.state.sheet)show(ev.state.sheet,ev.state.a).catch(hide);}else if(openId)hide();
     });
     // Coming back from the publisher (back button) with the sheet still in history.
-    if(history.state&&history.state.sheet)show(history.state.sheet).catch(hide);
+    if(history.state&&history.state.sheet)show(history.state.sheet,history.state.a).catch(hide);
     wrap.querySelector('.sheetback').addEventListener('click',close);
     wrap.querySelector('.sgrip').addEventListener('click',close);
     document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&openId)close();});

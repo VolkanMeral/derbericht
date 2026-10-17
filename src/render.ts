@@ -286,8 +286,13 @@ function abo(a: ArticleRow): string {
   return a.paywall ? '<span class="abo">Abo</span>' : "";
 }
 
+/** data-sheet attributes: on phones the preview card for this article opens instead of leaving the page. */
+function sheetAttr(a: ArticleRow): string {
+  return a.cluster_id ? ` data-sheet="${e(a.cluster_id)}" data-a="${e(a.id)}"` : "";
+}
+
 function ext(a: ArticleRow, cls = "t"): string {
-  return `<a class="${cls}" href="${e(a.url)}" target="_blank" rel="noopener">${e(a.title)}</a>`;
+  return `<a class="${cls}" href="${e(a.url)}" target="_blank" rel="noopener"${sheetAttr(a)}>${e(a.title)}</a>`;
 }
 
 function byCountry(s: Story): Partial<Record<Country, ArticleRow[]>> {
@@ -302,7 +307,7 @@ function storyHref(s: Story): { href: string; attrs: string } {
   const sheet = ` data-sheet="${e(s.id)}"`;
   return s.articles.length > 1
     ? { href: `/story/${e(s.id)}`, attrs: sheet }
-    : { href: e(s.lead.url), attrs: ` target="_blank" rel="noopener"${sheet}` };
+    : { href: e(s.lead.url), attrs: ` target="_blank" rel="noopener"${sheet} data-a="${e(s.lead.id)}"` };
 }
 
 /** "😡 214 · 😢 96" – the three most used reactions. */
@@ -332,7 +337,7 @@ function feedBlock(latest: ArticleRow[], count?: number): string {
   if (!latest.length) return "";
   return `<aside class="feed" aria-label="Neueste Meldungen">
     <h2><span class="dot"></span>Neueste Meldungen${count ? `<span style="margin-left:auto;font:400 13px var(--text);color:var(--muted)">${count} heute</span>` : ""}</h2>
-    ${latest.map((a) => `<a href="${e(a.url)}" target="_blank" rel="noopener"><time>${clock(a.published)}</time><span><span class="t">${e(a.title)}</span><small>${flag(a.country, 14)} ${e(a.publisher ?? "")}${abo(a)}</small></span></a>`).join("")}
+    ${latest.map((a) => `<a href="${e(a.url)}" target="_blank" rel="noopener"${sheetAttr(a)}><time>${clock(a.published)}</time><span><span class="t">${e(a.title)}</span><small>${flag(a.country, 14)} ${e(a.publisher ?? "")}${abo(a)}</small></span></a>`).join("")}
   </aside>`;
 }
 

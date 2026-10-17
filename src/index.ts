@@ -115,8 +115,11 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   }
 
   if (seg[0] === "karte" && seg[1] && seg.length === 2) {
-    const s = await getStory(env, seg[1]);
+    let s = await getStory(env, seg[1]);
     if (!s) return new Response("Nicht gefunden", { status: 404 });
+    // ?a=<article>: the card shows the headline the visitor tapped, not the cluster's lead.
+    const picked = s.articles.find((a) => a.id === url.searchParams.get("a"));
+    if (picked) s = { ...s, lead: picked };
     const counts = (await getReactions(env, [s.id]))[s.id] ?? {};
     return new Response(sheetBody(s, env.SITE_URL.replace(/\/$/, ""), counts), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=30", "X-Robots-Tag": "noindex", "X-Content-Type-Options": "nosniff" } });
   }
