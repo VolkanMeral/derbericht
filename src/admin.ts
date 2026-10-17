@@ -127,6 +127,7 @@ export async function handleAdmin(req: Request, env: Env, url: URL): Promise<Res
   if ((await countUsers(env)) === 0) return setup(req, env, url);
 
   if (path === "/admin/login") return login(req, env, url);
+  if (path === "/admin/zuruecksetzen") return resetWithCode(req, env, url);
   if (path === "/admin/logout" && req.method === "POST") return redirect("/admin/login", await endSession(env, req));
 
   const user = await currentUser(env, req);
@@ -195,7 +196,46 @@ async function login(req: Request, env: Env, url: URL): Promise<Response> {
     <form class="f" method="post">
       <label>E-Mail<input type="email" name="email" required autocomplete="username"></label>
       <label>Passwort<input type="password" name="password" required autocomplete="current-password"></label>
-      <button class="btn">Anmelden</button></form></div></div>`);
+      <button class="btn">Anmelden</button></form>
+    <p class="muted" style="margin:16px 0 0;font-size:13px"><a href="/admin/zuruecksetzen">Passwort vergessen?</a></p></div></div>`);
+}
+
+/** Password reset with the SETUP_CODE secret (for administrators who are locked out). */
+async function resetWithCode(req: Request, env: Env, url: URL): Promise<Response> {
+  const code = env.SETUP_CODE;
+  if (!code) {
+    return page("Passwort zurücksetzen", `<div class="login"><div class="card"><h1>Passwort zurücksetzen</h1>
+      <p>Bitte wenden Sie sich an einen Administrator. Er kann unter <b>Benutzer</b> ein neues Passwort setzen.</p>
+      <p class="muted">Administratoren ohne Zugang: In Cloudflare unter Workers &amp; Pages → derbericht → Settings → Variables and Secrets ein Secret <code>SETUP_CODE</code> anlegen, dann diese Seite neu laden.</p>
+      <p><a href="/admin/login">Zurück zur Anmeldung</a></p></div></div>`);
+  }
+  if (req.method === "POST") {
+    const ip = req.headers.get("CF-Connecting-IP") ?? "local";
+    const a = attempts.get(ip);
+    if (a && a.n >= 8 && Date.now() - a.t < 15 * 60_000) return back("/admin/zuruecksetzen", "err", "Zu viele Versuche. Bitte 15 Minuten warten.");
+    const f = await req.formData();
+    const email = String(f.get("email") ?? "").trim().toLowerCase();
+    const pw = String(f.get("password") ?? "");
+    const user = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first<{ id: string }>();
+    if (String(f.get("code") ?? "") !== code || !user) {
+      attempts.set(ip, { n: (a && Date.now() - a.t < 15 * 60_000 ? a.n : 0) + 1, t: Date.now() });
+      return back("/admin/zuruecksetzen", "err", "Einrichtungscode oder E-Mail stimmt nicht.");
+    }
+    const problem = passwordProblem(pw);
+    if (problem) return back("/admin/zuruecksetzen", "err", problem);
+    await setPassword(env, user.id, pw);
+    await env.DB.prepare("UPDATE users SET active = 1 WHERE id = ?").bind(user.id).run();
+    attempts.delete(ip);
+    return redirect("/admin", await startSession(env, user.id));
+  }
+  return page("Passwort zurücksetzen", `<div class="login"><div class="card"><h1 style="margin-bottom:6px">Passwort zurücksetzen</h1>
+    <p class="muted" style="margin-top:0">Mit dem Einrichtungscode (SETUP_CODE aus Cloudflare).</p>${flash(url)}
+    <form class="f" method="post">
+      <label>Einrichtungscode<input type="password" name="code" required autocomplete="off"></label>
+      <label>E-Mail<input type="email" name="email" required autocomplete="username"></label>
+      <label>Neues Passwort <small>mindestens 10 Zeichen</small><input type="password" name="password" required minlength="10" autocomplete="new-password"></label>
+      <button class="btn">Passwort setzen und anmelden</button></form>
+    <p style="margin:16px 0 0;font-size:13px"><a href="/admin/login">Zurück zur Anmeldung</a></p></div></div>`);
 }
 
 // ---------- dashboard ----------

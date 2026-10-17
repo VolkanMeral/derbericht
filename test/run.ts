@@ -371,7 +371,7 @@ await test("banner ads: created in admin, shown with 'Anzeige', clicks counted",
   assert.ok(r.res.headers.get("Location")!.includes("err="), "rejects non-http links");
 });
 
-await test("admin pages: sources toggle, opt-out, profile, logout", async () => {
+await test("admin pages: sources toggle, opt-out, password reset with code, logout", async () => {
   let r = await req("/admin/quellen", { cookie: adminCookie });
   assert.ok(r.text.includes("Jetzt abrufen") && r.text.includes("ORF"));
   r = await req("/admin/quellen", { method: "POST", cookie: adminCookie, form: { action: "optout", domain: "https://www.kurier.at/irgendwas" } });
@@ -379,6 +379,13 @@ await test("admin pages: sources toggle, opt-out, profile, logout", async () => 
   for (const [path, name] of [["/admin", "admin_dash"], ["/admin/beitraege", "admin_posts"], [`/admin/beitraege/${(sqlite.prepare("SELECT id FROM posts LIMIT 1").get() as { id: string }).id}`, "admin_edit"], ["/admin/werbung", "admin_ads"], ["/admin/benutzer", "admin_users"]]) {
     writeFileSync(new URL(`./out/${name}.html`, import.meta.url), (await req(path, { cookie: adminCookie })).text);
   }
+  r = await req("/admin/zuruecksetzen", { method: "POST", form: { code: "falsch", email: "admin@example.at", password: "neues-passwort-1" } });
+  assert.ok(r.res.headers.get("Location")!.includes("err="));
+  r = await req("/admin/zuruecksetzen", { method: "POST", form: { code: "geheimer-code-123", email: "ADMIN@example.at", password: "neues-passwort-1" } });
+  assert.equal(r.res.status, 303);
+  assert.ok(r.cookie.startsWith("db_session="), "logged in after reset");
+  r = await req("/admin/login", { method: "POST", form: { email: "admin@example.at", password: "neues-passwort-1" } });
+  assert.ok(r.cookie.startsWith("db_session="), "new password works");
   r = await req("/admin/logout", { method: "POST", cookie: adminCookie });
   r = await req("/admin", { cookie: adminCookie });
   assert.equal(r.res.headers.get("Location"), "/admin/login", "session ended");
