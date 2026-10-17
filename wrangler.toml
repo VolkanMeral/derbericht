@@ -19,7 +19,7 @@ IMAGES_PER_RUN = "4"
 [[d1_databases]]
 binding = "DB"
 database_name = "derbericht"
-database_id = "REPLACE_WITH_ID"
+database_id = "e9cf0f6b-448e-481e-8dd0-c272b5815f3d"
 
 # KI images: enable R2 in the dashboard, create bucket "derbericht-images", then remove the "#" below.
 # Without it the site works and shows category icons instead of KI illustrations.
