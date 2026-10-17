@@ -122,6 +122,7 @@ async function cleanup(env: Env): Promise<void> {
     // Teasers stored before the double-encoding fix.
     env.DB.prepare("UPDATE articles SET teaser = NULL WHERE teaser LIKE '%<img%' OR teaser LIKE '%&lt;%' OR teaser LIKE '%src=%'"),
     env.DB.prepare("UPDATE articles SET paywall = 1, title = trim(replace(title, '[premium]', '')) WHERE title LIKE '%[premium]%'"),
+    env.DB.prepare("DELETE FROM story_images WHERE key IN (SELECT image_key FROM clusters WHERE last_update < ? AND image_key IS NOT NULL)").bind(now - KEEP_MS),
     env.DB.prepare("DELETE FROM clusters WHERE last_update < ?").bind(now - KEEP_MS),
     env.DB.prepare(
       `DELETE FROM articles WHERE EXISTS (SELECT 1 FROM optouts o

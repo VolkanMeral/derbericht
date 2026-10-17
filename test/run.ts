@@ -191,6 +191,20 @@ await test("AI images only for 2+ source, non-sensitive stories, within the per-
   for (const p of prompts) assert.ok(p.includes("no people"));
 });
 
+await test("without R2 the illustration is stored in D1 and served from /img/", async () => {
+  const { generateImages } = await import("../src/images.ts");
+  sqlite.prepare("UPDATE clusters SET image_status = 'none', image_key = NULL").run();
+  const noR2 = { ...env, IMAGES: undefined };
+  const made = await generateImages(noR2);
+  assert.ok(made >= 1, String(made));
+  const row = sqlite.prepare("SELECT key, length(data) n FROM story_images LIMIT 1").get() as { key: string; n: number };
+  assert.ok(row.n > 100, String(row.n));
+  const res = await worker.fetch(new Request("https://derbericht.com/img/" + row.key), noR2);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("Content-Type"), "image/jpeg");
+  assert.equal(new Uint8Array(await res.arrayBuffer())[0], 0xff);
+});
+
 // ---------- pages ----------
 mkdirSync(new URL("./out/", import.meta.url), { recursive: true });
 async function page(path: string, headers: Record<string, string> = {}) {

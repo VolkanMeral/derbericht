@@ -3,6 +3,7 @@
 import { CATEGORY_NAME, COUNTRY_NAME, type Category, type Country } from "./sources.ts";
 import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, ensureSchema } from "./data.ts";
 import { runIngest } from "./ingest.ts";
+import { loadImage } from "./images.ts";
 import { handleAdmin } from "./admin.ts";
 import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, serveMedia, type AdSlots } from "./content.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, storyBody, type Edition, type PageMeta } from "./render.ts";
@@ -138,9 +139,9 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   if (seg[0] === "img" && seg.length >= 2) {
     const key = seg.slice(1).join("/");
     if (!/^story\/[a-f0-9]+\.jpg$/.test(key)) return new Response("Not found", { status: 404 });
-    const obj = env.IMAGES ? await env.IMAGES.get(key) : null;
-    if (!obj) return new Response("Not found", { status: 404 });
-    return new Response(obj.body, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=604800, immutable" } });
+    const body = await loadImage(env, key);
+    if (!body) return new Response("Not found", { status: 404 });
+    return new Response(body, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=604800, immutable" } });
   }
 
   if (path === "/robots.txt") {

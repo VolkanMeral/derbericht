@@ -1,4 +1,4 @@
-// AI illustrations for story cards (Cloudflare Workers AI, stored in R2).
+// AI illustrations for story cards (Cloudflare Workers AI, stored in R2 or, without R2, in D1).
 // Rules: symbolic illustration only, never photorealistic, no people/faces/logos/text,
 // always labelled "KI-Illustration", and no AI image for sensitive stories.
 
@@ -48,7 +48,7 @@ function base64ToBytes(b64: string): Uint8Array {
 
 /** Generates illustrations for the most important stories that do not have one yet. */
 export async function generateImages(env: Env): Promise<number> {
-  if (env.IMAGE_AI !== "on" || !env.IMAGES || !env.AI) return 0;
+  if (env.IMAGE_AI !== "on" || !env.AI) return 0;
   const limit = parseInt(env.IMAGE_DAILY_LIMIT || "60", 10);
   const perRun = parseInt(env.IMAGES_PER_RUN || "4", 10);
 
@@ -77,7 +77,8 @@ export async function generateImages(env: Env): Promise<number> {
       else if (out?.image) bytes = base64ToBytes(out.image);
       else throw new Error("no image in response");
       const key = `story/${c.id}.jpg`;
-      await env.IMAGES!.put(key, bytes, { httpMetadata: { contentType: "image/jpeg" } });
+      if (env.IMAGES) await env.IMAGES.put(key, bytes, { httpMetadata: { contentType: "image/jpeg" } });
+      else await env.DB.prepare("INSERT OR REPLACE INTO story_images (key, data, created) VALUES (?,?,?)").bind(key, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), Date.now()).run();
       await env.DB.batch([
         env.DB.prepare("UPDATE clusters SET image_status = 'done', image_key = ? WHERE id = ?").bind(key, c.id),
         env.DB.prepare("INSERT INTO usage (day, images) VALUES (?, 1) ON CONFLICT(day) DO UPDATE SET images = images + 1").bind(today()),
@@ -89,4 +90,15 @@ export async function generateImages(env: Env): Promise<number> {
     }
   }
   return made;
+}
+
+/** Reads a stored illustration from R2 or D1. */
+export async function loadImage(env: Env, key: string): Promise<BodyInit | null> {
+  if (env.IMAGES) {
+    const obj = await env.IMAGES.get(key);
+    if (obj) return obj.body;
+  }
+  const row = await env.DB.prepare("SELECT data FROM story_images WHERE key = ?").bind(key).first<{ data: ArrayBuffer | Uint8Array | number[] }>();
+  if (!row) return null;
+  return row.data instanceof Uint8Array ? row.data : new Uint8Array(row.data as ArrayBuffer);
 }

@@ -77,6 +77,13 @@ CREATE TABLE IF NOT EXISTS sessions (
   created  INTEGER NOT NULL
 );
 
+-- AI illustrations when no R2 bucket is bound
+CREATE TABLE IF NOT EXISTS story_images (
+  key      TEXT PRIMARY KEY,
+  data     BLOB NOT NULL,
+  created  INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS media (
   id           TEXT PRIMARY KEY,
   mime         TEXT NOT NULL,
