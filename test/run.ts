@@ -388,7 +388,7 @@ await test("admin pages: sources toggle, opt-out, password reset with code, logo
   assert.ok(!pub.includes("<b>x</b>"), "HTML escaped");
   r = await req("/admin/seiten/impressum", { method: "POST", cookie: adminCookie, form: { action: "reset" } });
   pub = await (await worker.fetch(new Request(`${O}/impressum`), env)).text();
-  assert.ok(pub.includes("[NAME / FIRMA]"), "back to default");
+  assert.ok(pub.includes("ATU71572719") && pub.includes("mailto:office@derbericht.com"), "back to default");
   r = await req("/admin/seiten", { cookie: authorCookie });
   assert.ok(r.text.includes("Kein Zugriff"), "author cannot edit legal pages");
   pub = await (await worker.fetch(new Request(`${O}/quellen`), env)).text();

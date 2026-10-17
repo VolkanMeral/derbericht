@@ -8,8 +8,8 @@ function inline(s: string): string {
   return s
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<em>$2</em>")
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[a-z0-9\-/]*)\)/g, (_m, text: string, url: string) =>
-      url.startsWith("/") ? `<a href="${url}">${text}</a>` : `<a href="${url.replace(/"/g, "&quot;")}" rel="noopener nofollow" target="_blank">${text}</a>`);
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)@]+@[^\s)]+|\/[a-z0-9\-/]*)\)/g, (_m, text: string, url: string) =>
+      url.startsWith("/") || url.startsWith("mailto:") ? `<a href="${url}">${text}</a>` : `<a href="${url.replace(/"/g, "&quot;")}" rel="noopener nofollow" target="_blank">${text}</a>`);
 }
 
 export function renderMarkdown(src: string): string {

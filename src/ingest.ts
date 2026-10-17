@@ -8,7 +8,7 @@ import { generateImages } from "./images.ts";
 import type { Env } from "./types.ts";
 import { ensureSchema } from "./data.ts";
 
-const UA = "DerBerichtBot/1.0 (+https://derbericht.com/quellen)";
+const UA = "DerBerichtBot/1.0 (+https://derbericht.com/quellen; office@derbericht.com)";
 const MAX_AGE_MS = 48 * 3600 * 1000;   // ignore older items; teasers are removed after 48h
 const KEEP_MS = 14 * 24 * 3600 * 1000; // headline + link kept 14 days, then deleted
 

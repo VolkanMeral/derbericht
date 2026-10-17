@@ -16,15 +16,16 @@ export const PAGE_DEFAULTS: Record<PageSlug, { title: string; body: string; hint
     hint: "Pflichtangaben nach § 5 ECG und § 25 MedienG.",
     body: `## Angaben gemäß § 5 ECG und § 25 MedienG
 
-**Medieninhaber und Herausgeber:**
-[NAME / FIRMA]
-[STRASSE NR]
-[PLZ ORT], Österreich
+**Medieninhaber, Herausgeber und Diensteanbieter:**
+Volkan Meral
+Achstraße 42
+6922 Wolfurt, Österreich
 
-**Kontakt:** E-Mail: [E-MAIL] · Telefon: [TELEFON]
+**Kontakt:** E-Mail: [office@derbericht.com](mailto:office@derbericht.com) · Telefon: [TELEFON]
 
-**Unternehmensgegenstand:** [z. B. Betrieb von Online-Informationsdiensten]
-[UID-Nummer] · [Firmenbuchnummer / Firmenbuchgericht, falls vorhanden] · [Gewerbebehörde / Kammerzugehörigkeit, falls zutreffend]
+**UID-Nummer:** ATU71572719
+**Unternehmensgegenstand:** Betrieb von Online-Informationsdiensten
+[Gewerbebehörde und Kammerzugehörigkeit, falls zutreffend, z. B. Bezirkshauptmannschaft Bregenz · Wirtschaftskammer Vorarlberg]
 
 ## Grundlegende Richtung (Blattlinie)
 
@@ -39,7 +40,7 @@ Herausgeber, die nicht verlinkt werden möchten, finden auf der Seite [Quellen &
   datenschutz: {
     title: "Datenschutzerklärung",
     hint: "Muss erweitert werden, bevor Werbenetzwerke (z. B. Google AdSense) eingebunden werden.",
-    body: `**Verantwortlicher:** [NAME / FIRMA], [ADRESSE], [E-MAIL]
+    body: `**Verantwortlicher:** Volkan Meral, Achstraße 42, 6922 Wolfurt, Österreich · E-Mail: [office@derbericht.com](mailto:office@derbericht.com)
 
 ## Was wir verarbeiten
 
@@ -65,7 +66,7 @@ Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Daten
 
 ## Sie möchten nicht verlinkt werden?
 
-Schreiben Sie an **[E-MAIL]** mit Ihrer Domain. Wir entfernen Ihre Inhalte innerhalb von 24 Stunden vollständig und nehmen sie nicht mehr auf.
+Schreiben Sie an **[office@derbericht.com](mailto:office@derbericht.com)** mit Ihrer Domain. Wir entfernen Ihre Inhalte innerhalb von 24 Stunden vollständig und nehmen sie nicht mehr auf.
 
 Unser Abruf-Programm meldet sich als DerBerichtBot/1.0 und liest ausschließlich öffentliche RSS-Feeds.`,
   },
