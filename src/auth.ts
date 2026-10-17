@@ -120,4 +120,5 @@ export const can = {
   sources: (u: User) => u.role === "admin" || u.role === "editor",
   users: (u: User) => u.role === "admin",
   pages: (u: User) => u.role === "admin",
+  stats: (u: User) => u.role === "admin" || u.role === "editor",
 };

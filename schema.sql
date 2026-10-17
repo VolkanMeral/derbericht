@@ -92,6 +92,15 @@ CREATE TABLE IF NOT EXISTS reaction_votes (
   created   INTEGER NOT NULL
 );
 
+-- Reaction history per day, story and emoji (admin report); kept 90 days
+CREATE TABLE IF NOT EXISTS reaction_log (
+  day       TEXT NOT NULL,
+  story_id  TEXT NOT NULL,
+  emoji     TEXT NOT NULL,
+  n         INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, story_id, emoji)
+);
+
 -- AI illustrations when no R2 bucket is bound
 CREATE TABLE IF NOT EXISTS story_images (
   key      TEXT PRIMARY KEY,

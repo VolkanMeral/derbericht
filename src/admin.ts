@@ -13,6 +13,7 @@ import { escapeHtml as e } from "./text.ts";
 import { runIngest } from "./ingest.ts";
 import { getPage, PAGE_DEFAULTS, PAGE_SLUGS, savePage, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
+import { dayKey, loadReport, PERIODS, REPORT_CSS, reportBody, reportCsv } from "./report.ts";
 
 // ---------- rendering ----------
 
@@ -63,6 +64,7 @@ function page(title: string, body: string, user?: User | null, active = ""): Res
     ? `<nav class="side"><a class="logo" href="/admin">Der Bericht<span>.</span> admin</a>
       ${navItem("/admin", "Übersicht", active)}
       ${navItem("/admin/beitraege", "Beiträge", active)}
+      ${can.stats(user) ? navItem("/admin/reaktionen", "Reaktionen", active) : ""}
       ${can.ads(user) ? navItem("/admin/werbung", "Werbung", active) : ""}
       ${can.sources(user) ? navItem("/admin/quellen", "Quellen", active) : ""}
       ${can.pages(user) ? navItem("/admin/seiten", "Seiten", active) : ""}
@@ -73,7 +75,7 @@ function page(title: string, body: string, user?: User | null, active = ""): Res
       <div class="who"><strong>${e(user.name)}</strong>${ROLE_LABEL[user.role]}</div></nav>`
     : "";
   const html = `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>${e(title)} · Der Bericht Admin</title><style>${CSS}</style></head>
+<meta name="robots" content="noindex,nofollow"><title>${e(title)} · Der Bericht Admin</title><style>${CSS}${REPORT_CSS}</style></head>
 <body>${user ? `<div class="shell">${nav}<main class="main">${body}</main></div>` : body}</body></html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Frame-Options": "DENY", "Referrer-Policy": "same-origin" } });
 }
@@ -139,6 +141,15 @@ export async function handleAdmin(req: Request, env: Env, url: URL): Promise<Res
   if (path === "/admin/beitraege") return postsList(env, user, url);
   if (path === "/admin/beitraege/neu" || /^\/admin\/beitraege\/[a-f0-9]+$/.test(path)) return postEdit(req, env, user, url, path.split("/").pop()!);
   if (path === "/admin/profil") return profile(req, env, user, url);
+  if ((path === "/admin/reaktionen" || path === "/admin/reaktionen.csv") && can.stats(user)) {
+    const t = Number(url.searchParams.get("t"));
+    const days = (PERIODS as readonly number[]).includes(t) ? t : 7;
+    const data = await loadReport(env, days);
+    if (path.endsWith(".csv")) {
+      return new Response(reportCsv(data), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="reaktionen-${dayKey(Date.now())}-${days}d.csv"`, "Cache-Control": "no-store" } });
+    }
+    return page("Reaktionen", reportBody(data), user, "/admin/reaktionen");
+  }
   if (path === "/admin/werbung" && can.ads(user)) return adsList(env, user, url);
   if ((path === "/admin/werbung/neu" || /^\/admin\/werbung\/[a-f0-9]+$/.test(path)) && can.ads(user)) return adEdit(req, env, user, url, path.split("/").pop()!);
   if (path === "/admin/quellen" && can.sources(user)) return sources(req, env, user, url);
@@ -254,6 +265,7 @@ async function dashboard(env: Env, user: User, url: URL): Promise<Response> {
     env.DB.prepare("SELECT COUNT(*) n, COALESCE(SUM(impressions),0) imp, COALESCE(SUM(clicks),0) cl FROM ads WHERE active = 1").first<{ n: number; imp: number; cl: number }>(),
   ]);
   const mine = await env.DB.prepare("SELECT id, title, status, updated FROM posts WHERE author_id = ? ORDER BY updated DESC LIMIT 5").bind(user.id).all<Post>();
+  const today = can.stats(user) ? await loadReport(env, 1) : null;
   const stat = (n: number | string, label: string) => `<div class="card stat"><b>${n}</b><span>${label}</span></div>`;
   return page("Übersicht", `<div class="top"><h1>Guten Tag, ${e(user.name.split(" ")[0])}</h1><a class="btn" href="/admin/beitraege/neu">+ Neuer Beitrag</a></div>${flash(url)}
     <div class="stats">
@@ -262,7 +274,11 @@ async function dashboard(env: Env, user: User, url: URL): Promise<Response> {
       ${stat(p?.n ?? 0, "Eigene Beiträge online")}
       ${stat(r?.n ?? 0, "Warten auf Freigabe")}
       ${can.ads(user) ? stat(`${ads?.imp ?? 0} / ${ads?.cl ?? 0}`, `Werbung: Einblendungen / Klicks (${ads?.n ?? 0} aktiv)`) : ""}
+      ${today ? `<a class="card stat" href="/admin/reaktionen?t=1" style="text-decoration:none"><b>${today.total}</b><span>Leser-Reaktionen heute →</span></a>` : ""}
     </div>
+    ${today && today.stories.length ? `<div class="card" style="margin-bottom:22px"><h2 style="font-size:20px;margin-bottom:8px">Heute am meisten bewegt</h2><table>${today.stories.slice(0, 3).map((s) =>
+      `<tr><td><a href="/story/${e(s.id)}" target="_blank">${e(s.title)}</a></td><td class="num" style="white-space:nowrap">${Object.entries(s.counts).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([em, n]) => `${em} ${n}`).join(" · ")}</td></tr>`).join("")}</table>
+      <p style="margin:12px 0 0"><a href="/admin/reaktionen">Ganzen Bericht ansehen →</a></p></div>` : ""}
     <div class="card"><h2 style="font-size:20px;margin-bottom:8px">Meine letzten Beiträge</h2>
       ${mine.results.length ? `<table>${mine.results.map((m) => `<tr><td><a href="/admin/beitraege/${m.id}">${e(m.title)}</a></td><td><span class="pill ${m.status}">${STATUS_LABEL[m.status]}</span></td><td class="muted">${dt(m.updated)}</td></tr>`).join("")}</table>` : `<p class="muted">Noch keine Beiträge. <a href="/admin/beitraege/neu">Ersten Beitrag schreiben</a></p>`}
     </div>`, user, "/admin");

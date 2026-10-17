@@ -12,6 +12,7 @@ export const SCHEMA: string[] = [
   "CREATE TABLE IF NOT EXISTS sessions ( id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL, created INTEGER NOT NULL )",
   "CREATE TABLE IF NOT EXISTS reactions ( story_id TEXT NOT NULL, emoji TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (story_id, emoji) )",
   "CREATE TABLE IF NOT EXISTS reaction_votes ( id TEXT PRIMARY KEY, story_id TEXT NOT NULL, emoji TEXT NOT NULL, created INTEGER NOT NULL )",
+  "CREATE TABLE IF NOT EXISTS reaction_log ( day TEXT NOT NULL, story_id TEXT NOT NULL, emoji TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, story_id, emoji) )",
   "CREATE TABLE IF NOT EXISTS story_images ( key TEXT PRIMARY KEY, data BLOB NOT NULL, created INTEGER NOT NULL )",
   "CREATE TABLE IF NOT EXISTS media ( id TEXT PRIMARY KEY, mime TEXT NOT NULL, data BLOB NOT NULL, size INTEGER NOT NULL, created INTEGER NOT NULL, uploaded_by TEXT )",
   "CREATE TABLE IF NOT EXISTS posts ( id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, kind TEXT NOT NULL CHECK (kind IN ('news','kommentar')), title TEXT NOT NULL, teaser TEXT, body TEXT NOT NULL DEFAULT '', category TEXT NOT NULL, country TEXT NOT NULL, author_id TEXT NOT NULL REFERENCES users(id), status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','review','published')), image_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL, published_at INTEGER )",

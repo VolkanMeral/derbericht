@@ -124,6 +124,7 @@ async function cleanup(env: Env): Promise<void> {
     env.DB.prepare("UPDATE articles SET paywall = 1, title = trim(replace(title, '[premium]', '')) WHERE title LIKE '%[premium]%'"),
     env.DB.prepare("DELETE FROM story_images WHERE key IN (SELECT image_key FROM clusters WHERE last_update < ? AND image_key IS NOT NULL)").bind(now - KEEP_MS),
     env.DB.prepare("DELETE FROM reaction_votes WHERE created < ?").bind(now - 2 * 24 * 3600 * 1000),
+    env.DB.prepare("DELETE FROM reaction_log WHERE day < ?").bind(new Date(now - 90 * 86400_000).toISOString().slice(0, 10)),
     env.DB.prepare("DELETE FROM reactions WHERE story_id IN (SELECT id FROM clusters WHERE last_update < ?)").bind(now - KEEP_MS),
     env.DB.prepare("DELETE FROM clusters WHERE last_update < ?").bind(now - KEEP_MS),
     env.DB.prepare(

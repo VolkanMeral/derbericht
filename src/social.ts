@@ -51,12 +51,21 @@ export async function handleReaction(req: Request, env: Env): Promise<Response> 
   const voter = await sha256(`${salt}|${ip}|${ua}|${story}`);
   const prev = await env.DB.prepare("SELECT emoji FROM reaction_votes WHERE id = ?").bind(voter).first<{ emoji: string }>();
   const stmts: D1PreparedStatement[] = [];
+  const day = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Vienna" }).format(new Date());
+  const log = (em: string, d: number) => env.DB.prepare(
+    "INSERT INTO reaction_log (day, story_id, emoji, n) VALUES (?,?,?,?) ON CONFLICT(day, story_id, emoji) DO UPDATE SET n = n + excluded.n",
+  ).bind(day, story, em, d);
   if (prev?.emoji === emoji) {
+    stmts.push(log(emoji, -1));
     // Same emoji again = take it back.
     stmts.push(env.DB.prepare("DELETE FROM reaction_votes WHERE id = ?").bind(voter));
     stmts.push(env.DB.prepare("UPDATE reactions SET n = MAX(n - 1, 0) WHERE story_id = ? AND emoji = ?").bind(story, emoji));
   } else {
-    if (prev) stmts.push(env.DB.prepare("UPDATE reactions SET n = MAX(n - 1, 0) WHERE story_id = ? AND emoji = ?").bind(story, prev.emoji));
+    if (prev) {
+      stmts.push(env.DB.prepare("UPDATE reactions SET n = MAX(n - 1, 0) WHERE story_id = ? AND emoji = ?").bind(story, prev.emoji));
+      stmts.push(log(prev.emoji, -1));
+    }
+    stmts.push(log(emoji, 1));
     stmts.push(env.DB.prepare("INSERT OR REPLACE INTO reaction_votes (id, story_id, emoji, created) VALUES (?,?,?,?)").bind(voter, story, emoji, Date.now()));
     stmts.push(env.DB.prepare("INSERT INTO reactions (story_id, emoji, n) VALUES (?,?,1) ON CONFLICT(story_id, emoji) DO UPDATE SET n = n + 1").bind(story, emoji));
   }

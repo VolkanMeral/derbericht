@@ -433,6 +433,17 @@ await test("banner ads: created in admin, shown with 'Anzeige', clicks counted",
   assert.ok(r.res.headers.get("Location")!.includes("err="), "rejects non-http links");
 });
 
+await test("reaction report: totals, top stories, CSV; dashboard tile", async () => {
+  let r = await req("/admin/reaktionen?t=1", { cookie: adminCookie });
+  writeFileSync(new URL("./out/admin_reaktionen.html", import.meta.url), r.text);
+  assert.ok(r.text.includes("Reaktionen der Leser") && r.text.includes("Meldungen mit den meisten Reaktionen"), "report page");
+  assert.ok(r.text.includes("KI-Haftung") && r.text.includes("Stimmung"), "voted story listed");
+  r = await req("/admin/reaktionen.csv?t=7", { cookie: adminCookie });
+  assert.ok(r.text.includes("Gefällt mir") && r.text.includes("KI-Haftung"), "csv");
+  r = await req("/admin", { cookie: adminCookie });
+  assert.ok(r.text.includes("Leser-Reaktionen heute"), "dashboard tile");
+});
+
 await test("admin pages: sources toggle, opt-out, password reset with code, logout", async () => {
   let r = await req("/admin/quellen", { cookie: adminCookie });
   assert.ok(r.text.includes("Jetzt abrufen") && r.text.includes("ORF"));
