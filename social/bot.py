@@ -156,7 +156,8 @@ def caption(s, platform):
     flags = "".join(FLAG[c] for c in ("at", "de", "ch") if s["by_country"].get(c))
     cat = re.sub(r"\W", "", s["category_name"])
     head = f"{s['title']}\n\n{flags} {s['sources']} Redaktionen {countries_text(s)} berichten darüber."
-    tail = f"\n\nBild: KI-Illustration (keine reale Aufnahme)\n{HASHTAGS} #{cat}"
+    bild = "\n\nBild: KI-Illustration (keine reale Aufnahme)" if s.get("image") else ""
+    tail = f"{bild}\n{HASHTAGS} #{cat}" if bild else f"\n\n{HASHTAGS} #{cat}"
     if platform == "facebook":
         return f"{head}\nSo titeln sie – alle Schlagzeilen im Vergleich:\n👉 {s['url']}{tail}"
     if platform == "threads":
@@ -173,6 +174,40 @@ FLAG_SVG = {
 }
 
 
+def norm(t):
+    return re.sub(r"\W+", " ", t.lower()).strip()
+
+
+def other_headlines(s, n=3):
+    """Differently worded headlines from other newsrooms, preferring other countries."""
+    items = s.get("headlines") or [{"publisher": p, "country": "", "title": t} for p, t in zip(s["publishers"], s["titles"])]
+    lead = norm(s["title"])
+    seen_pub, seen_t, out = {s["publisher"]}, {lead}, []
+    lead_c = next((h["country"] for h in items if h["publisher"] == s["publisher"]), "")
+    items = sorted(items, key=lambda h: h["country"] == lead_c)  # other countries first, stable order otherwise
+    for h in items:
+        t = norm(h["title"])
+        # skip agency copies: identical or nearly identical to a headline already shown
+        if h["publisher"] in seen_pub or t in seen_t or any(t in x or x in t for x in seen_t):
+            continue
+        seen_pub.add(h["publisher"]); seen_t.add(t); out.append(h)
+        if len(out) == n:
+            break
+    return out
+
+
+def figure_html(s):
+    if s.get("image"):
+        return f'<div class="fig"><img src="{html.escape(s["image"])}" alt=""><span class="ki">KI-Illustration</span></div>'
+    quotes = other_headlines(s)
+    if not quotes:
+        return ""
+    rows = "".join(
+        f'<div class="q"><p>{html.escape(h["title"])}</p><span>{FLAG_SVG.get(h["country"], "")}{html.escape(h["publisher"])}</span></div>'
+        for h in quotes)
+    return f'<div class="vgl"><div class="lbl">So titeln andere</div>{rows}</div>'
+
+
 def card_html(s):
     with open(os.path.join(KOK, "kart.html"), encoding="utf-8") as f:
         tpl = f.read()
@@ -184,13 +219,13 @@ def card_html(s):
     from zoneinfo import ZoneInfo
     when = dt.datetime.fromtimestamp(s["last_update"] / 1000, ZoneInfo("Europe/Vienna")).strftime("%d.%m. · %H:%M")
     values = {
-        "kategorie": s["category_name"], "zeit": when, "bild": s["image"], "titel": s["title"],
+        "kategorie": s["category_name"], "zeit": when, "figur": figure_html(s), "titel": s["title"],
         "label": "Zuerst berichtet" if s.get("own_topic") else "Schlagzeile",
         "quelle": s["publisher"] or "", "auch": f" · auch {names}" if names else "", "anzahl": str(s["sources"]),
         "laender": rows,
     }
     for k, v in values.items():
-        tpl = tpl.replace("{{" + k + "}}", v if k == "laender" else html.escape(v))
+        tpl = tpl.replace("{{" + k + "}}", v if k in ("laender", "figur") else html.escape(v))
     return tpl
 
 
@@ -276,7 +311,8 @@ FORMAT = (os.getenv("FORMAT") or "").strip().lower()   # manual run: briefing|st
 
 
 def story_post(posted):
-    s = pick(stories(), posted)
+    # Prefer stories with our own illustration; otherwise the headline-comparison card.
+    s = pick(stories(), posted) or pick([x for x in stories(img=0) if len(other_headlines(x)) >= 2], posted)
     if not s:
         return None
     if formats.ANTHROPIC_API_KEY:

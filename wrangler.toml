@@ -15,7 +15,8 @@ crons = ["*/10 * * * *"]
 SITE_URL = "https://derbericht.com"
 SITE_NAME = "Der Bericht"
 IMAGE_AI = "on"            # "off" = only category icons
-IMAGE_DAILY_LIMIT = "60"   # max AI illustrations per day
+IMAGE_DAILY_LIMIT = "150"  # max AI illustrations per day (Workers AI free tier ≈ 170 flux images)
+IMAGE_MIN_SOURCES = "3"   # only stories with at least this many newsrooms
 IMAGES_PER_RUN = "4"
 # Secret (not here): npx wrangler secret put ADMIN_TOKEN
 

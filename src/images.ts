@@ -49,7 +49,9 @@ function base64ToBytes(b64: string): Uint8Array {
 /** Generates illustrations for the most important stories that do not have one yet. */
 export async function generateImages(env: Env): Promise<number> {
   if (env.IMAGE_AI !== "on" || !env.AI) return 0;
-  const limit = parseInt(env.IMAGE_DAILY_LIMIT || "60", 10);
+  const limit = parseInt(env.IMAGE_DAILY_LIMIT || "150", 10);
+  // Only stories that several newsrooms carry: small 2-source stories used up the budget by early morning.
+  const minSources = parseInt(env.IMAGE_MIN_SOURCES || "3", 10);
   const perRun = parseInt(env.IMAGES_PER_RUN || "4", 10);
 
   const used = (await env.DB.prepare("SELECT images FROM usage WHERE day = ?").bind(today()).first<{ images: number }>())?.images ?? 0;
@@ -59,9 +61,9 @@ export async function generateImages(env: Env): Promise<number> {
   const since = Date.now() - 24 * 3600 * 1000;
   const { results } = await env.DB.prepare(
     `SELECT c.id, c.category, a.title FROM clusters c JOIN articles a ON a.id = c.lead_id
-     WHERE c.image_status = 'none' AND c.source_count >= 2 AND c.last_update > ?
+     WHERE c.image_status = 'none' AND c.source_count >= ? AND c.last_update > ?
      ORDER BY c.source_count DESC, c.last_update DESC LIMIT ?`,
-  ).bind(since, budget * 2).all<{ id: string; category: Category; title: string }>();
+  ).bind(minSources, since, budget * 2).all<{ id: string; category: Category; title: string }>();
 
   let made = 0;
   for (const c of results) {

@@ -200,6 +200,7 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
       publishers: [...new Set(s.articles.map((a) => a.publisher))],
       publishers_by_country: Object.fromEntries((["at", "de", "ch"] as Country[]).map((c) => [c, [...new Set(s.articles.filter((a) => a.country === c).map((a) => a.publisher))]])),
       titles: s.articles.map((a) => a.title).slice(0, 8),
+      headlines: s.articles.slice(0, 12).map((a) => ({ publisher: a.publisher, country: a.country, title: a.title })),
       by_country: Object.fromEntries((["at", "de", "ch"] as Country[]).map((c) => [c, s.articles.filter((a) => a.country === c).length])),
       image: s.image_status === "done" && s.image_key ? `${site}/img/${s.image_key}` : null,
       url: `${site}/story/${s.id}`,

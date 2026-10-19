@@ -8,6 +8,7 @@ export interface Env {
   SITE_NAME: string;
   IMAGE_AI: string;
   IMAGE_DAILY_LIMIT: string;
+  IMAGE_MIN_SOURCES?: string;
   IMAGES_PER_RUN: string;
   COMMERCIAL?: string; // "on" when the site earns money outside the banner ads (e.g. AdSense)
   SETUP_CODE?: string; // secret: needed once to create the first administrator

@@ -91,7 +91,7 @@ jobs:
       - name: Testbilder in den Branch social-preview legen
         if: always() && env.DRY_RUN == '1' && env.FORMAT != ''
         run: |
-          [ -d cikti ] || exit 0
+          [ -n "$(ls -A cikti 2>/dev/null)" ] || exit 0
           cd cikti
           git init -q -b social-preview
           git config user.name "derbericht-bot"; git config user.email "office@derbericht.com"
