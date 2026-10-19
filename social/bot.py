@@ -372,13 +372,18 @@ def main():
         kinds = ["briefing", "story", "nurhier", "dach", "stimmung", "woche"] if FORMAT == "alle" else [FORMAT]
         if FORMAT == "alle" and not DRY_RUN:
             raise RuntimeError("FORMAT=alle nur im Testmodus.")
+        failed = 0
         for k in kinds:
-            kind, post = build(k, posted)
-            if post:
-                publish(kind, post, posted, stamp)
-            else:
-                log(f"[{k}] nichts zu teilen.")
-        return 0
+            try:
+                kind, post = build(k, posted)
+                if post:
+                    publish(kind, post, posted, stamp)
+                else:
+                    log(f"[{k}] nichts zu teilen.")
+            except Exception as ex:  # noqa: BLE001
+                failed += 1
+                gh_error(f"Format {k}", ex)
+        return 1 if failed == len(kinds) else 0
     if not slot:
         log("Kein fälliger Termin.")
         return 0
