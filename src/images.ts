@@ -59,11 +59,13 @@ export async function generateImages(env: Env): Promise<number> {
   if (budget <= 0) return 0;
 
   const since = Date.now() - 24 * 3600 * 1000;
+  // New stories first (the social posts only use stories first seen in the last hours), then the biggest.
+  const fresh = Date.now() - 6 * 3600 * 1000;
   const { results } = await env.DB.prepare(
     `SELECT c.id, c.category, a.title FROM clusters c JOIN articles a ON a.id = c.lead_id
      WHERE c.image_status = 'none' AND c.source_count >= ? AND c.last_update > ?
-     ORDER BY c.source_count DESC, c.last_update DESC LIMIT ?`,
-  ).bind(minSources, since, budget * 2).all<{ id: string; category: Category; title: string }>();
+     ORDER BY c.first_seen > ? DESC, c.source_count DESC, c.last_update DESC LIMIT ?`,
+  ).bind(minSources, since, fresh, budget * 2).all<{ id: string; category: Category; title: string }>();
 
   let made = 0;
   for (const c of results) {
