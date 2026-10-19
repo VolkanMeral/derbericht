@@ -237,6 +237,7 @@ def connection_check():
         exp = info.get("expires_at") or 0
         days = (exp - time.time()) / 86400 if exp else None
         hours = (exp - time.time()) / 3600 if exp else None
+        print(f"::notice title=Meta-Token::Typ {info.get('type')}, gültig {info.get('is_valid')}, expires_at {exp}, data_access_expires_at {info.get('data_access_expires_at')}", flush=True)
         log(f"Gespeichertes Token: Typ {info.get('type')}, gültig: {info.get('is_valid')}, " + ("läuft nie ab" if not exp else f"läuft in {hours:.1f} Stunden ab ({time.strftime('%d.%m.%Y %H:%M', time.gmtime(exp))} UTC)"))
         if days is not None and days < 30:
             gh_error("Meta-Token läuft bald ab", f"Noch {days:.0f} Tage. Bitte das Seiten-Token (me/accounts) als META_PAGE_TOKEN eintragen.")
