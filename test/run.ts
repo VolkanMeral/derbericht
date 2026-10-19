@@ -60,6 +60,11 @@ await test("sensitive stories get no AI image", () => {
   assert.ok(isSensitive("Überschwemmung in Tirol"));
   assert.ok(!isSensitive("Neue Radwege für Dornbirn beschlossen"));
 });
+await test("similar-looking words from different topics do not match", () => {
+  assert.equal(similarity(tokens("Nicht ausschlaggebend – und doch zeigte Frankfurt, wie Trier schlagbar ist"), tokens("Schwere Ausschreitungen bei Protesten in Frankreich")).shared, 0);
+  assert.ok(similarity(tokens("Koalitionsgespräche in Berlin vereinbart"), tokens("Berlin: Koalition steht")).shared >= 2);
+});
+
 await test("image prompt forbids people, text and photorealism", () => {
   const p = buildPrompt("Regierung beschließt Budget", "politik");
   for (const w of ["no people", "no faces", "no text", "Not photorealistic"]) assert.ok(p.includes(w), w);

@@ -27,8 +27,10 @@ export async function getStories(env: Env, q: StoryQuery): Promise<Story[]> {
 
   const boost = q.boost ? "+ (CASE WHEN instr(c.countries, ?) > 0 THEN 4 ELSE 0 END)" : "";
   const sql = `SELECT c.* FROM clusters c WHERE ${where.join(" AND ")}
-    ORDER BY (c.source_count * 3.0 - (? - c.last_update) / 3600000.0 ${boost}) DESC LIMIT ?`;
-  const params = [...args, now, ...(q.boost ? [q.boost] : []), q.limit ?? 30];
+    ORDER BY (MIN(c.source_count, 15) * 3.0 - (? - c.first_seen) / 3600000.0 * 0.75 - (? - c.last_update) / 3600000.0 ${boost}) DESC LIMIT ?`;
+  // Score: every newsroom +3 (max 15), every hour since the story first appeared −0.75 and every hour
+  // without new coverage −1. A long-running story with a trickle of new articles therefore gives way.
+  const params = [...args, now, now, ...(q.boost ? [q.boost] : []), q.limit ?? 30];
   const { results: clusters } = await env.DB.prepare(sql).bind(...params).all<ClusterRow>();
   if (!clusters.length) return [];
   return attachArticles(env, clusters);

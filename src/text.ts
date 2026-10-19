@@ -75,14 +75,16 @@ export function tokens(title: string): string[] {
   return [...new Set(words.map(stem))];
 }
 
-/** Two tokens match if equal, or if they share a prefix of 5+ letters (German compounds and
- *  inflections: "streng" ~ "strenger", "haftung" ~ "haftungsregel", "einig" ~ "einigung"). */
+/** Two tokens match if equal, or if one is (almost) the start of the other: a shared prefix of
+ *  5+ letters covering at least 80 % of the shorter word (German compounds and inflections:
+ *  "streng" ~ "strenger", "haftung" ~ "haftungsregel", "einig" ~ "einigung" – but not
+ *  "frankfurt" ~ "frankreich" or "ausschlaggebend" ~ "ausschreitungen"). */
 function match(x: string, y: string): boolean {
   if (x === y) return true;
   if (x.length < 5 || y.length < 5) return false;
   let i = 0;
   while (i < x.length && i < y.length && x[i] === y[i]) i++;
-  return i >= 5;
+  return i >= 5 && i >= 0.8 * Math.min(x.length, y.length);
 }
 
 /** Overlap score used for clustering: shared tokens relative to the shorter title. */

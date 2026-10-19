@@ -78,9 +78,11 @@ async function fetchFeed(env: Env, feed: FeedRow, optouts: Set<string>): Promise
 
 async function cluster(env: Env): Promise<void> {
   const since = Date.now() - 36 * 3600 * 1000;
+  // Stories that began more than 48 hours ago take no new articles: a new development becomes a new story.
   const { results } = await env.DB.prepare(
-    "SELECT id, feed_id, tokens, published, cluster_id FROM articles WHERE published > ?",
-  ).bind(since).all<{ id: string; feed_id: string; tokens: string; published: number; cluster_id: string | null }>();
+    `SELECT a.id, a.feed_id, a.tokens, a.published, a.cluster_id FROM articles a LEFT JOIN clusters c ON c.id = a.cluster_id
+     WHERE a.published > ? AND (a.cluster_id IS NULL OR c.first_seen IS NULL OR c.first_seen > ?)`,
+  ).bind(since, Date.now() - 48 * 3600 * 1000).all<{ id: string; feed_id: string; tokens: string; published: number; cluster_id: string | null }>();
 
   const rows: Clusterable[] = results.map((r) => ({ ...r, tokens: r.tokens ? r.tokens.split(" ") : [] }));
   const fresh = rows.filter((r) => !r.cluster_id);
