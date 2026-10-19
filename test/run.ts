@@ -151,7 +151,7 @@ const env = { DB, IMAGES, AI, SITE_URL: "https://derbericht.com", SITE_NAME: "De
   return body ? new Response(body, { status: 200 }) : new Response("nope", { status: 404 });
 };
 
-const { runIngest } = await import("../src/ingest.ts");
+const { runIngest, removeOptedOut } = await import("../src/ingest.ts");
 const worker = (await import("../src/index.ts")).default;
 
 let result: any;
@@ -347,7 +347,8 @@ await test("teasers disappear after 48 hours", async () => {
 });
 await test("opt-out removes a publisher's articles", async () => {
   sqlite.prepare("INSERT INTO optouts (domain, added) VALUES ('spiegel.de', ?)").run(now);
-  await runIngest(env);
+  await removeOptedOut(env, "spiegel.de");   // what the admin form does when an opt-out is added
+  await runIngest(env);                       // and new items of that domain are skipped
   const n = (sqlite.prepare("SELECT COUNT(*) n FROM articles WHERE url LIKE '%spiegel.de%'").get() as { n: number }).n;
   assert.equal(n, 0);
 });

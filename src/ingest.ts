@@ -61,6 +61,9 @@ async function fetchFeed(env: Env, feed: FeedRow, optouts: Set<string>): Promise
     if (now - it.published > MAX_AGE_MS) continue;
     if (optouts.has(domainOf(it.url))) continue;
     const id = await hashId(it.url);
+    // "[premium]" marker in some feeds: paywall article, marker removed from the headline.
+    const premium = /\[premium\]/i.test(it.title);
+    if (premium) it.title = it.title.replace(/\[premium\]/gi, "").trim();
     const tok = tokens(it.title);
     const teaser = it.summary ? cutTeaser(it.summary) : null;
     stmts.push(
@@ -68,15 +71,19 @@ async function fetchFeed(env: Env, feed: FeedRow, optouts: Set<string>): Promise
         `INSERT OR IGNORE INTO articles (id, feed_id, url, title, teaser, category, country, published, fetched, paywall, tokens)
          VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       ).bind(id, feed.id, it.url, it.title, teaser || null, guessCategory(it.title, feed.category), feed.country,
-        it.published, now, it.paywall || (feed.paywall_hint && /\+$/.test(it.title)) ? 1 : 0, tok.join(" ")),
+        it.published, now, premium || it.paywall || (feed.paywall_hint && /\+$/.test(it.title)) ? 1 : 0, tok.join(" ")),
     );
     fresh.push({ id, tokens: tok, published: it.published, cluster_id: null, feed_id: feed.id });
   }
-  if (stmts.length) await env.DB.batch(stmts);
-  return fresh;
+  // Only articles that were really new (INSERT OR IGNORE skips known URLs) count.
+  if (!stmts.length) return [];
+  const done = await env.DB.batch(stmts);
+  return fresh.filter((_, i) => (done[i]?.meta?.changes ?? 1) > 0);
 }
 
-async function cluster(env: Env): Promise<void> {
+async function cluster(env: Env, newItems: number): Promise<void> {
+  // Nothing new since the last run: the clusters cannot change (saves reading the whole 36-hour window).
+  if (!newItems) return;
   const since = Date.now() - 36 * 3600 * 1000;
   // Stories that began more than 48 hours ago take no new articles: a new development becomes a new story.
   const { results } = await env.DB.prepare(
@@ -125,21 +132,20 @@ async function cleanup(env: Env): Promise<void> {
   if (env.IMAGES) for (const r of old.results) await env.IMAGES.delete(r.image_key);
   await env.DB.batch([
     // Legal rule: teaser disappears after 48 hours, only headline + link remain.
-    env.DB.prepare("UPDATE articles SET teaser = NULL WHERE teaser IS NOT NULL AND fetched < ?").bind(now - MAX_AGE_MS),
+    // Only the slice that crossed 48 h since the last runs (index on fetched) instead of the whole table.
+    env.DB.prepare("UPDATE articles SET teaser = NULL WHERE fetched BETWEEN ? AND ? AND teaser IS NOT NULL").bind(now - MAX_AGE_MS - 6 * 3600 * 1000, now - MAX_AGE_MS),
     env.DB.prepare("DELETE FROM articles WHERE published < ?").bind(now - KEEP_MS),
-    // Teasers stored before the double-encoding fix.
-    env.DB.prepare("UPDATE articles SET teaser = NULL WHERE teaser LIKE '%<img%' OR teaser LIKE '%&lt;%' OR teaser LIKE '%src=%'"),
-    env.DB.prepare("UPDATE articles SET paywall = 1, title = trim(replace(title, '[premium]', '')) WHERE title LIKE '%[premium]%'"),
     env.DB.prepare("DELETE FROM story_images WHERE key IN (SELECT image_key FROM clusters WHERE last_update < ? AND image_key IS NOT NULL)").bind(now - KEEP_MS),
     env.DB.prepare("DELETE FROM reaction_votes WHERE created < ?").bind(now - 2 * 24 * 3600 * 1000),
     env.DB.prepare("DELETE FROM reaction_log WHERE day < ?").bind(new Date(now - 90 * 86400_000).toISOString().slice(0, 10)),
     env.DB.prepare("DELETE FROM reactions WHERE story_id IN (SELECT id FROM clusters WHERE last_update < ?)").bind(now - KEEP_MS),
     env.DB.prepare("DELETE FROM clusters WHERE last_update < ?").bind(now - KEEP_MS),
-    env.DB.prepare(
-      `DELETE FROM articles WHERE EXISTS (SELECT 1 FROM optouts o
-         WHERE articles.url LIKE '%://' || o.domain || '/%' OR articles.url LIKE '%://www.' || o.domain || '/%')`,
-    ),
   ]);
+}
+
+/** Removes stored articles of an opted-out domain (runs once when the opt-out is added, not every cron). */
+export async function removeOptedOut(env: Env, domain: string): Promise<void> {
+  await env.DB.prepare("DELETE FROM articles WHERE url LIKE ? OR url LIKE ?").bind(`%://${domain}/%`, `%://www.${domain}/%`).run();
 }
 
 export async function runIngest(env: Env): Promise<{ feeds: number; items: number; errors: number; images: number }> {
@@ -166,7 +172,7 @@ export async function runIngest(env: Env): Promise<{ feeds: number; items: numbe
   });
   if (status.length) await env.DB.batch(status);
 
-  await cluster(env);
+  await cluster(env, items);
   const images = await generateImages(env);
   await cleanup(env);
   await enforceLicenses(env);

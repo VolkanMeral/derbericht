@@ -61,12 +61,13 @@ export async function track(env: Env, req: Request): Promise<void> {
 
 /** Daily totals are kept 400 days; the per-visitor rows only 31 days. */
 export async function rollup(env: Env): Promise<void> {
-  const today = dayKey(Date.now());
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT OR REPLACE INTO visits_daily (day, visitors, views)
-       SELECT day, COUNT(*), SUM(views) FROM visitors WHERE day < ? AND day NOT IN (SELECT day FROM visits_daily) GROUP BY day`,
-    ).bind(today),
+      // Only yesterday, and only once (reading 30 days of visitors every 10 minutes was too expensive).
+      `INSERT OR IGNORE INTO visits_daily (day, visitors, views)
+       SELECT day, COUNT(*), SUM(views) FROM visitors
+       WHERE NOT EXISTS (SELECT 1 FROM visits_daily WHERE day = ?1) AND day = ?1 GROUP BY day`,
+    ).bind(dayKey(Date.now() - 86400_000)),
     env.DB.prepare("DELETE FROM visitors WHERE day < ?").bind(dayKey(Date.now() - 31 * 86400_000)),
     env.DB.prepare("DELETE FROM page_daily WHERE day < ?").bind(dayKey(Date.now() - 90 * 86400_000)),
     env.DB.prepare("DELETE FROM visits_daily WHERE day < ?").bind(dayKey(Date.now() - 400 * 86400_000)),

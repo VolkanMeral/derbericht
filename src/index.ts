@@ -248,10 +248,41 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   return html(layout(meta(env, { title: "Seite nicht gefunden", path, edition: saved ?? "dach", noindex: true }), '<div class="empty">Diese Seite gibt es nicht. <a href="/">Zur Startseite</a></div>'), 404);
 }
 
+// Public pages are kept in Cloudflare's edge cache for a short time, so repeated views
+// (and crawlers) do not query the database every time. Keyed by edition cookie and, for "/", visitor country.
+const PAGE_TTL = 120;
+function pageCacheKey(req: Request): Request | null {
+  if (req.method !== "GET" || typeof caches === "undefined") return null;
+  const u = new URL(req.url);
+  if (u.protocol !== "https:") return null;
+  if (/^\/(admin|reagieren|wechseln|werbung|media|suche)(\/|$)/.test(u.pathname)) return null;
+  const ed = /(?:^|;\s*)edition=(\w+)/.exec(req.headers.get("Cookie") ?? "")?.[1] ?? "";
+  const c = String((req as unknown as { cf?: { country?: string } }).cf?.country ?? "");
+  u.searchParams.set("_ed", ed || (["AT", "DE", "CH"].includes(c) ? c : "x"));
+  return new Request(u.toString(), { method: "GET" });
+}
+
+async function cachedHandle(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const key = pageCacheKey(req);
+  const cache = key ? (caches as unknown as { default: Cache }).default : null;
+  if (key && cache) {
+    const hit = await cache.match(key);
+    if (hit) return hit;
+  }
+  const res = await handle(req, env, ctx);
+  const type = res.headers.get("Content-Type") ?? "";
+  if (key && cache && res.status === 200 && !res.headers.has("Set-Cookie") && /text\/html|application\/json/.test(type)) {
+    const copy = new Response(res.clone().body, res);
+    copy.headers.set("Cache-Control", `public, max-age=${PAGE_TTL}`);
+    ctx?.waitUntil(cache.put(key, copy));
+  }
+  return res;
+}
+
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
-      const res = await handle(req, env, ctx);
+      const res = await cachedHandle(req, env, ctx);
       if (shouldTrack(req, res)) {
         const job = track(env, req).catch((e) => console.error("track", e));
         if (ctx) ctx.waitUntil(job); else await job;

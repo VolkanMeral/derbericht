@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS articles (
 );
 CREATE INDEX IF NOT EXISTS idx_articles_cluster ON articles(cluster_id);
 CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published);
+CREATE INDEX IF NOT EXISTS idx_articles_feed ON articles(feed_id);
+CREATE INDEX IF NOT EXISTS idx_articles_fetched ON articles(fetched);
 
 CREATE TABLE IF NOT EXISTS clusters (
   id            TEXT PRIMARY KEY,
@@ -45,6 +47,7 @@ CREATE TABLE IF NOT EXISTS clusters (
   image_status  TEXT NOT NULL DEFAULT 'none'   -- none | done | skipped | failed
 );
 CREATE INDEX IF NOT EXISTS idx_clusters_update ON clusters(last_update);
+CREATE INDEX IF NOT EXISTS idx_clusters_first ON clusters(first_seen);
 
 -- Publishers who asked to be removed (by domain). Checked on every fetch.
 CREATE TABLE IF NOT EXISTS optouts (

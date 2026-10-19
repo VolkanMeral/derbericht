@@ -1,6 +1,7 @@
 // Admin area at /admin: login, dashboard, own posts, banner ads, sources, users.
 // Server-rendered forms; POSTs are only accepted from the same origin (CSRF protection).
 
+import { removeOptedOut } from "./ingest.ts";
 import {
   can, countUsers, createUser, currentUser, endSession, passwordProblem, randomId, ROLE_LABEL, ROLES,
   setPassword, startSession, verifyLogin, type Role, type User,
@@ -491,6 +492,7 @@ async function sources(req: Request, env: Env, user: User, url: URL): Promise<Re
       const domain = String(f.get("domain") ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
       if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) return back("/admin/quellen", "err", "Bitte eine Domain wie beispiel.at angeben.");
       await env.DB.prepare("INSERT OR IGNORE INTO optouts (domain, added, note) VALUES (?,?,?)").bind(domain, Date.now(), String(f.get("note") ?? "").slice(0, 200)).run();
+      await removeOptedOut(env, domain);
       return back("/admin/quellen", "ok", `${domain} wird nicht mehr angezeigt (wirksam ab dem nächsten Abruf).`);
     }
     if (action === "optout-remove") {
