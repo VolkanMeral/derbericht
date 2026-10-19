@@ -88,6 +88,16 @@ jobs:
           path: social/cikti/
           if-no-files-found: ignore
 
+      - name: Testbilder in den Branch social-preview legen
+        if: always() && env.DRY_RUN == '1' && env.FORMAT != ''
+        run: |
+          [ -d cikti ] || exit 0
+          cd cikti
+          git init -q -b social-preview
+          git config user.name "derbericht-bot"; git config user.email "office@derbericht.com"
+          git add -A && git commit -qm "Testbilder $(date -u +%F-%H%M)"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" social-preview
+
       - name: Geteilte Geschichten speichern
         if: always()
         run: |
