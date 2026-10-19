@@ -175,7 +175,9 @@ FLAG_SVG = {
 
 
 def norm(t):
-    return re.sub(r"\W+", " ", t.lower()).strip()
+    import unicodedata
+    t = "".join(c for c in unicodedata.normalize("NFKD", t.lower()) if not unicodedata.combining(c))
+    return re.sub(r"\W+", " ", t).strip()
 
 
 def other_headlines(s, n=3):
@@ -205,7 +207,7 @@ def figure_html(s):
     rows = "".join(
         f'<div class="q"><p>{html.escape(h["title"])}</p><span>{FLAG_SVG.get(h["country"], "")}{html.escape(h["publisher"])}</span></div>'
         for h in quotes)
-    return f'<div class="vgl"><div class="lbl">So titeln andere</div>{rows}</div>'
+    return f'<div class="vgl{" wenig" if len(quotes) < 3 else ""}"><div class="lbl">So titeln andere</div>{rows}</div>'
 
 
 def card_html(s):
