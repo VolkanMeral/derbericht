@@ -236,7 +236,8 @@ def connection_check():
         info = check(HTTP.get(graph("debug_token"), params={"input_token": ORIGINAL_TOKEN, "access_token": PAGE_TOKEN}, timeout=30)).get("data", {})
         exp = info.get("expires_at") or 0
         days = (exp - time.time()) / 86400 if exp else None
-        log(f"Gespeichertes Token: Typ {info.get('type')}, " + ("läuft nie ab" if not exp else f"läuft in {days:.0f} Tagen ab"))
+        hours = (exp - time.time()) / 3600 if exp else None
+        log(f"Gespeichertes Token: Typ {info.get('type')}, gültig: {info.get('is_valid')}, " + ("läuft nie ab" if not exp else f"läuft in {hours:.1f} Stunden ab ({time.strftime('%d.%m.%Y %H:%M', time.gmtime(exp))} UTC)"))
         if days is not None and days < 30:
             gh_error("Meta-Token läuft bald ab", f"Noch {days:.0f} Tage. Bitte das Seiten-Token (me/accounts) als META_PAGE_TOKEN eintragen.")
     except Exception as e:  # noqa: BLE001
