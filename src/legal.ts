@@ -46,9 +46,10 @@ Herausgeber, die nicht verlinkt werden möchten, finden auf der Seite [Quellen &
 
 ## Was wir verarbeiten
 
-Diese Website verwendet keine Tracking-Tools und lädt keine Schriften oder Skripte von Dritten.
+Diese Website verwendet keine Cookies zu Analysezwecken, keine Tracking-Tools von Dritten und lädt keine Schriften oder Skripte von Dritten.
 
 - **Hosting:** Die Website läuft bei Cloudflare, Inc. Beim Aufruf verarbeitet Cloudflare technisch notwendige Daten (z. B. IP-Adresse, Zeitpunkt, aufgerufene Seite), um die Seite auszuliefern und vor Angriffen zu schützen (Art. 6 Abs. 1 lit. f DSGVO).
+- **Reichweitenmessung:** Um zu wissen, wie viele Menschen Der Bericht nutzen, zählen wir Seitenaufrufe auf unserem eigenen Server – ohne Cookies und ohne Drittanbieter. Dafür bilden wir aus IP-Adresse und Browserkennung zusammen mit einem täglich wechselnden geheimen Wert einen nicht umkehrbaren Prüfwert; die IP-Adresse selbst wird nicht gespeichert, und ein Besucher kann am nächsten Tag nicht wiedererkannt werden. Gespeichert werden außerdem das Land (aus der IP-Adresse abgeleitet), der Gerätetyp, die aufgerufene Seite und die verweisende Website. Die Einzeldaten werden nach 31 Tagen gelöscht, danach bleiben nur Tagessummen (Art. 6 Abs. 1 lit. f DSGVO; berechtigtes Interesse an der Messung der Reichweite).
 - **Länderauswahl:** Aus der IP-Adresse wird nur das Land abgeleitet, um passende Nachrichten zu zeigen. Die IP-Adresse wird dafür nicht gespeichert.
 - **Cookie „edition“:** Wenn Sie eine Ausgabe (DACH, AT, DE, CH) wählen, speichern wir diese Wahl für ein Jahr in einem technisch notwendigen Cookie. Es enthält nur das Kürzel der Ausgabe.
 - **Emoji-Reaktionen:** Wenn Sie mit einem Emoji auf eine Nachricht reagieren, speichern wir nur die Zahl der Reaktionen. Damit nicht mehrfach abgestimmt werden kann, speichern wir für zwei Tage einen nicht umkehrbaren Prüfwert (Hash) aus IP-Adresse, Browserkennung und Nachricht; die IP-Adresse selbst wird nicht gespeichert (Art. 6 Abs. 1 lit. f DSGVO). Ihre eigene Auswahl merkt sich nur Ihr Browser (lokaler Speicher).

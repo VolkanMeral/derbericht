@@ -8,6 +8,7 @@ import { generateImages } from "./images.ts";
 import type { Env } from "./types.ts";
 import { ensureSchema } from "./data.ts";
 import { allowedFeedsSql, commercialMode, enforceLicenses } from "./license.ts";
+import { rollup } from "./analytics.ts";
 
 const UA = "DerBerichtBot/1.0 (+https://derbericht.com/quellen; office@derbericht.com)";
 const MAX_AGE_MS = 48 * 3600 * 1000;   // ignore older items; teasers are removed after 48h
@@ -167,5 +168,6 @@ export async function runIngest(env: Env): Promise<{ feeds: number; items: numbe
   const images = await generateImages(env);
   await cleanup(env);
   await enforceLicenses(env);
+  await rollup(env);
   return { feeds: feeds.length, items, errors, images };
 }

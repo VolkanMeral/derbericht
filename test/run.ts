@@ -500,4 +500,26 @@ await test("licences: active banner = commercial mode, non-commercial sources pa
   assert.ok(r.text.includes("Werbemodus aktiv") && r.text.includes("Pausiert (Nutzungsrecht)") && r.text.includes("Nutzung erlaubt"), "admin shows licence state");
 });
 
+await test("visitor stats: pages count, bots and admin do not, dashboard shows live/today", async () => {
+  const visit = (path: string, ua: string, ip: string) => worker.fetch(new Request("https://derbericht.com" + path, { headers: { "User-Agent": ua, "CF-Connecting-IP": ip, "CF-IPCountry": "AT", Referer: "https://www.google.com/" } }), env);
+  const phone = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148 Safari/604.1";
+  const before = (sqlite.prepare("SELECT COUNT(*) n FROM visitors").get() as { n: number }).n;
+  await visit("/", phone, "10.0.0.1");
+  await visit("/at", phone, "10.0.0.1");
+  await visit("/", "Mozilla/5.0 (Windows NT 10.0) Chrome/130", "10.0.0.2");
+  await visit("/", "Googlebot/2.1 (+http://www.google.com/bot.html)", "10.0.0.3");
+  await visit("/robots.txt", phone, "10.0.0.4");
+  const rows = sqlite.prepare("SELECT * FROM visitors").all() as any[];
+  assert.equal(rows.length - before, 2, "two humans, bot and robots.txt ignored");
+  const me = rows.find((r) => r.device === "mobile");
+  assert.equal(me.views, 2); assert.equal(me.country, "AT"); assert.equal(me.ref, "google.com");
+  assert.ok(!JSON.stringify(rows).includes("10.0.0.1"), "IP not stored");
+  const cookie = (await req("/admin/login", { method: "POST", form: { email: "admin@example.at", password: "neues-passwort-1" } })).cookie;
+  let r = await req("/admin", { cookie });
+  assert.ok(r.text.includes("Gerade auf der Website") && r.text.includes("Besucher heute"), "dashboard tiles");
+  r = await req("/admin/besucher?t=7", { cookie });
+  writeFileSync(new URL("./out/admin_besucher.html", import.meta.url), r.text);
+  assert.ok(r.text.includes("Meistgelesene Seiten") && r.text.includes("google.com") && r.text.includes("Smartphone"), "visitors page");
+});
+
 console.log(`\n${passed} tests passed. Pages written to test/out/`);

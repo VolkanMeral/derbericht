@@ -5,6 +5,7 @@ import { getStories, getStory, getFeedList, getStats, getBreaking, getLatest, en
 import { runIngest } from "./ingest.ts";
 import { loadImage } from "./images.ts";
 import { getReactions, handleReaction } from "./social.ts";
+import { shouldTrack, track } from "./analytics.ts";
 import { handleAdmin } from "./admin.ts";
 import { adClick, adHtml, pickAds, postBySlug, postCards, postList, postPage, publishedPosts, searchPosts, serveMedia, type AdSlots } from "./content.ts";
 import { CATEGORIES, EDITIONS, EDITION_LABEL, compareBody, editionChooser, homeBody, layout, listBody, searchBody, sheetBody, storyBody, type Edition, type PageMeta } from "./render.ts";
@@ -213,6 +214,10 @@ export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     try {
       const res = await handle(req, env, ctx);
+      if (shouldTrack(req, res)) {
+        const job = track(env, req).catch((e) => console.error("track", e));
+        if (ctx) ctx.waitUntil(job); else await job;
+      }
       if (new URL(req.url).protocol !== "https:") return res;
       // Browsers remember to use https only (no "not secure" warning, no http detour).
       const out = new Response(res.body, res);

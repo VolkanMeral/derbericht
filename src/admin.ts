@@ -13,6 +13,7 @@ import { escapeHtml as e } from "./text.ts";
 import { runIngest } from "./ingest.ts";
 import { getPage, PAGE_DEFAULTS, PAGE_SLUGS, savePage, type PageSlug } from "./legal.ts";
 import type { Env } from "./types.ts";
+import { snapshot, visitorsPage } from "./analytics.ts";
 import { commercialMode, LICENSE_LABEL, LICENSES, type License } from "./license.ts";
 import { dayKey, loadReport, PERIODS, REPORT_CSS, reportBody, reportCsv } from "./report.ts";
 
@@ -65,6 +66,7 @@ function page(title: string, body: string, user?: User | null, active = ""): Res
     ? `<nav class="side"><a class="logo" href="/admin">Der Bericht<span>.</span> admin</a>
       ${navItem("/admin", "Übersicht", active)}
       ${navItem("/admin/beitraege", "Beiträge", active)}
+      ${can.stats(user) ? navItem("/admin/besucher", "Besucher", active) : ""}
       ${can.stats(user) ? navItem("/admin/reaktionen", "Reaktionen", active) : ""}
       ${can.ads(user) ? navItem("/admin/werbung", "Werbung", active) : ""}
       ${can.sources(user) ? navItem("/admin/quellen", "Quellen", active) : ""}
@@ -142,6 +144,7 @@ export async function handleAdmin(req: Request, env: Env, url: URL): Promise<Res
   if (path === "/admin/beitraege") return postsList(env, user, url);
   if (path === "/admin/beitraege/neu" || /^\/admin\/beitraege\/[a-f0-9]+$/.test(path)) return postEdit(req, env, user, url, path.split("/").pop()!);
   if (path === "/admin/profil") return profile(req, env, user, url);
+  if (path === "/admin/besucher" && can.stats(user)) return page("Besucher", await visitorsPage(env, url), user, "/admin/besucher");
   if ((path === "/admin/reaktionen" || path === "/admin/reaktionen.csv") && can.stats(user)) {
     const t = Number(url.searchParams.get("t"));
     const days = (PERIODS as readonly number[]).includes(t) ? t : 7;
@@ -267,8 +270,14 @@ async function dashboard(env: Env, user: User, url: URL): Promise<Response> {
   ]);
   const mine = await env.DB.prepare("SELECT id, title, status, updated FROM posts WHERE author_id = ? ORDER BY updated DESC LIMIT 5").bind(user.id).all<Post>();
   const today = can.stats(user) ? await loadReport(env, 1) : null;
+  const visits = can.stats(user) ? await snapshot(env) : null;
   const stat = (n: number | string, label: string) => `<div class="card stat"><b>${n}</b><span>${label}</span></div>`;
   return page("Übersicht", `<div class="top"><h1>Guten Tag, ${e(user.name.split(" ")[0])}</h1><a class="btn" href="/admin/beitraege/neu">+ Neuer Beitrag</a></div>${flash(url)}
+    ${visits ? `<div class="stats">
+      <a class="card stat" href="/admin/besucher" style="text-decoration:none"><b><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2f6b3a;margin-right:10px;vertical-align:middle"></span>${visits.live}</b><span>Gerade auf der Website →</span></a>
+      <a class="card stat" href="/admin/besucher?t=1" style="text-decoration:none"><b>${visits.today}</b><span>Besucher heute · ${visits.todayViews} Seitenaufrufe</span></a>
+      <a class="card stat" href="/admin/besucher" style="text-decoration:none"><b>${visits.yesterday}</b><span>Besucher gestern · ${visits.yesterdayViews} Seitenaufrufe</span></a>
+    </div>` : ""}
     <div class="stats">
       ${stat(a?.n ?? 0, "Meldungen (24 Std.)")}
       ${stat(`${(f?.n ?? 0) - (f?.bad ?? 0)} / ${f?.n ?? 0}`, "Quellen ohne Fehler")}

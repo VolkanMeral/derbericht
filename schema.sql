@@ -103,6 +103,34 @@ CREATE TABLE IF NOT EXISTS reaction_log (
   PRIMARY KEY (day, story_id, emoji)
 );
 
+-- Visitor statistics without cookies: id = daily changing hash (IP + browser + secret); IP never stored
+CREATE TABLE IF NOT EXISTS visitors (
+  day      TEXT NOT NULL,
+  id       TEXT NOT NULL,
+  first    INTEGER NOT NULL,
+  last     INTEGER NOT NULL,
+  views    INTEGER NOT NULL DEFAULT 1,
+  country  TEXT,
+  device   TEXT,
+  ref      TEXT,
+  entry    TEXT,
+  PRIMARY KEY (day, id)
+);
+CREATE INDEX IF NOT EXISTS idx_visitors_last ON visitors(last);
+
+CREATE TABLE IF NOT EXISTS page_daily (
+  day   TEXT NOT NULL,
+  path  TEXT NOT NULL,
+  n     INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, path)
+);
+
+CREATE TABLE IF NOT EXISTS visits_daily (
+  day       TEXT PRIMARY KEY,
+  visitors  INTEGER NOT NULL,
+  views     INTEGER NOT NULL
+);
+
 -- AI illustrations when no R2 bucket is bound
 CREATE TABLE IF NOT EXISTS story_images (
   key      TEXT PRIMARY KEY,
