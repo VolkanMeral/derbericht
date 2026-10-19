@@ -231,6 +231,16 @@ def connection_check():
     kind = "aus System-/Benutzer-Token geholt" if PAGE_TOKEN != ORIGINAL_TOKEN else "direktes Seiten-Token"
     page = check(HTTP.get(graph(PAGE_ID), params={"fields": "name", "access_token": PAGE_TOKEN}, timeout=30))
     log(f"Facebook-Seite erreichbar: {page.get('name')} ({kind})")
+    # Type and lifetime of the stored token (a page token from a long-lived user token never expires).
+    try:
+        info = check(HTTP.get(graph("debug_token"), params={"input_token": ORIGINAL_TOKEN, "access_token": PAGE_TOKEN}, timeout=30)).get("data", {})
+        exp = info.get("expires_at") or 0
+        days = (exp - time.time()) / 86400 if exp else None
+        log(f"Gespeichertes Token: Typ {info.get('type')}, " + ("läuft nie ab" if not exp else f"läuft in {days:.0f} Tagen ab"))
+        if days is not None and days < 30:
+            gh_error("Meta-Token läuft bald ab", f"Noch {days:.0f} Tage. Bitte das Seiten-Token (me/accounts) als META_PAGE_TOKEN eintragen.")
+    except Exception as e:  # noqa: BLE001
+        log("Token-Prüfung nicht möglich:", str(e)[:120])
     if IG_USER_ID:
         ig = check(HTTP.get(graph(IG_USER_ID), params={"fields": "username", "access_token": PAGE_TOKEN}, timeout=30))
         log("Instagram erreichbar:", ig.get("username"))
