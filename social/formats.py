@@ -92,7 +92,10 @@ TAIL = """<script>window.fit=function(){var k=document.querySelector('.k');docum
 def thumb(s, size):
     if s.get("image"):
         return f'<img src="{e(s["image"])}" alt="" style="width:{size}px;height:{size}px;border-radius:20px;object-fit:cover">'
-    return f'<span style="width:{size}px;height:{size}px;border-radius:20px;background:#efeee9;display:block"></span>'
+    icon = round(size * 0.42)
+    return (f'<span style="width:{size}px;height:{size}px;border-radius:20px;background:#efeee9;display:flex;align-items:center;justify-content:center">'
+            f'<svg width="{icon}" height="{icon}" viewBox="0 0 24 24" fill="none" stroke="#9a9aa0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
+            '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg></span>')
 
 
 def countries_line(s):
