@@ -313,8 +313,8 @@ FORMAT = (os.getenv("FORMAT") or "").strip().lower()   # manual run: briefing|st
 
 
 def story_post(posted):
-    # Prefer stories with our own illustration; otherwise the headline-comparison card.
-    s = pick(stories(), posted) or pick([x for x in stories(img=0) if len(other_headlines(x)) >= 2], posted)
+    # Only stories with our own illustration – a card without a picture does not get attention.
+    s = pick(stories(), posted)
     if not s:
         return None
     if formats.ANTHROPIC_API_KEY:
@@ -428,10 +428,11 @@ def main():
     hhmm, kind = slot
     log(f"Termin {hhmm}: {kind}")
     kind, post = build(kind, posted)
-    if post:
-        publish(kind, post, posted, stamp)
-    else:
-        log("Nichts zu teilen.")
+    if not post:
+        # e.g. no story with an illustration yet: the next run (30 min later) tries again within the slot window
+        log("Nichts zu teilen – nächster Versuch in 30 Minuten.")
+        return 0
+    publish(kind, post, posted, stamp)
     if not DRY_RUN:
         done_today.append(hhmm)
         write_posted()
