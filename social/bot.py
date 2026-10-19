@@ -156,13 +156,12 @@ def caption(s, platform):
     flags = "".join(FLAG[c] for c in ("at", "de", "ch") if s["by_country"].get(c))
     cat = re.sub(r"\W", "", s["category_name"])
     head = f"{s['title']}\n\n{flags} {s['sources']} Redaktionen {countries_text(s)} berichten darüber."
-    bild = "\n\nBild: KI-Illustration (keine reale Aufnahme)" if s.get("image") else ""
-    tail = f"{bild}\n{HASHTAGS} #{cat}" if bild else f"\n\n{HASHTAGS} #{cat}"
+    tail = f"\n\nBild: KI-Illustration (keine reale Aufnahme)\n{HASHTAGS} #{cat}"
     if platform == "facebook":
-        return f"{head}\nSo titeln sie – alle Schlagzeilen im Vergleich:\n👉 {s['url']}{tail}"
+        return f"{head}\nDu entscheidest, bei wem du weiterliest – alle Berichte auf einen Blick:\n👉 {s['url']}{tail}"
     if platform == "threads":
-        return f"{s['title']}\n\n{flags} {s['sources']} Redaktionen berichten. Alle Schlagzeilen im Vergleich:\n{s['url']}"[:500]
-    return f"{head}\nAlle Schlagzeilen im Vergleich: Link in der Bio · derbericht.com{tail}"
+        return f"{s['title']}\n\n{flags} {s['sources']} Redaktionen berichten. Du entscheidest, bei wem du weiterliest:\n{s['url']}"[:500]
+    return f"{head}\nDu entscheidest, bei wem du weiterliest: Link in der Bio · derbericht.com{tail}"
 
 
 # ------------------------------------------------------------------ image
@@ -174,40 +173,8 @@ FLAG_SVG = {
 }
 
 
-def norm(t):
-    import unicodedata
-    t = "".join(c for c in unicodedata.normalize("NFKD", t.lower()) if not unicodedata.combining(c))
-    return re.sub(r"\W+", " ", t).strip()
-
-
-def other_headlines(s, n=3):
-    """Differently worded headlines from other newsrooms, preferring other countries."""
-    items = s.get("headlines") or [{"publisher": p, "country": "", "title": t} for p, t in zip(s["publishers"], s["titles"])]
-    lead = norm(s["title"])
-    seen_pub, seen_t, out = {s["publisher"]}, {lead}, []
-    lead_c = next((h["country"] for h in items if h["publisher"] == s["publisher"]), "")
-    items = sorted(items, key=lambda h: h["country"] == lead_c)  # other countries first, stable order otherwise
-    for h in items:
-        t = norm(h["title"])
-        # skip agency copies: identical or nearly identical to a headline already shown
-        if h["publisher"] in seen_pub or t in seen_t or any(t in x or x in t for x in seen_t):
-            continue
-        seen_pub.add(h["publisher"]); seen_t.add(t); out.append(h)
-        if len(out) == n:
-            break
-    return out
-
-
 def figure_html(s):
-    if s.get("image"):
-        return f'<div class="fig"><img src="{html.escape(s["image"])}" alt=""><span class="ki">KI-Illustration</span></div>'
-    quotes = other_headlines(s)
-    if not quotes:
-        return ""
-    rows = "".join(
-        f'<div class="q"><p>{html.escape(h["title"])}</p><span>{FLAG_SVG.get(h["country"], "")}{html.escape(h["publisher"])}</span></div>'
-        for h in quotes)
-    return f'<div class="vgl{" wenig" if len(quotes) < 3 else ""}"><div class="lbl">So titeln andere</div>{rows}</div>'
+    return f'<div class="fig"><img src="{html.escape(s["image"])}" alt=""><span class="ki">KI-Illustration</span></div>'
 
 
 def card_html(s):
@@ -216,15 +183,13 @@ def card_html(s):
     rows = "".join(
         f'<div class="land">{FLAG_SVG[c]}<b>{s["by_country"][c]}</b></div>'
         for c in ("at", "de", "ch") if s["by_country"].get(c))
-    others = [p for p in s["publishers"] if p != s["publisher"]]
-    names = ", ".join(others[:3]) + (f" +{len(others) - 3}" if len(others) > 3 else "")
     from zoneinfo import ZoneInfo
     when = dt.datetime.fromtimestamp(s["last_update"] / 1000, ZoneInfo("Europe/Vienna")).strftime("%d.%m. · %H:%M")
     values = {
         "kategorie": s["category_name"], "zeit": when, "figur": figure_html(s), "titel": s["title"],
-        "label": "Zuerst berichtet" if s.get("own_topic") else "Schlagzeile",
-        "quelle": s["publisher"] or "", "auch": f" · auch {names}" if names else "", "anzahl": str(s["sources"]),
-        "laender": rows,
+        # The headline is the lead newsroom's wording, so it is credited in small type; our own topic line needs no credit.
+        "quelle": "" if s.get("own_topic") else (f"Schlagzeile: {s['publisher']}" if s.get("publisher") else ""),
+        "anzahl": str(s["sources"]), "laender": rows,
     }
     for k, v in values.items():
         tpl = tpl.replace("{{" + k + "}}", v if k in ("laender", "figur") else html.escape(v))
