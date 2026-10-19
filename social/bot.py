@@ -24,6 +24,8 @@ import time
 
 import requests
 
+import formats
+
 KOK = os.path.dirname(os.path.abspath(__file__))
 CIKTI = os.path.join(KOK, "cikti")
 DURUM = os.path.join(KOK, "posted.json")
@@ -32,7 +34,7 @@ SITE = os.getenv("SITE_URL", "https://derbericht.com").rstrip("/")
 GRAPH_VERSION = os.getenv("GRAPH_VERSION", "v26.0")
 DRY_RUN = os.getenv("DRY_RUN", "1") == "1"
 CHECK_ONLY = os.getenv("CHECK_ONLY", "0") == "1"
-MIN_SOURCES = int(os.getenv("MIN_SOURCES", "3") or 3)
+MIN_SOURCES = int(os.getenv("MIN_SOURCES", "4") or 4)
 MAX_AGE_HOURS = int(os.getenv("MAX_AGE_HOURS", "8") or 8)
 HASHTAGS = os.getenv("BASE_HASHTAGS", "#DerBericht #Nachrichten #Österreich #Deutschland #Schweiz")
 
@@ -96,21 +98,35 @@ def gh_error(title, msg):
 
 # ------------------------------------------------------------------ data
 
+STATE = {"posts": [], "slots": {}}
+
+
 def read_posted():
+    """posted.json: {"posts": [...], "slots": {"2026-10-19": ["07:30", ...]}} (older files: a plain list)."""
+    global STATE
     try:
         with open(DURUM, encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        return []
+        data = []
+    STATE = data if isinstance(data, dict) else {"posts": data, "slots": {}}
+    STATE.setdefault("posts", []); STATE.setdefault("slots", {})
+    return STATE["posts"]
 
 
-def write_posted(rows):
+def write_posted(rows=None):
+    if rows is not None:
+        STATE["posts"] = rows
+    STATE["posts"] = STATE["posts"][-500:]
+    keep = sorted(STATE["slots"])[-7:]
+    STATE["slots"] = {d: STATE["slots"][d] for d in keep}
     with open(DURUM, "w", encoding="utf-8") as f:
-        json.dump(rows[-500:], f, ensure_ascii=False, indent=1)
+        json.dump(STATE, f, ensure_ascii=False, indent=1)
 
 
-def stories():
-    r = HTTP.get(f"{SITE}/api/social.json", params={"min": MIN_SOURCES}, timeout=30)
+def stories(**params):
+    params = {"min": MIN_SOURCES, **params}
+    r = HTTP.get(f"{SITE}/api/social.json", params=params, timeout=30)
     r.raise_for_status()
     return r.json()["stories"]
 
@@ -169,6 +185,7 @@ def card_html(s):
     when = dt.datetime.fromtimestamp(s["last_update"] / 1000, ZoneInfo("Europe/Vienna")).strftime("%d.%m. · %H:%M")
     values = {
         "kategorie": s["category_name"], "zeit": when, "bild": s["image"], "titel": s["title"],
+        "label": "Zuerst berichtet" if s.get("own_topic") else "Schlagzeile",
         "quelle": s["publisher"] or "", "auch": f" · auch {names}" if names else "", "anzahl": str(s["sources"]),
         "laender": rows,
     }
@@ -177,12 +194,12 @@ def card_html(s):
     return tpl
 
 
-def render(s, path):
+def render(s, path, html_text=None):
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         b = p.chromium.launch()
         page = b.new_page(viewport={"width": 1080, "height": 1350}, device_scale_factor=1)
-        page.set_content(card_html(s), wait_until="networkidle")
+        page.set_content(html_text or card_html(s), wait_until="networkidle")
         page.evaluate("document.fonts.ready")
         page.evaluate("window.fit && window.fit()")
         page.screenshot(path=path, type="jpeg", quality=92, clip={"x": 0, "y": 0, "width": 1080, "height": 1350})
@@ -255,62 +272,126 @@ def connection_check():
 
 # ------------------------------------------------------------------ main
 
-def main():
-    if CHECK_ONLY:
-        connection_check()
-        return 0
-    os.makedirs(CIKTI, exist_ok=True)
-    posted = read_posted()
+FORMAT = (os.getenv("FORMAT") or "").strip().lower()   # manual run: briefing|story|dach|nurhier|stimmung|woche|alle
+
+
+def story_post(posted):
     s = pick(stories(), posted)
-    if "--kontrol" in sys.argv:
-        log("Neue Geschichte:", s["title"] if s else "keine")
-        out = os.getenv("GITHUB_OUTPUT")
-        if out:
-            with open(out, "a") as f:
-                f.write(f"neu={'true' if s else 'false'}\n")
-        return 0
     if not s:
-        log("Keine neue Geschichte zum Teilen.")
-        return 0
-    log(f"Ausgewählt: {s['title']} | {s['sources']} Quellen | {s['category_name']}")
-    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M")
-    image = render(s, os.path.join(CIKTI, f"{stamp}.jpg"))
-    texts = {k: caption(s, k) for k in ("facebook", "instagram", "threads")}
-    with open(os.path.join(CIKTI, f"{stamp}.txt"), "w", encoding="utf-8") as f:
-        f.write("\n\n".join(f"--- {k.upper()} ---\n{v}" for k, v in texts.items()))
-    log("Bild erzeugt:", image)
+        return None
+    if formats.ANTHROPIC_API_KEY:
+        s["title"], s["own_topic"] = formats.topic(s), True
+    return {"html": card_html(s), "ids": [s["id"]], "title": s["title"], "link": s["url"],
+            "texts": {k: caption(s, k) for k in ("facebook", "instagram", "threads")}}
+
+
+def build(kind, posted):
+    """One post of the given format; falls back to a single story card when the data is too thin."""
+    done = {p["id"] for p in posted}
+    post = None
+    if kind == "briefing":
+        post = formats.briefing(stories(min=3, hours=12, img=0))
+    elif kind == "dach":
+        post = formats.dach(next((x for x in stories(min=3, hours=24, multi=1) if x["id"] not in done), None))
+    elif kind == "nurhier":
+        c = formats.nurhier_country()
+        post = formats.nur_hier(c, stories(min=2, hours=24, only=c, img=0))
+    elif kind == "stimmung":
+        post = formats.stimmung(next(iter(stories(min=2, hours=24, sort="reactions", img=0)), None))
+    elif kind == "woche":
+        r = HTTP.get(f"{SITE}/api/week.json", timeout=30)
+        r.raise_for_status()
+        post = formats.woche(r.json())
+    if post:
+        post.setdefault("title", kind)
+        return kind, post
+    if kind != "story":
+        log(f"Format {kind}: zu wenig Daten, stattdessen Einzelmeldung.")
+    p = story_post(posted)
+    return ("story", p) if p else (kind, None)
+
+
+def publish(kind, post, posted, stamp):
+    image = render(None, os.path.join(CIKTI, f"{stamp}-{kind}.jpg"), post["html"])
+    with open(os.path.join(CIKTI, f"{stamp}-{kind}.txt"), "w", encoding="utf-8") as f:
+        f.write("\n\n".join(f"--- {k.upper()} ---\n{v}" for k, v in post["texts"].items()))
+    log(f"[{kind}] Bild erzeugt:", image)
     if DRY_RUN:
         log("TESTMODUS (DRY_RUN=1): nichts geteilt. Bild und Texte liegen unter Artifacts.")
-        return 0
+        return
     if not (PAGE_ID and PAGE_TOKEN):
-        log("FEHLER: META_PAGE_ID / META_PAGE_TOKEN fehlen.")
-        return 1
-
-    row = {"id": s["id"], "title": s["title"], "time": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
+        raise RuntimeError("META_PAGE_ID / META_PAGE_TOKEN fehlen.")
+    row = {"id": post["ids"][0] if post["ids"] else f"{kind}-{stamp}", "ids": post["ids"], "kind": kind,
+           "title": post["title"], "time": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
 
     def save():
         if row not in posted:
             posted.append(row)
         write_posted(posted)
 
-    fb_id, fb_image = facebook_photo(image, texts["facebook"])
+    fb_id, fb_image = facebook_photo(image, post["texts"]["facebook"])
     row["facebook"] = fb_id
     log("Facebook geteilt:", fb_id)
-    save()  # from here on the story counts as shared, even if a later step fails
+    save()
 
     def attempt(name, fn):
         try:
             row[name] = fn()
             log(f"{name} geteilt:", row[name])
-        except Exception as e:  # noqa: BLE001
-            row[f"{name}_fehler"] = str(e)[:300]
-            gh_error(f"{name} Fehler", e)
+        except Exception as ex:  # noqa: BLE001
+            row[f"{name}_fehler"] = str(ex)[:300]
+            gh_error(f"{name} Fehler", ex)
         save()
 
     if IG_USER_ID:
-        attempt("instagram", lambda: instagram_photo(fb_image, texts["instagram"]))
+        attempt("instagram", lambda: instagram_photo(fb_image, post["texts"]["instagram"]))
     if THREADS_TOKEN:
-        attempt("threads", lambda: threads_post(texts["threads"], s["url"]))
+        attempt("threads", lambda: threads_post(post["texts"]["threads"], post["link"]))
+
+
+def main():
+    if CHECK_ONLY:
+        connection_check()
+        return 0
+    os.makedirs(CIKTI, exist_ok=True)
+    posted = read_posted()
+    now = dt.datetime.now(formats.VIENNA)
+    day = now.strftime("%Y-%m-%d")
+    done_today = STATE["slots"].setdefault(day, [])
+    slot = None if FORMAT else formats.due_slot(done_today, now)
+    if "--kontrol" in sys.argv:
+        work = bool(FORMAT) or bool(slot)
+        log("Zu tun:", FORMAT or (f"{slot[0]} {slot[1]}" if slot else "nichts (kein fälliger Termin)"))
+        out = os.getenv("GITHUB_OUTPUT")
+        if out:
+            with open(out, "a") as f:
+                f.write(f"neu={'true' if work else 'false'}\n")
+        return 0
+    stamp = now.strftime("%Y%m%d-%H%M")
+    if FORMAT:
+        kinds = ["briefing", "story", "nurhier", "dach", "stimmung", "woche"] if FORMAT == "alle" else [FORMAT]
+        if FORMAT == "alle" and not DRY_RUN:
+            raise RuntimeError("FORMAT=alle nur im Testmodus.")
+        for k in kinds:
+            kind, post = build(k, posted)
+            if post:
+                publish(kind, post, posted, stamp)
+            else:
+                log(f"[{k}] nichts zu teilen.")
+        return 0
+    if not slot:
+        log("Kein fälliger Termin.")
+        return 0
+    hhmm, kind = slot
+    log(f"Termin {hhmm}: {kind}")
+    kind, post = build(kind, posted)
+    if post:
+        publish(kind, post, posted, stamp)
+    else:
+        log("Nichts zu teilen.")
+    if not DRY_RUN:
+        done_today.append(hhmm)
+        write_posted()
     return 0
 
 

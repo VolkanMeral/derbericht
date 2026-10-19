@@ -248,6 +248,12 @@ await test("emoji reactions: counted once per visitor, switchable, can be taken 
   assert.ok(empty.includes("autofocus") && empty.includes('action="/suche"'), "empty search page");
   const feed = await (await worker.fetch(new Request("https://derbericht.com/api/social.json?min=2"), env)).json() as any;
   assert.ok(feed.stories.length >= 1 && feed.stories[0].image.startsWith("https://derbericht.com/img/") && feed.stories[0].url.includes("/story/"), "social feed");
+  const multi = await (await worker.fetch(new Request("https://derbericht.com/api/social.json?min=2&multi=1&img=0&hours=48"), env)).json() as any;
+  assert.ok(multi.stories.every((x: any) => x.countries.length > 1), "multi-country feed");
+  const onlyAt = await (await worker.fetch(new Request("https://derbericht.com/api/social.json?min=1&only=at&img=0&hours=48"), env)).json() as any;
+  assert.ok(onlyAt.stories.every((x: any) => x.countries.join() === "at"), "single-country feed");
+  const week = await (await worker.fetch(new Request("https://derbericht.com/api/week.json"), env)).json() as any;
+  assert.ok(week.articles > 0 && week.top && typeof week.only_share.at === "number", "week numbers");
   const card = await worker.fetch(new Request("https://derbericht.com/karte/" + c.id), env);
   const ch = await card.text();
   assert.equal(card.status, 200);

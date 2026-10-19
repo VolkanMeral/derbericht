@@ -174,9 +174,21 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
   // Feed for the social media bot (social/bot.py): ranked stories that have an own KI illustration.
   if (path === "/api/social.json") {
     const site = env.SITE_URL.replace(/\/$/, "");
-    const minSources = Math.max(2, Number(url.searchParams.get("min")) || 3);
-    const list = (await getStories(env, { hours: 6, minSources, limit: 15 })).filter((s) => s.image_status === "done" && s.image_key);
+    const p = url.searchParams;
+    const minSources = Math.max(2, Number(p.get("min")) || 3);
+    const hours = Math.min(48, Math.max(1, Number(p.get("hours")) || 6));
+    const only = p.get("only") as Country | null;
+    let list = await getStories(env, {
+      hours, minSources, limit: 40,
+      country: only && ["at", "de", "ch"].includes(only) ? only : undefined,
+      multiCountry: p.get("multi") === "1",
+    });
+    if (only) list = list.filter((s) => s.countries === only);           // reported in this one country only
+    if (p.get("img") !== "0") list = list.filter((s) => s.image_status === "done" && s.image_key);
     const reactions = await getReactions(env, list.map((s) => s.id));
+    const total = (id: string) => Object.values(reactions[id] ?? {}).reduce((a, b) => a + b, 0);
+    if (p.get("sort") === "reactions") list = list.filter((s) => total(s.id) > 0).sort((a, b) => total(b.id) - total(a.id));
+    list = list.slice(0, 15);
     const body = list.map((s) => ({
       id: s.id,
       title: s.lead.title,
@@ -186,14 +198,39 @@ async function handle(req: Request, env: Env, ctx?: ExecutionContext): Promise<R
       countries: s.countries.split(","),
       sources: s.articles.length,
       publishers: [...new Set(s.articles.map((a) => a.publisher))],
+      publishers_by_country: Object.fromEntries((["at", "de", "ch"] as Country[]).map((c) => [c, [...new Set(s.articles.filter((a) => a.country === c).map((a) => a.publisher))]])),
+      titles: s.articles.map((a) => a.title).slice(0, 8),
       by_country: Object.fromEntries((["at", "de", "ch"] as Country[]).map((c) => [c, s.articles.filter((a) => a.country === c).length])),
-      image: `${site}/img/${s.image_key}`,
+      image: s.image_status === "done" && s.image_key ? `${site}/img/${s.image_key}` : null,
       url: `${site}/story/${s.id}`,
       first_seen: s.first_seen,
       last_update: s.last_update,
       reactions: reactions[s.id] ?? {},
     }));
     return new Response(JSON.stringify({ generated: Date.now(), stories: body }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=120", "X-Robots-Tag": "noindex" } });
+  }
+
+  // Weekly numbers for the Sunday post ("Die Woche in Zahlen").
+  if (path === "/api/week.json") {
+    const since = Date.now() - 7 * 86400_000;
+    const [art, top, cty, reacted] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) AS n, COUNT(DISTINCT feed_id) AS feeds FROM articles WHERE published > ?").bind(since).first<{ n: number; feeds: number }>(),
+      env.DB.prepare(`SELECT c.id, c.source_count, a.title, (SELECT COUNT(*) FROM articles x WHERE x.cluster_id = c.id) AS articles
+        FROM clusters c JOIN articles a ON a.id = c.lead_id WHERE c.first_seen > ? ORDER BY articles DESC LIMIT 1`).bind(since).first<{ id: string; source_count: number; title: string; articles: number }>(),
+      env.DB.prepare(`SELECT
+          SUM(CASE WHEN countries = 'at' THEN 1 ELSE 0 END) AS only_at, SUM(CASE WHEN instr(countries,'at') > 0 THEN 1 ELSE 0 END) AS any_at,
+          SUM(CASE WHEN countries = 'de' THEN 1 ELSE 0 END) AS only_de, SUM(CASE WHEN instr(countries,'de') > 0 THEN 1 ELSE 0 END) AS any_de,
+          SUM(CASE WHEN countries = 'ch' THEN 1 ELSE 0 END) AS only_ch, SUM(CASE WHEN instr(countries,'ch') > 0 THEN 1 ELSE 0 END) AS any_ch
+        FROM clusters WHERE first_seen > ? AND source_count >= 2`).bind(since).first<Record<string, number>>(),
+      env.DB.prepare(`SELECT r.story_id, a.title, SUM(r.n) AS n, (SELECT emoji FROM reaction_log z WHERE z.story_id = r.story_id GROUP BY emoji ORDER BY SUM(n) DESC LIMIT 1) AS emoji
+        FROM reaction_log r JOIN clusters c ON c.id = r.story_id JOIN articles a ON a.id = c.lead_id
+        WHERE r.day >= ? GROUP BY r.story_id ORDER BY n DESC LIMIT 1`).bind(new Date(since).toISOString().slice(0, 10)).first<{ story_id: string; title: string; n: number; emoji: string }>(),
+    ]);
+    const share = (o?: number, a?: number) => (a ? Math.round(((o ?? 0) / a) * 100) : 0);
+    return new Response(JSON.stringify({
+      articles: art?.n ?? 0, feeds: art?.feeds ?? 0, top: top ?? null, reacted: reacted ?? null,
+      only_share: { at: share(cty?.only_at, cty?.any_at), de: share(cty?.only_de, cty?.any_de), ch: share(cty?.only_ch, cty?.any_ch) },
+    }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "public, max-age=600", "X-Robots-Tag": "noindex" } });
   }
 
   if (path === "/robots.txt") {

@@ -41,3 +41,18 @@ Anahtarları kimseyle paylaşma, sohbete de yapıştırma; sadece GitHub Secrets
 | `MAX_AGE_HOURS` | `8` | Bundan eski haberler paylaşılmaz |
 
 Paylaşım saatleri: `.github/workflows/social.yml` içindeki `cron` satırı (saatler UTC). Tasarım: `social/kart.html`.
+
+## Tagesplan (seit Oktober 2026)
+Der Bot läuft alle 30 Minuten und teilt zu diesen Wiener Zeiten (je ein Beitrag):
+
+| Zeit | Format |
+|---|---|
+| 07:30 | Morgen-Briefing – die 5 Themen des Morgens |
+| 09:00, 11:00, 14:00, 16:00, 19:00, 21:30 | einzelne Meldung (mind. 4 Redaktionen, eigene KI-Illustration) |
+| 12:30 | „Nur in Österreich / Deutschland / der Schweiz ein Thema“ (täglich wechselnd) |
+| 17:30 | DACH-Vergleich |
+| 20:30 | Leser-Stimmung (Emoji-Reaktionen) |
+| Sonntag 11:00 | Die Woche in Zahlen (statt Einzelmeldung) |
+
+Fehlen für ein Format die Daten, wird stattdessen eine Einzelmeldung geteilt. Mit `ANTHROPIC_API_KEY` (Secret) schreibt Claude eigene, neutrale Themenzeilen; ohne Schlüssel wird die Schlagzeile mit Quelle gezeigt.
+Testen: Actions → Social Media → Run workflow → `format` = `alle`, `dry_run` = `1` → Bilder unter Artifacts.
