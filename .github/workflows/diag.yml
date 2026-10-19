@@ -6,10 +6,5 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          curl -s "https://derbericht.com/api/social.json?min=3&img=0&hours=12&t=$(date +%s)" | python3 -c '
-          import json, sys, time
-          for s in json.load(sys.stdin)["stories"]:
-              age = (time.time() * 1000 - s["first_seen"]) / 3.6e6
-              print(f"::notice::{s[\"sources\"]} Quellen | {age:.1f} h | Bild: {\"ja\" if s[\"image\"] else \"nein\"} | {s[\"title\"][:70]}")
-          '
+      - uses: actions/checkout@v4
+      - run: python3 scripts/diag.py
