@@ -63,8 +63,8 @@ export async function generateImages(env: Env): Promise<number> {
   const fresh = Date.now() - 6 * 3600 * 1000;
   const { results } = await env.DB.prepare(
     `SELECT c.id, c.category, a.title FROM clusters c JOIN articles a ON a.id = c.lead_id
-     WHERE c.image_status = 'none' AND c.source_count >= ? AND c.last_update > ?
-     ORDER BY c.first_seen > ? DESC, c.source_count DESC, c.last_update DESC LIMIT ?`,
+     WHERE c.image_status IN ('none', 'failed') AND c.source_count >= ? AND c.last_update > ?
+     ORDER BY c.image_status = 'none' DESC, c.first_seen > ? DESC, c.source_count DESC, c.last_update DESC LIMIT ?`,
   ).bind(minSources, since, fresh, budget * 2).all<{ id: string; category: Category; title: string }>();
 
   let made = 0;
@@ -90,6 +90,9 @@ export async function generateImages(env: Env): Promise<number> {
       made++;
     } catch (e) {
       console.error("image failed", c.id, e);
+      // Daily AI allocation used up / rate limit: stop and try again in a later run (do not mark the story).
+      if (/neuron|allocation|limit|capacity|429|quota/i.test(String(e))) break;
+      // Other errors: marked 'failed'; such stories are retried later, after all new ones.
       await env.DB.prepare("UPDATE clusters SET image_status = 'failed' WHERE id = ?").bind(c.id).run();
     }
   }
