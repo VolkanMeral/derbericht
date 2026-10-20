@@ -39,10 +39,10 @@ jobs:
       META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
       IG_USER_ID: ${{ secrets.IG_USER_ID }}
       THREADS_TOKEN: ${{ secrets.THREADS_TOKEN }}
-      MIN_SOURCES: ${{ vars.MIN_SOURCES || '4' }}
+      MIN_SOURCES: ${{ vars.MIN_SOURCES || '3' }}
       FORMAT: ${{ github.event_name == 'workflow_dispatch' && inputs.format || '' }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      MAX_AGE_HOURS: ${{ vars.MAX_AGE_HOURS || '8' }}
+      MAX_AGE_HOURS: ${{ vars.MAX_AGE_HOURS || '12' }}
     steps:
       - uses: actions/checkout@v4
 
