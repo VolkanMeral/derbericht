@@ -1,1 +1,24 @@
-[]
+{
+ "posts": [
+  {
+   "id": "c7c834611b7f5da8",
+   "ids": [
+    "c7c834611b7f5da8",
+    "f3a5a618281d3a88",
+    "2114247624878ec3",
+    "3f6f643e54ddb0af",
+    "46b705310d85f89c"
+   ],
+   "kind": "briefing",
+   "title": "briefing",
+   "time": "2026-10-20T05:41:32+00:00",
+   "facebook": "417030248736562_1769231405208365",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"User access is restricted\",\"type\":\"OAuthException\",\"code\":25,\"error_subcode\":2207050,\"is_transient\":false,\"error_user_title\":\"Kullan\\u0131c\\u0131 k\\u0131s\\u0131tland\\u0131\",\"error_user_msg\":\"Instagram hesab\\u0131 k\\u0131s\\u0131tland\\u0131.\",\"fbtrace_id\":\"A2"
+  }
+ ],
+ "slots": {
+  "2026-10-20": [
+   "07:30"
+  ]
+ }
+}
