@@ -25,12 +25,24 @@
    "time": "2026-10-20T07:17:05+00:00",
    "facebook": "417030248736562_1769292598535579",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"User access is restricted\",\"type\":\"OAuthException\",\"code\":25,\"error_subcode\":2207050,\"is_transient\":false,\"error_user_title\":\"Kullan\\u0131c\\u0131 k\\u0131s\\u0131tland\\u0131\",\"error_user_msg\":\"Instagram hesab\\u0131 k\\u0131s\\u0131tland\\u0131.\",\"fbtrace_id\":\"Ah"
+  },
+  {
+   "id": "96245f9b0b83521f",
+   "ids": [
+    "96245f9b0b83521f"
+   ],
+   "kind": "story",
+   "title": "«Trumpflation»: Immobilienkredite so teuer wie seit 2009 nicht mehr",
+   "time": "2026-10-20T09:13:50+00:00",
+   "facebook": "417030248736562_1769375085193997",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"User access is restricted\",\"type\":\"OAuthException\",\"code\":25,\"error_subcode\":2207050,\"is_transient\":false,\"error_user_title\":\"Kullan\\u0131c\\u0131 k\\u0131s\\u0131tland\\u0131\",\"error_user_msg\":\"Instagram hesab\\u0131 k\\u0131s\\u0131tland\\u0131.\",\"fbtrace_id\":\"A1"
   }
  ],
  "slots": {
   "2026-10-20": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
