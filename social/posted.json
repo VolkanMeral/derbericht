@@ -14,11 +14,23 @@
    "time": "2026-10-20T05:41:32+00:00",
    "facebook": "417030248736562_1769231405208365",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"User access is restricted\",\"type\":\"OAuthException\",\"code\":25,\"error_subcode\":2207050,\"is_transient\":false,\"error_user_title\":\"Kullan\\u0131c\\u0131 k\\u0131s\\u0131tland\\u0131\",\"error_user_msg\":\"Instagram hesab\\u0131 k\\u0131s\\u0131tland\\u0131.\",\"fbtrace_id\":\"A2"
+  },
+  {
+   "id": "f3a5a618281d3a88",
+   "ids": [
+    "f3a5a618281d3a88"
+   ],
+   "kind": "story",
+   "title": "Umstrittene Abgeordnete: Berliner Linke berät über umstrittene Abgeordnete",
+   "time": "2026-10-20T07:17:05+00:00",
+   "facebook": "417030248736562_1769292598535579",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"User access is restricted\",\"type\":\"OAuthException\",\"code\":25,\"error_subcode\":2207050,\"is_transient\":false,\"error_user_title\":\"Kullan\\u0131c\\u0131 k\\u0131s\\u0131tland\\u0131\",\"error_user_msg\":\"Instagram hesab\\u0131 k\\u0131s\\u0131tland\\u0131.\",\"fbtrace_id\":\"Ah"
   }
  ],
  "slots": {
   "2026-10-20": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
