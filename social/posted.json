@@ -49,6 +49,17 @@
    "time": "2026-10-20T10:40:07+00:00",
    "facebook": "417030248736562_1769440461854126",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"User access is restricted\",\"type\":\"OAuthException\",\"code\":25,\"error_subcode\":2207050,\"is_transient\":false,\"error_user_title\":\"Kullan\\u0131c\\u0131 k\\u0131s\\u0131tland\\u0131\",\"error_user_msg\":\"Instagram hesab\\u0131 k\\u0131s\\u0131tland\\u0131.\",\"fbtrace_id\":\"An"
+  },
+  {
+   "id": "29c0ba86e7752581",
+   "ids": [
+    "29c0ba86e7752581"
+   ],
+   "kind": "dach",
+   "title": "dach",
+   "time": "2026-10-20T15:40:14+00:00",
+   "facebook": "417030248736562_1769704108494428",
+   "instagram": "17996589333012883"
   }
  ],
  "slots": {
@@ -56,7 +67,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "17:30"
   ]
  }
 }
