@@ -181,6 +181,17 @@
    "time": "2026-10-22T10:40:29+00:00",
    "facebook": "417030248736562_1771676174963888",
    "instagram": "18473219329191937"
+  },
+  {
+   "id": "c5de70e670a41e3f",
+   "ids": [
+    "c5de70e670a41e3f"
+   ],
+   "kind": "story",
+   "title": "Proteste gegen US-Präsidenten: „Großartig“: Trump bejubelt Prügel für Wahlkampf-Störer",
+   "time": "2026-10-22T13:13:58+00:00",
+   "facebook": "417030248736562_1771805684950937",
+   "instagram": "18134559571662478"
   }
  ],
  "slots": {
@@ -203,7 +214,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
