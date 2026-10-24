@@ -335,6 +335,17 @@
    "time": "2026-10-24T10:37:57+00:00",
    "facebook": "417030248736562_1773983161399856",
    "instagram": "18094636319189236"
+  },
+  {
+   "id": "57ef40bb396ced49",
+   "ids": [
+    "57ef40bb396ced49"
+   ],
+   "kind": "story",
+   "title": "Erster Herbststurm über Deutschland: Zwei Schwerverletzte, Chaos bei der Bahn – und jetzt drohen Orkanböen",
+   "time": "2026-10-24T12:15:44+00:00",
+   "facebook": "417030248736562_1774063204725185",
+   "instagram": "18397045582166587"
   }
  ],
  "slots": {
@@ -374,7 +385,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
