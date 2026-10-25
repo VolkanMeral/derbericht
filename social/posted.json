@@ -438,6 +438,17 @@
    "time": "2026-10-25T16:39:26+00:00",
    "facebook": "417030248736562_1775433751254797",
    "instagram": "18115863389027922"
+  },
+  {
+   "id": "603057e40dc34f15",
+   "ids": [
+    "603057e40dc34f15"
+   ],
+   "kind": "story",
+   "title": "Vorgezogene Parlamentswahlen in Serbien: Machtwechsel oder weiter mit Aleksandar Vucic?",
+   "time": "2026-10-25T18:18:50+00:00",
+   "facebook": "417030248736562_1775517964579709",
+   "instagram": "18111309494099607"
   }
  ],
  "slots": {
@@ -488,7 +499,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
