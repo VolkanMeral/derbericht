@@ -499,6 +499,17 @@
    "time": "2026-10-26T11:43:37+00:00",
    "facebook": "417030248736562_1776304681167704",
    "instagram": "18096936677405262"
+  },
+  {
+   "id": "89b3f5723e85b573",
+   "ids": [
+    "89b3f5723e85b573"
+   ],
+   "kind": "story",
+   "title": "Schäden im Badeort Patong: Starkregen setzt Thailands Urlaubsinsel Phuket unter Wasser",
+   "time": "2026-10-26T13:41:36+00:00",
+   "facebook": "417030248736562_1776424004489105",
+   "instagram": "18113092784157625"
   }
  ],
  "slots": {
@@ -556,7 +567,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
