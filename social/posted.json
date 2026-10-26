@@ -510,6 +510,17 @@
    "time": "2026-10-26T13:41:36+00:00",
    "facebook": "417030248736562_1776424004489105",
    "instagram": "18113092784157625"
+  },
+  {
+   "id": "331a3d7fb8366be4",
+   "ids": [
+    "331a3d7fb8366be4"
+   ],
+   "kind": "story",
+   "title": "Shoppingmeile: Londoner Oxford Street wird zur Fußgängerzone",
+   "time": "2026-10-26T15:00:43+00:00",
+   "facebook": "417030248736562_1776501704481335",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
   }
  ],
  "slots": {
@@ -568,7 +579,8 @@
    "09:00",
    "11:00",
    "12:30",
-   "14:00"
+   "14:00",
+   "16:00"
   ]
  }
 }
