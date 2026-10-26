@@ -475,6 +475,17 @@
    "time": "2026-10-26T08:34:12+00:00",
    "facebook": "417030248736562_1776154927849346",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
+  },
+  {
+   "id": "2b09d1f9aa89801a",
+   "ids": [
+    "2b09d1f9aa89801a"
+   ],
+   "kind": "story",
+   "title": "Berlin: Eralp hält geplantes Investitionsschutzgesetz für verfassungswidrig",
+   "time": "2026-10-26T10:15:33+00:00",
+   "facebook": "417030248736562_1776230547841784",
+   "instagram": "18099544169451762"
   }
  ],
  "slots": {
@@ -530,7 +541,8 @@
   ],
   "2026-10-26": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
