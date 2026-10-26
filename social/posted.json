@@ -464,6 +464,17 @@
    "time": "2026-10-26T07:19:00+00:00",
    "facebook": "417030248736562_1776099054521600",
    "instagram": "18136733389563063"
+  },
+  {
+   "id": "53c145260650c945",
+   "ids": [
+    "53c145260650c945"
+   ],
+   "kind": "story",
+   "title": "Milliarden-Airport eröffnet: Neuer Flughafen in Sydney sorgt für Verwirrung",
+   "time": "2026-10-26T08:34:12+00:00",
+   "facebook": "417030248736562_1776154927849346",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
   }
  ],
  "slots": {
@@ -518,7 +529,8 @@
    "19:00"
   ],
   "2026-10-26": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
