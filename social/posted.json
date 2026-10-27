@@ -569,6 +569,17 @@
    "time": "2026-10-27T11:41:25+00:00",
    "facebook": "417030248736562_1777570464374459",
    "instagram": "18025808189876547"
+  },
+  {
+   "id": "bba061880b3963ae",
+   "ids": [
+    "bba061880b3963ae"
+   ],
+   "kind": "story",
+   "title": "Vergesellschaftungen: Hubig: «Viele Fragezeichen» bei Gesetz gegen Enteignungen",
+   "time": "2026-10-27T13:16:51+00:00",
+   "facebook": "417030248736562_1777670414364464",
+   "instagram": "18113647790145703"
   }
  ],
  "slots": {
@@ -627,7 +638,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
