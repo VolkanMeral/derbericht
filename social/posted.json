@@ -547,6 +547,17 @@
    "time": "2026-10-27T08:25:38+00:00",
    "facebook": "417030248736562_1777374484394057",
    "instagram": "18072271304770344"
+  },
+  {
+   "id": "9984fd6cc369beaa",
+   "ids": [
+    "9984fd6cc369beaa"
+   ],
+   "kind": "story",
+   "title": "USA: Trump verspricht eine Million Dollar für Hinweise auf Wahlbetrug bei Midterms",
+   "time": "2026-10-27T10:17:23+00:00",
+   "facebook": "417030248736562_1777490514382454",
+   "instagram": "17894950134434743"
   }
  ],
  "slots": {
@@ -603,7 +614,8 @@
   ],
   "2026-10-27": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
