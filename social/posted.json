@@ -536,6 +536,17 @@
    "time": "2026-10-27T06:56:15+00:00",
    "facebook": "417030248736562_1777301351068037",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
+  },
+  {
+   "id": "524c0b783769a48a",
+   "ids": [
+    "524c0b783769a48a"
+   ],
+   "kind": "story",
+   "title": "Musik: Jay-Z übernimmt 2027 Halbzeit-Show beim Super Bowl",
+   "time": "2026-10-27T08:25:38+00:00",
+   "facebook": "417030248736562_1777374484394057",
+   "instagram": "18072271304770344"
   }
  ],
  "slots": {
@@ -591,7 +602,8 @@
    "16:00"
   ],
   "2026-10-27": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
