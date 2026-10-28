@@ -663,6 +663,17 @@
    "time": "2026-10-28T13:09:48+00:00",
    "facebook": "417030248736562_1779048457559993",
    "instagram": "18077220473749692"
+  },
+  {
+   "id": "991bd0f77615e43c",
+   "ids": [
+    "991bd0f77615e43c"
+   ],
+   "kind": "story",
+   "title": "Streit in CDU-Landtagsfraktion: Abgeordnete sollten eidesstattliche Erklärung unterschreiben",
+   "time": "2026-10-28T15:09:50+00:00",
+   "facebook": "417030248736562_1779177794213726",
+   "instagram": "18137762215644602"
   }
  ],
  "slots": {
@@ -723,7 +734,8 @@
    "09:00",
    "11:00",
    "12:30",
-   "14:00"
+   "14:00",
+   "16:00"
   ]
  }
 }
