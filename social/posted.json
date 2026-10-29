@@ -711,6 +711,17 @@
    "time": "2026-10-29T08:13:15+00:00",
    "facebook": "417030248736562_1780075690790603",
    "instagram": "18128134478477422"
+  },
+  {
+   "id": "d7b9decce12fbbbf",
+   "ids": [
+    "d7b9decce12fbbbf"
+   ],
+   "kind": "story",
+   "title": "„Elon Musk ist ein Genie“: Putin äußert sich lobend über US-Tech-Milliardär",
+   "time": "2026-10-29T10:10:00+00:00",
+   "facebook": "417030248736562_1780181344113371",
+   "instagram": "18084078641379279"
   }
  ],
  "slots": {
@@ -769,7 +780,8 @@
   ],
   "2026-10-29": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
