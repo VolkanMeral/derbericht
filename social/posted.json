@@ -884,6 +884,17 @@
    "time": "2026-10-30T19:35:24+00:00",
    "facebook": "417030248736562_1782026277262211",
    "instagram": "18034201835885745"
+  },
+  {
+   "id": "f2cd8fbd3ee4d080",
+   "ids": [
+    "f2cd8fbd3ee4d080"
+   ],
+   "kind": "story",
+   "title": "Kriminalität: Fall Fabian: Verteidiger kündigt Antrag auf Freispruch an",
+   "time": "2026-10-30T20:34:51+00:00",
+   "facebook": "417030248736562_1782075357257303",
+   "instagram": "18018068309957878"
   }
  ],
  "slots": {
@@ -950,7 +961,8 @@
    "16:00",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
