@@ -978,6 +978,17 @@
    "time": "2026-10-31T16:34:51+00:00",
    "facebook": "417030248736562_1783101213821384",
    "instagram": "18101706557551255"
+  },
+  {
+   "id": "f4a8d46dfc4795cb",
+   "ids": [
+    "f4a8d46dfc4795cb"
+   ],
+   "kind": "story",
+   "title": "Flávio Bolsonaro begründet Flucht aus Brasilien mit angeblicher „Verfolgung“",
+   "time": "2026-10-31T18:09:09+00:00",
+   "facebook": "417030248736562_1783205573810948",
+   "instagram": "18231574471332677"
   }
  ],
  "slots": {
@@ -1046,7 +1057,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
