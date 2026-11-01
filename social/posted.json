@@ -1024,6 +1024,19 @@
    "time": "2026-11-01T10:07:48+00:00",
    "facebook": "417030248736562_1784076917057147",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
+  },
+  {
+   "id": "82da288d96557b9f",
+   "ids": [
+    "82da288d96557b9f",
+    "8f3004171cf93dac",
+    "87f870134435d208"
+   ],
+   "kind": "nurhier",
+   "title": "nurhier",
+   "time": "2026-11-01T11:34:48+00:00",
+   "facebook": "417030248736562_1784153620382810",
+   "instagram": "17996570475018588"
   }
  ],
  "slots": {
@@ -1088,7 +1101,8 @@
   "2026-11-01": [
    "07:30",
    "09:00",
-   "11:00"
+   "11:00",
+   "12:30"
   ]
  }
 }
