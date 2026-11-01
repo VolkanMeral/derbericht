@@ -1015,6 +1015,15 @@
    "time": "2026-11-01T08:10:37+00:00",
    "facebook": "417030248736562_1783978160400356",
    "instagram": "18030334484879287"
+  },
+  {
+   "id": "woche-20261101-1107",
+   "ids": [],
+   "kind": "woche",
+   "title": "woche",
+   "time": "2026-11-01T10:07:48+00:00",
+   "facebook": "417030248736562_1784076917057147",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
   }
  ],
  "slots": {
@@ -1078,7 +1087,8 @@
   ],
   "2026-11-01": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
