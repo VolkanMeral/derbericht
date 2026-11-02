@@ -1131,6 +1131,17 @@
    "time": "2026-11-02T13:10:07+00:00",
    "facebook": "417030248736562_1785464770251695",
    "instagram": "18358428418174535"
+  },
+  {
+   "id": "b7365c828e45a25c",
+   "ids": [
+    "b7365c828e45a25c"
+   ],
+   "kind": "story",
+   "title": "Erster Gesetzesentwurf: Reiche will Spritpreisdeckel offenbar an Preise im Ausland koppeln",
+   "time": "2026-11-02T15:09:31+00:00",
+   "facebook": "417030248736562_1785592523572253",
+   "instagram": "17914604313472393"
   }
  ],
  "slots": {
@@ -1198,7 +1209,8 @@
    "09:00",
    "11:00",
    "12:30",
-   "14:00"
+   "14:00",
+   "16:00"
   ]
  }
 }
