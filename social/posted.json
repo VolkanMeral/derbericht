@@ -1085,6 +1085,17 @@
    "time": "2026-11-02T06:45:47+00:00",
    "facebook": "417030248736562_1785104606954378",
    "instagram": "18107012261526223"
+  },
+  {
+   "id": "946f73dc0a08f2d7",
+   "ids": [
+    "946f73dc0a08f2d7"
+   ],
+   "kind": "story",
+   "title": "Spiele in Brisbane: Australien: Krokodil nahe Olympia-Ruderstrecke gesichtet",
+   "time": "2026-11-02T08:13:14+00:00",
+   "facebook": "417030248736562_1785191210279051",
+   "instagram": "18118531409109196"
   }
  ],
  "slots": {
@@ -1148,7 +1159,8 @@
    "17:30"
   ],
   "2026-11-02": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
