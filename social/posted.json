@@ -1284,6 +1284,17 @@
    "time": "2026-11-04T06:39:02+00:00",
    "facebook": "417030248736562_1787608990037273",
    "instagram": "18035722454886680"
+  },
+  {
+   "id": "5fec5db13e0e5a61",
+   "ids": [
+    "5fec5db13e0e5a61"
+   ],
+   "kind": "story",
+   "title": "Massive Zurückweisung Trumps: Demokraten gewinnen Mehrheit im US-Repräsentantenhaus und im Senat",
+   "time": "2026-11-04T08:11:31+00:00",
+   "facebook": "417030248736562_1787685640029608",
+   "instagram": "18110594987166119"
   }
  ],
  "slots": {
@@ -1350,7 +1361,8 @@
    "19:00"
   ],
   "2026-11-04": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
