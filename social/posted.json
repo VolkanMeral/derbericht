@@ -1363,6 +1363,17 @@
    "time": "2026-11-04T18:09:46+00:00",
    "facebook": "417030248736562_1788301853301320",
    "instagram": "18120833830960375"
+  },
+  {
+   "id": "043f2beaf853a5b6",
+   "ids": [
+    "043f2beaf853a5b6"
+   ],
+   "kind": "story",
+   "title": "Sondervermögen Infrastruktur: 4,5 Millionen Euro Förderung für Schwimmbad in Flensburg",
+   "time": "2026-11-04T19:37:15+00:00",
+   "facebook": "417030248736562_1788382096626629",
+   "instagram": "18131923906890053"
   }
  ],
  "slots": {
@@ -1436,7 +1447,8 @@
    "14:00",
    "16:00",
    "17:30",
-   "19:00"
+   "19:00",
+   "20:30"
   ]
  }
 }
