@@ -1295,6 +1295,17 @@
    "time": "2026-11-04T08:11:31+00:00",
    "facebook": "417030248736562_1787685640029608",
    "instagram": "18110594987166119"
+  },
+  {
+   "id": "ca8fc45cbff39e96",
+   "ids": [
+    "ca8fc45cbff39e96"
+   ],
+   "kind": "story",
+   "title": "Wichtiger Sieg bei den Midterms: Demokrat nimmt Republikanern Senatssitz in North Carolina ab",
+   "time": "2026-11-04T10:10:33+00:00",
+   "facebook": "417030248736562_1787785790019593",
+   "instagram": "18109246697257610"
   }
  ],
  "slots": {
@@ -1362,7 +1373,8 @@
   ],
   "2026-11-04": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
