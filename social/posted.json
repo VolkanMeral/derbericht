@@ -1466,6 +1466,17 @@
    "time": "2026-11-05T16:46:32+00:00",
    "facebook": "417030248736562_1789519459846226",
    "instagram": "18183194173427425"
+  },
+  {
+   "id": "f738e8214488196a",
+   "ids": [
+    "f738e8214488196a"
+   ],
+   "kind": "story",
+   "title": "Präparierte Halloween-Süßigkeiten: Mehrere Kinder geben zu, dass sie Erwachsene erschrecken wollten",
+   "time": "2026-11-05T18:10:47+00:00",
+   "facebook": "417030248736562_1789598503171655",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
   }
  ],
  "slots": {
@@ -1540,7 +1551,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
