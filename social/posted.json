@@ -1400,6 +1400,17 @@
    "time": "2026-11-05T06:39:50+00:00",
    "facebook": "417030248736562_1788966553234850",
    "instagram": "18140185804712888"
+  },
+  {
+   "id": "cf6fd046626fde1f",
+   "ids": [
+    "cf6fd046626fde1f"
+   ],
+   "kind": "story",
+   "title": "Vorwurf der „Kollaboration“: Hongkonger Aktivist Wong zu weiteren zehn Jahren Haft verurteilt",
+   "time": "2026-11-05T08:12:26+00:00",
+   "facebook": "417030248736562_1789039909894181",
+   "instagram": "18055546964808192"
   }
  ],
  "slots": {
@@ -1468,7 +1479,8 @@
    "21:30"
   ],
   "2026-11-05": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
