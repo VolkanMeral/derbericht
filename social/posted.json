@@ -1433,6 +1433,17 @@
    "time": "2026-11-05T11:35:09+00:00",
    "facebook": "417030248736562_1789212766543562",
    "instagram": "17968470960194882"
+  },
+  {
+   "id": "69fe5abcd11cdde9",
+   "ids": [
+    "69fe5abcd11cdde9"
+   ],
+   "kind": "story",
+   "title": "Nach 23 Jahren: Cristiano Ronaldo beendet Karriere in der Nationalmannschaft",
+   "time": "2026-11-05T13:08:51+00:00",
+   "facebook": "417030248736562_1789306953200810",
+   "instagram": "18109020284204788"
   }
  ],
  "slots": {
@@ -1504,7 +1515,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
