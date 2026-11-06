@@ -1477,21 +1477,24 @@
    "time": "2026-11-05T18:10:47+00:00",
    "facebook": "417030248736562_1789598503171655",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
+  },
+  {
+   "id": "d5b75115d51feb67",
+   "ids": [
+    "d5b75115d51feb67",
+    "ee7d1c232b14e414",
+    "0e1f5aedf5bae6d8",
+    "a3cca564eee17add",
+    "bc8e38c23a6bbc3e"
+   ],
+   "kind": "briefing",
+   "title": "briefing",
+   "time": "2026-11-06T06:39:14+00:00",
+   "facebook": "417030248736562_1790291243102381",
+   "instagram": "18123654577941313"
   }
  ],
  "slots": {
-  "2026-10-30": [
-   "07:30",
-   "09:00",
-   "11:00",
-   "12:30",
-   "14:00",
-   "16:00",
-   "17:30",
-   "19:00",
-   "20:30",
-   "21:30"
-  ],
   "2026-10-31": [
    "07:30",
    "09:00",
@@ -1553,6 +1556,9 @@
    "16:00",
    "17:30",
    "19:00"
+  ],
+  "2026-11-06": [
+   "07:30"
   ]
  }
 }
