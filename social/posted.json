@@ -1560,6 +1560,17 @@
    "time": "2026-11-06T16:34:59+00:00",
    "facebook": "417030248736562_1790882326376606",
    "instagram": "17982562377068810"
+  },
+  {
+   "id": "718fdb2248ecbfce",
+   "ids": [
+    "718fdb2248ecbfce"
+   ],
+   "kind": "story",
+   "title": "Elektromobilität: Tesla stellt Produktion des Cybertrucks in Texas ein",
+   "time": "2026-11-06T18:11:29+00:00",
+   "facebook": "417030248736562_1790992043032301",
+   "instagram": "18111556283223997"
   }
  ],
  "slots": {
@@ -1632,7 +1643,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
