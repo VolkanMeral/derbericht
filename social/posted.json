@@ -1643,6 +1643,17 @@
    "time": "2026-11-07T11:34:57+00:00",
    "facebook": "417030248736562_1791889376275901",
    "instagram": "18112620560183329"
+  },
+  {
+   "id": "a2def1fdcf63c39a",
+   "ids": [
+    "a2def1fdcf63c39a"
+   ],
+   "kind": "story",
+   "title": "Wird Robert Pattinson der neue Bond?: Hollywoodstar hat für die Rolle vorgesprochen",
+   "time": "2026-11-07T13:06:59+00:00",
+   "facebook": "417030248736562_1791988719599300",
+   "instagram": "18122756402282307"
   }
  ],
  "slots": {
@@ -1714,7 +1725,8 @@
    "07:30",
    "09:00",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
