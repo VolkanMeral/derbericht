@@ -1654,6 +1654,17 @@
    "time": "2026-11-07T13:06:59+00:00",
    "facebook": "417030248736562_1791988719599300",
    "instagram": "18122756402282307"
+  },
+  {
+   "id": "f50b44f69ab02230",
+   "ids": [
+    "f50b44f69ab02230"
+   ],
+   "kind": "story",
+   "title": "Wahl des Staatsoberhaupts: BSW-Spitze kritisiert Nominierung von Constantin Schreiber",
+   "time": "2026-11-07T15:06:41+00:00",
+   "facebook": "417030248736562_1792113226253516",
+   "instagram": "18251549269310049"
   }
  ],
  "slots": {
@@ -1726,7 +1737,8 @@
    "09:00",
    "11:00",
    "12:30",
-   "14:00"
+   "14:00",
+   "16:00"
   ]
  }
 }
