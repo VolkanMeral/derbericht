@@ -1676,6 +1676,17 @@
    "time": "2026-11-07T16:34:50+00:00",
    "facebook": "417030248736562_1792205239577648",
    "instagram": "17912826222576010"
+  },
+  {
+   "id": "4dbcf8b3bb9fd6ed",
+   "ids": [
+    "4dbcf8b3bb9fd6ed"
+   ],
+   "kind": "story",
+   "title": "Friedrich-Naumann-Stiftung: Schah-Sohn erhält Preis für Irans Volk - Demonstrationen",
+   "time": "2026-11-07T18:08:28+00:00",
+   "facebook": "417030248736562_1792301229568049",
+   "instagram": "18077819531571298"
   }
  ],
  "slots": {
@@ -1750,7 +1761,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
