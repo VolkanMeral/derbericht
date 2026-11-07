@@ -1687,6 +1687,17 @@
    "time": "2026-11-07T18:08:28+00:00",
    "facebook": "417030248736562_1792301229568049",
    "instagram": "18077819531571298"
+  },
+  {
+   "id": "0b3a7d1747ee4bff",
+   "ids": [
+    "0b3a7d1747ee4bff"
+   ],
+   "kind": "story",
+   "title": "Bundespräsidentenwahl: Die „Nachbarin von nebenan“ - Besuch in Aigners Heimatort",
+   "time": "2026-11-07T19:34:58+00:00",
+   "facebook": "417030248736562_1792382672893238",
+   "instagram": "18107600609644592"
   }
  ],
  "slots": {
@@ -1762,7 +1773,8 @@
    "14:00",
    "16:00",
    "17:30",
-   "19:00"
+   "19:00",
+   "20:30"
   ]
  }
 }
