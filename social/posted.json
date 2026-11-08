@@ -1744,6 +1744,17 @@
    "time": "2026-11-08T10:07:56+00:00",
    "facebook": "417030248736562_1793164579481714",
    "instagram": "18415743757093045"
+  },
+  {
+   "id": "5d3295fdb725a3cf",
+   "ids": [
+    "5d3295fdb725a3cf"
+   ],
+   "kind": "story",
+   "title": "Nahost: Netanjahu-Rivale Eisenkot in Israel mit Regierungsbildung beauftragt",
+   "time": "2026-11-08T11:34:39+00:00",
+   "facebook": "417030248736562_1793254272806078",
+   "instagram": "18093121178230725"
   }
  ],
  "slots": {
@@ -1817,7 +1828,8 @@
   "2026-11-08": [
    "07:30",
    "09:00",
-   "11:00"
+   "11:00",
+   "12:30"
   ]
  }
 }
