@@ -1799,6 +1799,17 @@
    "time": "2026-11-08T18:08:53+00:00",
    "facebook": "417030248736562_1793655426099296",
    "instagram": "18168825859503926"
+  },
+  {
+   "id": "7beec4606a352c01",
+   "ids": [
+    "7beec4606a352c01"
+   ],
+   "kind": "story",
+   "title": "\"Glaube rechtfertigt keine Spaltung\": Fan- und Förderabteilung des BVB kritisiert Nmecha",
+   "time": "2026-11-08T19:35:38+00:00",
+   "facebook": "417030248736562_1793745232756982",
+   "instagram": "18002055963011117"
   }
  ],
  "slots": {
@@ -1877,7 +1888,8 @@
    "14:00",
    "16:00",
    "17:30",
-   "19:00"
+   "19:00",
+   "20:30"
   ]
  }
 }
