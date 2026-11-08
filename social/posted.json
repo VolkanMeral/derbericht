@@ -1724,6 +1724,17 @@
    "time": "2026-11-08T06:37:29+00:00",
    "facebook": "417030248736562_1792969059501266",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"type\":\"OAuthException\",\"code\":9007,\"error_subcode\":2207027,\"is_transient\":false,\"error_user_title\":\"Yay\\u0131nlanam\\u0131yor\",\"error_user_msg\":\"Medya yay\\u0131nlanmaya haz\\u0131r de\\u011fil. L\\u00fctfen biraz bekle\",\"fbtrace_id\":"
+  },
+  {
+   "id": "4acb6a00797cc4bc",
+   "ids": [
+    "4acb6a00797cc4bc"
+   ],
+   "kind": "story",
+   "title": "Handel: Preisschock zu Weihnachten: KI-Chips verteuern Elektronik",
+   "time": "2026-11-08T08:10:21+00:00",
+   "facebook": "417030248736562_1793062472825258",
+   "instagram": "18148008889584132"
   }
  ],
  "slots": {
@@ -1795,7 +1806,8 @@
    "21:30"
   ],
   "2026-11-08": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
