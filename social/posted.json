@@ -1847,6 +1847,17 @@
    "time": "2026-11-09T09:11:46+00:00",
    "facebook": "417030248736562_1794439852687520",
    "instagram": "18128348149916476"
+  },
+  {
+   "id": "fbe5769a8dd738b8",
+   "ids": [
+    "fbe5769a8dd738b8"
+   ],
+   "kind": "story",
+   "title": "Ersetzbar am Arbeitsplatz: Ifo: KI-Effekt am Arbeitsmarkt - Berufseinsteiger leiden",
+   "time": "2026-11-09T10:09:13+00:00",
+   "facebook": "417030248736562_1794479649350207",
+   "instagram": "18246750946315073"
   }
  ],
  "slots": {
@@ -1920,7 +1931,8 @@
   ],
   "2026-11-09": [
    "07:30",
-   "09:00"
+   "09:00",
+   "11:00"
   ]
  }
 }
