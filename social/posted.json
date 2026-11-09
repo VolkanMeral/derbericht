@@ -1915,6 +1915,17 @@
    "time": "2026-11-09T18:34:51+00:00",
    "facebook": "417030248736562_1794990085965830",
    "instagram": "18117658979323329"
+  },
+  {
+   "id": "0a5d1c2ee5b20e76",
+   "ids": [
+    "0a5d1c2ee5b20e76"
+   ],
+   "kind": "story",
+   "title": "Beliebte Plattform: Medien: Spanien erwägt TikTok-Sperre wegen Kindesmissbrauchs",
+   "time": "2026-11-09T19:35:09+00:00",
+   "facebook": "417030248736562_1795051079293064",
+   "instagram": "17883102708547031"
   }
  ],
  "slots": {
@@ -1994,7 +2005,8 @@
    "14:00",
    "16:00",
    "17:30",
-   "19:00"
+   "19:00",
+   "20:30"
   ]
  }
 }
