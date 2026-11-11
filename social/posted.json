@@ -2046,6 +2046,17 @@
    "time": "2026-11-11T06:39:48+00:00",
    "facebook": "417030248736562_1796971489101023",
    "instagram": "17916063765475847"
+  },
+  {
+   "id": "0dc19ce9a1bea7c5",
+   "ids": [
+    "0dc19ce9a1bea7c5"
+   ],
+   "kind": "story",
+   "title": "Belästigungsvorwürfe: Palmer verzichtet vorerst auf öffentliche Auftritte",
+   "time": "2026-11-11T10:09:14+00:00",
+   "facebook": "417030248736562_1797168355748003",
+   "instagram": "18119271334821049"
   }
  ],
  "slots": {
@@ -2118,7 +2129,8 @@
    "21:30"
   ],
   "2026-11-11": [
-   "07:30"
+   "07:30",
+   "11:00"
   ]
  }
 }
