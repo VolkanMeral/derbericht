@@ -2114,6 +2114,17 @@
    "time": "2026-11-11T19:34:52+00:00",
    "facebook": "417030248736562_1797734469024725",
    "instagram": "17913344796483323"
+  },
+  {
+   "id": "90db9aaa32bb0d8d",
+   "ids": [
+    "90db9aaa32bb0d8d"
+   ],
+   "kind": "story",
+   "title": "Frau war auch schon dabei: Englands Ex-Fußballstar Wayne Rooney im Dschungelcamp",
+   "time": "2026-11-11T21:04:59+00:00",
+   "facebook": "417030248736562_1797816815683157",
+   "instagram": "18030356678874060"
   }
  ],
  "slots": {
@@ -2192,7 +2203,8 @@
    "14:00",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
