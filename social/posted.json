@@ -2175,6 +2175,17 @@
    "time": "2026-11-12T13:08:51+00:00",
    "facebook": "417030248736562_1798660748932097",
    "instagram": "18149313388571775"
+  },
+  {
+   "id": "cac0c48be5b003c4",
+   "ids": [
+    "cac0c48be5b003c4"
+   ],
+   "kind": "story",
+   "title": "„Er hat jetzt lebenslang Hausarrest“: Teenager nach sechs Tagen in australischer Wildnis gerettet",
+   "time": "2026-11-12T15:08:45+00:00",
+   "facebook": "417030248736562_1798791278919044",
+   "instagram": "18134653763508469"
   }
  ],
  "slots": {
@@ -2250,7 +2261,8 @@
    "07:30",
    "11:00",
    "12:30",
-   "14:00"
+   "14:00",
+   "16:00"
   ]
  }
 }
