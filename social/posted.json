@@ -2394,6 +2394,17 @@
    "time": "2026-11-14T16:34:38+00:00",
    "facebook": "417030248736562_1801589401972565",
    "instagram": "17871496287658997"
+  },
+  {
+   "id": "400af92970bdba01",
+   "ids": [
+    "400af92970bdba01"
+   ],
+   "kind": "story",
+   "title": "Gouverneurswahl in Alaska: Alaska wählt erstmals seit 1998 einen Demokraten zum Gouverneur",
+   "time": "2026-11-14T18:09:00+00:00",
+   "facebook": "417030248736562_1801685778629594",
+   "instagram": "18118623014012329"
   }
  ],
  "slots": {
@@ -2468,7 +2479,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
