@@ -2508,6 +2508,17 @@
    "time": "2026-11-15T18:09:08+00:00",
    "facebook": "417030248736562_1803016108496561",
    "instagram": "18130975630868496"
+  },
+  {
+   "id": "5d2dcf3277eccc27",
+   "ids": [
+    "5d2dcf3277eccc27"
+   ],
+   "kind": "story",
+   "title": "Raubüberfall in Dänemark: Pokémon-Coup! Maskierte Räuber erbeuten Karten-Schatz",
+   "time": "2026-11-15T19:34:35+00:00",
+   "facebook": "417030248736562_1803117795153059",
+   "instagram": "18127715308926973"
   }
  ],
  "slots": {
@@ -2582,7 +2593,8 @@
    "14:00",
    "16:00",
    "17:30",
-   "19:00"
+   "19:00",
+   "20:30"
   ]
  }
 }
