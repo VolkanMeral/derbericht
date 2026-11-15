@@ -2464,6 +2464,17 @@
    "time": "2026-11-15T11:34:36+00:00",
    "facebook": "417030248736562_1802606661870839",
    "instagram": "18084439886361891"
+  },
+  {
+   "id": "9f122ae711bb38c1",
+   "ids": [
+    "9f122ae711bb38c1"
+   ],
+   "kind": "story",
+   "title": "Fußball-Nationalmannschaft: Gut für Klopp: Alle Spieler inklusive Kapitän Kimmich fit",
+   "time": "2026-11-15T13:07:34+00:00",
+   "facebook": "417030248736562_1802707235194115",
+   "instagram": "18366159592217793"
   }
  ],
  "slots": {
@@ -2534,7 +2545,8 @@
   "2026-11-15": [
    "07:30",
    "11:00",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
