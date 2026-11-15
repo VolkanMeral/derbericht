@@ -2519,6 +2519,17 @@
    "time": "2026-11-15T19:34:35+00:00",
    "facebook": "417030248736562_1803117795153059",
    "instagram": "18127715308926973"
+  },
+  {
+   "id": "96eeb639560a70c9",
+   "ids": [
+    "96eeb639560a70c9"
+   ],
+   "kind": "story",
+   "title": "Südamerika-Reise: Papst feiert Gottesdienst in 3.700 Metern Höhe in den Anden",
+   "time": "2026-11-15T20:34:44+00:00",
+   "facebook": "417030248736562_1803197258478446",
+   "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"code\":9007,\"type\":\"OAuthException\",\"error_subcode\":2207027,\"is_transient\":false,\"error_user_msg\":\"Medya yayınlanmaya hazır değil. Lütfen biraz bekle\",\"error_user_title\":\"Yayınlanamıyor\",\"fbtrace_id\":\"ArtZZgfXS_kgKt6IPl--w4g\"}}"
   }
  ],
  "slots": {
@@ -2594,7 +2605,8 @@
    "16:00",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
