@@ -2530,20 +2530,24 @@
    "time": "2026-11-15T20:34:44+00:00",
    "facebook": "417030248736562_1803197258478446",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"code\":9007,\"type\":\"OAuthException\",\"error_subcode\":2207027,\"is_transient\":false,\"error_user_msg\":\"Medya yayınlanmaya hazır değil. Lütfen biraz bekle\",\"error_user_title\":\"Yayınlanamıyor\",\"fbtrace_id\":\"ArtZZgfXS_kgKt6IPl--w4g\"}}"
+  },
+  {
+   "id": "98174d983e536c16",
+   "ids": [
+    "98174d983e536c16",
+    "ccda410f015dbcbe",
+    "be80010647d3627c",
+    "8dd6f4cdf98023ae",
+    "c7a3b4f8892522bd"
+   ],
+   "kind": "briefing",
+   "title": "briefing",
+   "time": "2026-11-16T06:55:38+00:00",
+   "facebook": "417030248736562_1803802718417900",
+   "instagram": "18135859915771549"
   }
  ],
  "slots": {
-  "2026-11-09": [
-   "07:30",
-   "09:00",
-   "11:00",
-   "12:30",
-   "14:00",
-   "16:00",
-   "17:30",
-   "19:00",
-   "20:30"
-  ],
   "2026-11-10": [
    "07:30",
    "11:00",
@@ -2607,6 +2611,9 @@
    "19:00",
    "20:30",
    "21:30"
+  ],
+  "2026-11-16": [
+   "07:30"
   ]
  }
 }
