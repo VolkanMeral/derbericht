@@ -2591,6 +2591,17 @@
    "time": "2026-11-16T16:34:50+00:00",
    "facebook": "417030248736562_1804477245017114",
    "instagram": "18139415203647932"
+  },
+  {
+   "id": "ddabdd324fd18236",
+   "ids": [
+    "ddabdd324fd18236"
+   ],
+   "kind": "story",
+   "title": "Fußball-Politik: FIFA-Machtkampf: Infantinos Gegner und ihre Suche nach Mr. X",
+   "time": "2026-11-16T18:10:41+00:00",
+   "facebook": "417030248736562_1804585081672997",
+   "instagram": "18146692636608600"
   }
  ],
  "slots": {
@@ -2663,7 +2674,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
