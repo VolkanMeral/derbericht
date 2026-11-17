@@ -2707,6 +2707,17 @@
    "time": "2026-11-17T19:35:14+00:00",
    "facebook": "417030248736562_1806228471508658",
    "instagram": "18120553376095264"
+  },
+  {
+   "id": "f3150ee161869ea9",
+   "ids": [
+    "f3150ee161869ea9"
+   ],
+   "kind": "story",
+   "title": "Real Madrid begrüßt Urteil: Haftstrafe nach rassistischen Beleidigungen gegen Mbappé",
+   "time": "2026-11-17T20:36:03+00:00",
+   "facebook": "417030248736562_1806276554837183",
+   "instagram": "18043135739839467"
   }
  ],
  "slots": {
@@ -2780,7 +2791,8 @@
    "16:00",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
