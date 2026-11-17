@@ -2652,6 +2652,17 @@
    "time": "2026-11-17T11:34:52+00:00",
    "facebook": "417030248736562_1805678794896959",
    "instagram_fehler": "Graph API Fehler 400: {\"error\":{\"message\":\"Media ID is not available\",\"code\":9007,\"type\":\"OAuthException\",\"error_subcode\":2207027,\"is_transient\":false,\"error_user_msg\":\"Medya yayınlanmaya hazır değil. Lütfen biraz bekle\",\"error_user_title\":\"Yayınlanamıyor\",\"fbtrace_id\":\"ABtELcVoVvkswOxuRYs3fk3\"}}"
+  },
+  {
+   "id": "7b66a878e3af7abe",
+   "ids": [
+    "7b66a878e3af7abe"
+   ],
+   "kind": "story",
+   "title": "Türkei: Polizei stürmt Sitz von oppositionsnahem Sender Sözcü TV",
+   "time": "2026-11-17T13:09:24+00:00",
+   "facebook": "417030248736562_1805805711550934",
+   "instagram": "18133435534825062"
   }
  ],
  "slots": {
@@ -2720,7 +2731,8 @@
   ],
   "2026-11-17": [
    "07:30",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
