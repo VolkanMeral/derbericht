@@ -2746,6 +2746,17 @@
    "time": "2026-11-18T11:35:13+00:00",
    "facebook": "417030248736562_1806960108102161",
    "instagram": "18079653026441226"
+  },
+  {
+   "id": "f48b9a6e8ef1d6b1",
+   "ids": [
+    "f48b9a6e8ef1d6b1"
+   ],
+   "kind": "story",
+   "title": "Autonomes Fahren: Pilotbetrieb: Uber und Momenta testen Robotaxis mit Kunden in München",
+   "time": "2026-11-18T13:35:20+00:00",
+   "facebook": "417030248736562_1807072598090912",
+   "instagram": "17961608493256204"
   }
  ],
  "slots": {
@@ -2814,7 +2825,8 @@
   ],
   "2026-11-18": [
    "07:30",
-   "12:30"
+   "12:30",
+   "14:00"
   ]
  }
 }
