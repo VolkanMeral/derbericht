@@ -2757,6 +2757,17 @@
    "time": "2026-11-18T13:35:20+00:00",
    "facebook": "417030248736562_1807072598090912",
    "instagram": "17961608493256204"
+  },
+  {
+   "id": "56b64db3f9e4ce2b",
+   "ids": [
+    "56b64db3f9e4ce2b"
+   ],
+   "kind": "story",
+   "title": "Vorwürfe sexueller Übergriffe: Gericht leitet Ermittlungen gegen Julio Iglesias ein",
+   "time": "2026-11-18T15:08:55+00:00",
+   "facebook": "417030248736562_1807158171415688",
+   "instagram": "18122323465756212"
   }
  ],
  "slots": {
@@ -2826,7 +2837,8 @@
   "2026-11-18": [
    "07:30",
    "12:30",
-   "14:00"
+   "14:00",
+   "16:00"
   ]
  }
 }
