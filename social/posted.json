@@ -2966,6 +2966,17 @@
    "time": "2026-11-20T16:36:23+00:00",
    "facebook": "417030248736562_1809919021139603",
    "instagram": "17986260071904599"
+  },
+  {
+   "id": "495cdf84e159ea10",
+   "ids": [
+    "495cdf84e159ea10"
+   ],
+   "kind": "story",
+   "title": "Justiz: Frankreichs Justiz untersucht Vorwürfe gegen Depardieu und Houellebecq",
+   "time": "2026-11-20T18:10:31+00:00",
+   "facebook": "417030248736562_1810014104463428",
+   "instagram": "18430578142147794"
   }
  ],
  "slots": {
@@ -3035,7 +3046,8 @@
    "12:30",
    "14:00",
    "16:00",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
