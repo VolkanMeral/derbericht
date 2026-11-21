@@ -3071,6 +3071,17 @@
    "time": "2026-11-21T19:35:12+00:00",
    "facebook": "417030248736562_1811406027657569",
    "instagram": "17913136125657085"
+  },
+  {
+   "id": "e5b10be3bbad40bd",
+   "ids": [
+    "e5b10be3bbad40bd"
+   ],
+   "kind": "story",
+   "title": "Welthandel: EU und Indonesien unterzeichnen weitreichenden Handelsdeal",
+   "time": "2026-11-21T20:34:39+00:00",
+   "facebook": "417030248736562_1811460377652134",
+   "instagram": "17919121671542968"
   }
  ],
  "slots": {
@@ -3141,7 +3152,8 @@
    "16:00",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
