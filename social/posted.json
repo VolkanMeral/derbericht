@@ -3027,6 +3027,17 @@
    "time": "2026-11-21T11:34:35+00:00",
    "facebook": "417030248736562_1810931174371721",
    "instagram": "17918955795494697"
+  },
+  {
+   "id": "2bec4e4484b986c3",
+   "ids": [
+    "2bec4e4484b986c3"
+   ],
+   "kind": "story",
+   "title": "Ringen um Billionen-Haushalt: Streit um EU-Budget: Costa kürzt nach Kritik von Merz",
+   "time": "2026-11-21T15:07:27+00:00",
+   "facebook": "417030248736562_1811136747684497",
+   "instagram": "18132470815876904"
   }
  ],
  "slots": {
@@ -3093,7 +3104,8 @@
   ],
   "2026-11-21": [
    "07:30",
-   "12:30"
+   "12:30",
+   "16:00"
   ]
  }
 }
