@@ -3060,6 +3060,17 @@
    "time": "2026-11-21T18:08:55+00:00",
    "facebook": "417030248736562_1811318597666312",
    "instagram": "18031262474873130"
+  },
+  {
+   "id": "3b3fa2b5af3e197a",
+   "ids": [
+    "3b3fa2b5af3e197a"
+   ],
+   "kind": "story",
+   "title": "Finnland registriert Drohnenangriff auf russischen Frachter in der Ostsee",
+   "time": "2026-11-21T19:35:12+00:00",
+   "facebook": "417030248736562_1811406027657569",
+   "instagram": "17913136125657085"
   }
  ],
  "slots": {
@@ -3129,7 +3140,8 @@
    "12:30",
    "16:00",
    "17:30",
-   "19:00"
+   "19:00",
+   "20:30"
   ]
  }
 }
