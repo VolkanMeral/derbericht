@@ -3163,6 +3163,17 @@
    "time": "2026-11-22T19:34:22+00:00",
    "facebook": "417030248736562_1812693984195440",
    "instagram": "18248805598315762"
+  },
+  {
+   "id": "cc6d9e1e57da7c45",
+   "ids": [
+    "cc6d9e1e57da7c45"
+   ],
+   "kind": "story",
+   "title": "Fußball-Bundesliga: Njinmah schießt Werder zum Sieg im Nordderby gegen den HSV",
+   "time": "2026-11-22T20:35:47+00:00",
+   "facebook": "417030248736562_1812744744190364",
+   "instagram": "18121047230602865"
   }
  ],
  "slots": {
@@ -3232,7 +3243,8 @@
    "16:00",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
