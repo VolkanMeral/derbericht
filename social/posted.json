@@ -3272,6 +3272,17 @@
    "time": "2026-11-24T11:35:06+00:00",
    "facebook": "417030248736562_1814702600661245",
    "instagram": "18001305156043835"
+  },
+  {
+   "id": "0952cca814f7fa16",
+   "ids": [
+    "0952cca814f7fa16"
+   ],
+   "kind": "story",
+   "title": "Tumulte beim Endspiel: Cas-Urteil: Senegal nach Skandal-Finale doch Afrika-Meister",
+   "time": "2026-11-24T16:09:45+00:00",
+   "facebook": "417030248736562_1814992427298929",
+   "instagram": "18085262474360035"
   }
  ],
  "slots": {
@@ -3334,7 +3345,8 @@
   ],
   "2026-11-24": [
    "07:30",
-   "12:30"
+   "12:30",
+   "16:00"
   ]
  }
 }
