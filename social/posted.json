@@ -3377,6 +3377,17 @@
    "time": "2026-11-25T16:34:54+00:00",
    "facebook": "417030248736562_1816296383835200",
    "instagram": "18185712448384360"
+  },
+  {
+   "id": "f616ff5a6f1bcbbe",
+   "ids": [
+    "f616ff5a6f1bcbbe"
+   ],
+   "kind": "story",
+   "title": "Illegale Preisabsprachen: EU verhängt Millionenstrafen gegen Duftstoff-Kartell",
+   "time": "2026-11-25T18:10:21+00:00",
+   "facebook": "417030248736562_1816412070490298",
+   "instagram": "18458046562134827"
   }
  ],
  "slots": {
@@ -3440,7 +3451,8 @@
    "07:30",
    "09:00",
    "12:30",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
