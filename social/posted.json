@@ -3399,6 +3399,17 @@
    "time": "2026-11-25T19:34:47+00:00",
    "facebook": "417030248736562_1816493460482159",
    "instagram": "18184042579437636"
+  },
+  {
+   "id": "9d7be01d4ec9fb16",
+   "ids": [
+    "9d7be01d4ec9fb16"
+   ],
+   "kind": "story",
+   "title": "Reformpläne: Unionspolitiker schlagen Kompromiss im Rentenstreit vor",
+   "time": "2026-11-25T20:35:17+00:00",
+   "facebook": "417030248736562_1816553713809467",
+   "instagram": "17961510417270179"
   }
  ],
  "slots": {
@@ -3464,7 +3475,8 @@
    "12:30",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
