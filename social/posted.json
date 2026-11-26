@@ -3470,6 +3470,17 @@
    "time": "2026-11-26T19:35:18+00:00",
    "facebook": "417030248736562_1817752463689592",
    "instagram": "18028836401946113"
+  },
+  {
+   "id": "e3f5e0c558a6112c",
+   "ids": [
+    "e3f5e0c558a6112c"
+   ],
+   "kind": "story",
+   "title": "US-Militärpräsenz in Europa: Medien: Entscheidung über US-Truppenabzug verschiebt sich",
+   "time": "2026-11-26T20:34:56+00:00",
+   "facebook": "417030248736562_1817807353684103",
+   "instagram": "17970150432224215"
   }
  ],
  "slots": {
@@ -3533,7 +3544,8 @@
    "12:30",
    "17:30",
    "19:00",
-   "20:30"
+   "20:30",
+   "21:30"
   ]
  }
 }
