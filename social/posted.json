@@ -3531,6 +3531,17 @@
    "time": "2026-11-27T16:35:31+00:00",
    "facebook": "417030248736562_1818873033577535",
    "instagram": "18062807159556184"
+  },
+  {
+   "id": "1835b516ec16de69",
+   "ids": [
+    "1835b516ec16de69"
+   ],
+   "kind": "story",
+   "title": "Regierungsbildung in Israel: Eisenkot: Koalitionsgespräche mit Likud kommen nicht voran",
+   "time": "2026-11-27T18:09:52+00:00",
+   "facebook": "417030248736562_1818964716901700",
+   "instagram": "17938908909410295"
   }
  ],
  "slots": {
@@ -3591,7 +3602,8 @@
    "07:30",
    "09:00",
    "12:30",
-   "17:30"
+   "17:30",
+   "19:00"
   ]
  }
 }
