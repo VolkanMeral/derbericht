@@ -3579,6 +3579,17 @@
    "time": "2026-11-28T06:39:59+00:00",
    "facebook": "417030248736562_1819568826841289",
    "instagram": "18155216203549698"
+  },
+  {
+   "id": "decdccc7fe64b4c2",
+   "ids": [
+    "decdccc7fe64b4c2"
+   ],
+   "kind": "story",
+   "title": "Fußball-Bundesliga: Gladbach verspielt Sieg - Füllkrug rettet Bremen",
+   "time": "2026-11-28T08:10:31+00:00",
+   "facebook": "417030248736562_1819642213500617",
+   "instagram": "17919488127494706"
   }
  ],
  "slots": {
@@ -3636,7 +3647,8 @@
    "21:30"
   ],
   "2026-11-28": [
-   "07:30"
+   "07:30",
+   "09:00"
   ]
  }
 }
